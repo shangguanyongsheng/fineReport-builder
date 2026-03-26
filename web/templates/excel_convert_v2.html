@@ -629,22 +629,52 @@
         
         // 收集配置
         function collectConfig() {
+            console.log('开始收集配置...');
+            
             // 数据源
             if (config.datasource_type === 'database') {
                 config.datasource = {
-                    name: document.getElementById('dsName').value,
+                    name: document.getElementById('dsName').value || 'main_data',
                     type: 'database',
-                    database: document.getElementById('dsDatabase').value,
-                    sql: document.getElementById('dsSql').value
+                    database: document.getElementById('dsDatabase').value || '',
+                    sql: document.getElementById('dsSql').value || ''
                 };
+                console.log('数据库数据源:', config.datasource);
             } else {
+                // 安全解析 JSON
+                let returnFields = [];
+                let paramTemplate = {};
+                
+                try {
+                    const rfValue = document.getElementById('returnFields').value;
+                    if (rfValue && rfValue.trim()) {
+                        returnFields = JSON.parse(rfValue);
+                    }
+                } catch (e) {
+                    console.error('返回字段 JSON 解析错误:', e);
+                    alert('返回字段 JSON 格式错误，请检查');
+                    return null;
+                }
+                
+                try {
+                    const ptValue = document.getElementById('paramTemplate').value;
+                    if (ptValue && ptValue.trim()) {
+                        paramTemplate = JSON.parse(ptValue);
+                    }
+                } catch (e) {
+                    console.error('入参模板 JSON 解析错误:', e);
+                    alert('入参模板 JSON 格式错误，请检查');
+                    return null;
+                }
+                
                 config.datasource = {
-                    name: document.getElementById('classDsName').value,
+                    name: document.getElementById('classDsName').value || 'main_data',
                     type: 'class',
-                    class_name: document.getElementById('className').value,
-                    return_fields: JSON.parse(document.getElementById('returnFields').value || '[]'),
-                    parameter_template: JSON.parse(document.getElementById('paramTemplate').value || '{}')
+                    class_name: document.getElementById('className').value || '',
+                    return_fields: returnFields,
+                    parameter_template: paramTemplate
                 };
+                console.log('Class 数据源:', config.datasource);
             }
             
             // 列映射
@@ -653,51 +683,104 @@
                 const col = input.id.replace('map_', '');
                 if (input.value) config.column_mapping[col] = input.value;
             });
+            console.log('列映射:', config.column_mapping);
             
             // 筛选组件
             config.filter_components = [];
             document.querySelectorAll('.component-pair').forEach(el => {
-                config.filter_components.push({
-                    label: el.querySelector('.comp-label').value,
-                    type: el.querySelector('.comp-type').value,
-                    code: el.querySelector('.comp-code').value,
-                    default_value: el.querySelector('.comp-default').value
-                });
+                const comp = {
+                    label: el.querySelector('.comp-label')?.value || '',
+                    type: el.querySelector('.comp-type')?.value || 'TextEditor',
+                    code: el.querySelector('.comp-code')?.value || '',
+                    default_value: el.querySelector('.comp-default')?.value || ''
+                };
+                if (comp.code) {  // 只添加有 code 的组件
+                    config.filter_components.push(comp);
+                }
             });
+            console.log('筛选组件:', config.filter_components);
             
             // 报表信息
             config.report = {
-                title: document.getElementById('reportTitle').value,
-                sheet_name: document.getElementById('sheetName').value
+                title: document.getElementById('reportTitle').value || '新建报表',
+                sheet_name: document.getElementById('sheetName').value || 'Sheet1'
             };
+            console.log('报表信息:', config.report);
             
+            console.log('完整配置:', JSON.stringify(config, null, 2));
             return config;
         }
         
         // 生成报表
         function generateReport() {
+            console.log('=== 开始生成报表 ===');
+            
             const cfg = collectConfig();
+            if (!cfg) {
+                console.error('配置收集失败');
+                return;
+            }
+            
+            console.log('发送请求到 /api/v2/generate');
+            console.log('请求体:', JSON.stringify(cfg, null, 2));
+            
+            // 显示加载状态
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'block';
+            resultSection.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split me-2"></i>正在生成报表...</div>';
             
             fetch('/api/v2/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cfg)
             })
-            .then(r => r.json())
+            .then(response => {
+                console.log('响应状态:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('响应数据:', data);
+                
                 if (data.error) {
-                    alert('生成失败: ' + data.error);
+                    resultSection.innerHTML = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>生成失败: ${data.error}</div>`;
                     return;
                 }
                 
-                document.getElementById('resultSection').style.display = 'block';
-                document.getElementById('downloadBtn').href = data.download_url;
+                resultSection.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>报表生成成功！
+                    </div>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="${data.download_url}" class="btn btn-primary">
+                            <i class="bi bi-download me-2"></i>下载 .cpt
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="showGeneratedJson()">
+                            <i class="bi bi-code me-2"></i>查看配置 JSON
+                        </button>
+                    </div>
+                `;
+            })
+            .catch(err => {
+                console.error('请求失败:', err);
+                resultSection.innerHTML = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>请求失败: ${err.message}</div>`;
             });
         }
         
         function showGeneratedJson() {
-            const cfg = collectConfig();
-            alert(JSON.stringify(cfg, null, 2));
+            if (config) {
+                const json = JSON.stringify(config, null, 2);
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+                    <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+                        <div style="background:white;padding:24px;border-radius:8px;max-width:80%;max-height:80%;overflow:auto;">
+                            <h5>配置 JSON</h5>
+                            <pre style="background:#f5f5f5;padding:16px;border-radius:4px;overflow:auto;">${json}</pre>
+                            <button class="btn btn-secondary" onclick="this.closest('div[style*=position]').remove()">关闭</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
         }
         
         function escapeHtml(text) {

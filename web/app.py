@@ -345,7 +345,14 @@ def generate_cpt_xml(title, cells, styles, ds_name, database):
 @app.route('/api/v2/generate', methods=['POST'])
 def generate_report_v2():
     """V2 报表生成接口"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info("=" * 60)
+    logger.info("收到 V2 报表生成请求")
+    
     data = request.json
+    logger.info(f"请求数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
     
     try:
         # 解析配置
@@ -353,6 +360,10 @@ def generate_report_v2():
         column_mapping = data.get('column_mapping', {})
         filter_components = data.get('filter_components', [])
         report_info = data.get('report', {})
+        
+        logger.info(f"数据源类型: {datasource.get('type')}")
+        logger.info(f"列映射: {column_mapping}")
+        logger.info(f"筛选组件数量: {len(filter_components)}")
         
         # 生成 CPT 配置
         cpt_config = {
@@ -365,54 +376,79 @@ def generate_report_v2():
         
         # 数据源配置
         if datasource.get('type') == 'database':
+            sql = datasource.get('sql', '')
+            params = extract_params_from_sql(sql)
+            logger.info(f"SQL 参数: {params}")
+            
             cpt_config['data_sources'].append({
                 'name': datasource.get('name', 'main_data'),
                 'type': 'DBTableData',
                 'database': datasource.get('database', ''),
-                'sql': datasource.get('sql', ''),
-                'parameters': extract_params_from_sql(datasource.get('sql', ''))
+                'sql': sql,
+                'parameters': params
             })
+            logger.info(f"数据库数据源已配置: {datasource.get('name')}")
+            
         elif datasource.get('type') == 'class':
+            param_template = datasource.get('parameter_template', {})
+            params = list(param_template.keys())
+            logger.info(f"Class 入参: {params}")
+            
             cpt_config['data_sources'].append({
                 'name': datasource.get('name', 'main_data'),
                 'type': 'ClassTableData',
                 'class_name': datasource.get('class_name', ''),
                 'return_fields': datasource.get('return_fields', []),
-                'parameters': list(datasource.get('parameter_template', {}).keys())
+                'parameters': params
             })
+            logger.info(f"Class 数据源已配置: {datasource.get('name')}")
         
         # 筛选组件配置
+        logger.info("配置筛选组件...")
         for i, comp in enumerate(filter_components):
-            cpt_config['filter_controls'].append({
+            ctrl = {
                 'name': comp.get('code', f'param_{i}'),
                 'label': comp.get('label', ''),
                 'type': comp.get('type', 'TextEditor'),
                 'default': comp.get('default_value', ''),
                 'x': 100 + (i % 5) * 220,
                 'y': 10 + (i // 5) * 50
-            })
+            }
+            cpt_config['filter_controls'].append(ctrl)
+            logger.debug(f"组件 {i}: {ctrl}")
+        logger.info(f"筛选组件配置完成，共 {len(cpt_config['filter_controls'])} 个")
         
         # 单元格配置（从列映射生成）
+        logger.info("配置单元格...")
         row = 0
         for col_letter, field_name in column_mapping.items():
             col_num = ord(col_letter.upper()) - ord('A')
-            cpt_config['cells'].append({
+            cell = {
                 'column': col_num,
                 'row': row,
                 'value': field_name,
                 'style_index': 0
-            })
+            }
+            cpt_config['cells'].append(cell)
+            logger.debug(f"单元格: {col_letter}({col_num}) -> {field_name}")
+        logger.info(f"单元格配置完成，共 {len(cpt_config['cells'])} 个")
         
         # 生成 CPT 文件
+        logger.info("开始生成 CPT 文件...")
         from parsers.cpt_generator import CPTGenerator
         generator = CPTGenerator()
         cpt_content = generator.generate(cpt_config)
+        logger.info(f"CPT 文件生成成功，大小: {len(cpt_content)} 字符")
         
         # 保存文件
         output_filename = f"{report_info.get('title', 'report')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.cpt"
         output_path = OUTPUT_FOLDER / output_filename
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(cpt_content)
+        logger.info(f"文件已保存: {output_path}")
+        
+        logger.info("报表生成完成!")
+        logger.info("=" * 60)
         
         return jsonify({
             'success': True,
@@ -422,6 +458,8 @@ def generate_report_v2():
         })
         
     except Exception as e:
+        logger.error(f"生成失败: {str(e)}", exc_info=True)
+        logger.error("=" * 60)
         return jsonify({'error': str(e)}), 500
 
 
