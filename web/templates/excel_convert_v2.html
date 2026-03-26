@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 转 CPT - FineReport Builder V2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .navbar { background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); }
+        .navbar-brand, .nav-link { color: white !important; }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: #e8e8e8;
+            border-radius: 20px;
+            margin: 0 8px;
+            cursor: pointer;
+        }
+        .step.active {
+            background: #52c41a;
+            color: white;
+        }
+        .step.done {
+            background: #95de64;
+            color: white;
+        }
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-size: 12px;
+        }
+        
+        .card-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i { margin-right: 8px; color: #52c41a; }
+        
+        .upload-zone {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover { border-color: #52c41a; background: #f6ffed; }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .preview-table th, .preview-table td {
+            border: 1px solid #e8e8e8;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .preview-table th { background: #fafafa; }
+        .preview-table .col-header { background: #e6f7ff; font-weight: bold; }
+        
+        .datasource-tabs {
+            display: flex;
+            border-bottom: 2px solid #e8e8e8;
+            margin-bottom: 16px;
+        }
+        .datasource-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .datasource-tab.active {
+            border-bottom-color: #52c41a;
+            color: #52c41a;
+            font-weight: 600;
+        }
+        
+        .component-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .component-pair {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 280px;
+        }
+        .component-pair input {
+            flex: 1;
+        }
+        
+        .mapping-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+        .mapping-row .col-badge {
+            background: #1890ff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .param-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #fafafa;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .param-item.bound { border-left: 3px solid #52c41a; }
+        .param-item.unbound { border-left: 3px solid #faad14; }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            border: none;
+            color: white;
+            padding: 12px 32px;
+            font-size: 16px;
+            border-radius: 8px;
+        }
+        .btn-generate:hover { background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%); }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-file-earmark-spreadsheet me-2"></i>FineReport Builder V2</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">首页</a>
+                <a class="nav-link" href="/cpt-analyze">CPT 分析</a>
+                <a class="nav-link active" href="/excel-convert">Excel 转换</a>
+                <a class="nav-link" href="/class-test">Class 测试</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 步骤指示器 -->
+    <div class="container mt-4">
+        <div class="step-indicator">
+            <div class="step active" id="step1" onclick="goToStep(1)">
+                <span class="step-number">1</span>
+                上传 Excel
+            </div>
+            <div class="step" id="step2" onclick="goToStep(2)">
+                <span class="step-number">2</span>
+                配置数据源
+            </div>
+            <div class="step" id="step3" onclick="goToStep(3)">
+                <span class="step-number">3</span>
+                列映射
+            </div>
+            <div class="step" id="step4" onclick="goToStep(4)">
+                <span class="step-number">4</span>
+                筛选组件
+            </div>
+            <div class="step" id="step5" onclick="goToStep(5)">
+                <span class="step-number">5</span>
+                生成报表
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="container pb-5">
+        <!-- Step 1: 上传 Excel -->
+        <div id="panel1" class="card-section">
+            <div class="section-title"><i class="bi bi-file-earmark-excel"></i>Step 1: 上传 Excel 模板</div>
+            
+            <div class="upload-zone" id="uploadZone">
+                <i class="bi bi-cloud-arrow-up" style="font-size: 48px; color: #52c41a;"></i>
+                <p class="mt-3 mb-0">拖拽 Excel 文件到此处，或点击选择</p>
+                <p class="text-muted small mb-2">支持 .xlsx, .xls 格式，仅支持单 Sheet</p>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+            </div>
+            
+            <!-- Excel 预览 -->
+            <div id="previewSection" style="display: none;">
+                <h6 class="mt-4 mb-2">
+                    <i class="bi bi-table me-2"></i>数据预览
+                    <small class="text-muted" id="previewInfo"></small>
+                </h6>
+                <div style="overflow-x: auto;">
+                    <table class="preview-table" id="previewTable"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: 配置数据源 -->
+        <div id="panel2" class="card-section" style="display: none;">
+            <div class="section-title"><i class="bi bi-database"></i>Step 2: 配置数据源</div>
+            
+            <div class="datasource-tabs">
+                <div class="datasource-tab active" id="tabDb" onclick="switchDsTab('database')">
+                    <i class="bi bi-database me-2"></i>数据库数据源
+                </div>
+                <div class="datasource-tab" id="tabClass" onclick="switchDsTab('class')">
+                    <i class="bi bi-code-square me-2"></i>Class 数据源
+                </div>
+            </div>
+            
+            <!-- 数据库数据源 -->
+            <div id="dsDatabase">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">数据源名称</label>
+                        <input type="text" class="form-control" id="dsName" placeholder="sales_data">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">数据库连接</label>
+                        <input type="text" class="form-control" id="dsDatabase" placeholder="cfs-report">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">SQL 查询语句</label>
+                    <textarea class="form-control" id="dsSql" rows="5" placeholder="SELECT region, product, amount FROM sales WHERE date >= '${startDate}'"></textarea>
+                    <small class="text-muted">支持 ${参数名} 占位符，参数从筛选组件获取</small>
+                </div>
+            </div>
+            
+            <!-- Class 数据源 -->
+            <div id="dsClass" style="display: none;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">数据源名称</label>
+                        <input type="text" class="form-control" id="classDsName" placeholder="credit_data">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">className</label>
+                        <input type="text" class="form-control" id="className" placeholder="com.yocyl.fr.engine.tableData.finance.CreditContractDetailData">
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <label class="form-label">返回字段 <small class="text-muted">(JSON 格式)</small></label>
+                    <textarea class="form-control" id="returnFields" rows="3" placeholder='[{"name": "contractNo", "type": "string"}, {"name": "amount", "type": "number"}]'></textarea>
+                </div>
+                
+                <div class="mt-3">
+                    <label class="form-label">入参模板 <small class="text-muted">(空值从筛选组件获取，有值为默认值)</small></label>
+                    <textarea class="form-control" id="paramTemplate" rows="4" placeholder='{"orgId": "", "startDate": "2026-03-02", "indexInfo": []}'></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: 列映射 -->
+        <div id="panel3" class="card-section" style="display: none;">
+            <div class="section-title"><i class="bi bi-diagram-3"></i>Step 3: Excel 列 → 字段映射</div>
+            
+            <div id="mappingList">
+                <!-- 动态生成 -->
+            </div>
+            
+            <button class="btn btn-outline-secondary mt-2" onclick="autoMapping()">
+                <i class="bi bi-magic me-2"></i>自动映射
+            </button>
+        </div>
+
+        <!-- Step 4: 筛选组件 -->
+        <div id="panel4" class="card-section" style="display: none;">
+            <div class="section-title">
+                <i class="bi bi-funnel"></i>Step 4: 筛选组件配置
+                <small class="text-muted ms-2">（一行 5 对组件：说明 + 输入控件）</small>
+            </div>
+            
+            <div class="mb-3">
+                <button class="btn btn-outline-primary btn-sm" onclick="addComponent()">
+                    <i class="bi bi-plus-lg me-1"></i>添加组件
+                </button>
+                <button class="btn btn-outline-secondary btn-sm ms-2" onclick="importComponentsJson()">
+                    <i class="bi bi-file-code me-1"></i>导入 JSON
+                </button>
+            </div>
+            
+            <!-- 组件列表 -->
+            <div id="componentList">
+                <!-- 动态生成 -->
+            </div>
+            
+            <!-- 参数绑定状态 -->
+            <div class="mt-4">
+                <h6><i class="bi bi-link-45deg me-2"></i>参数绑定状态</h6>
+                <div id="bindingStatus">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: 生成报表 -->
+        <div id="panel5" class="card-section" style="display: none;">
+            <div class="section-title"><i class="bi bi-file-earmark-plus"></i>Step 5: 生成报表</div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">报表标题</label>
+                    <input type="text" class="form-control" id="reportTitle" placeholder="销售统计报表">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Sheet 名称</label>
+                    <input type="text" class="form-control" id="sheetName" placeholder="Sheet1">
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button class="btn btn-generate" onclick="generateReport()">
+                    <i class="bi bi-arrow-repeat me-2"></i>生成 .cpt 报表
+                </button>
+            </div>
+            
+            <!-- 生成结果 -->
+            <div id="resultSection" class="mt-4" style="display: none;">
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>报表生成成功！
+                </div>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="#" class="btn btn-primary" id="downloadBtn">
+                        <i class="bi bi-download me-2"></i>下载 .cpt
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="showGeneratedJson()">
+                        <i class="bi bi-code me-2"></i>查看配置 JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导航按钮 -->
+        <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-outline-secondary" id="prevBtn" onclick="prevStep()" disabled>
+                <i class="bi bi-arrow-left me-2"></i>上一步
+            </button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                下一步<i class="bi bi-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 状态管理
+        let currentStep = 1;
+        let excelData = null;
+        let config = {
+            datasource_type: 'database',
+            datasource: {},
+            column_mapping: {},
+            filter_components: [],
+            report: {}
+        };
+        
+        // 文件上传
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        function handleFile(file) {
+            if (!file || !file.name.match(/\.(xlsx|xls)$/i)) {
+                alert('请上传 Excel 文件');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            uploadZone.innerHTML = '<div class="spinner-border text-success"></div><p class="mt-3">解析中...</p>';
+            
+            fetch('/api/analyze/excel', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        uploadZone.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                        return;
+                    }
+                    
+                    excelData = data;
+                    document.getElementById('previewSection').style.display = 'block';
+                    document.getElementById('previewInfo').textContent = 
+                        `Sheet: ${data.preview.sheet_name} | ${data.preview.max_row + 1} 行 × ${data.preview.max_column + 1} 列`;
+                    
+                    renderPreview(data.preview);
+                    generateMappingUI(data.preview.max_column);
+                    
+                    uploadZone.innerHTML = `
+                        <i class="bi bi-file-earmark-check" style="font-size: 48px; color: #52c41a;"></i>
+                        <p class="mt-3 mb-0">${file.name}</p>
+                        <p class="text-muted small mb-0">点击重新选择</p>
+                    `;
+                    
+                    // 启用下一步
+                    document.getElementById('nextBtn').disabled = false;
+                });
+        }
+        
+        function renderPreview(preview) {
+            let html = '<tr>';
+            // 列头 A, B, C...
+            html += '<th></th>';
+            for (let i = 0; i <= preview.max_column; i++) {
+                html += `<th class="col-header">${String.fromCharCode(65 + i)}</th>`;
+            }
+            html += '</tr>';
+            
+            preview.data.forEach((row, ri) => {
+                html += '<tr>';
+                html += `<th>${ri + 1}</th>`;
+                row.forEach(cell => {
+                    html += `<td>${escapeHtml(cell) || '-'}</td>`;
+                });
+                // 补齐空列
+                for (let i = row.length; i <= preview.max_column; i++) {
+                    html += '<td>-</td>';
+                }
+                html += '</tr>';
+            });
+            
+            document.getElementById('previewTable').innerHTML = html;
+        }
+        
+        function generateMappingUI(maxCol) {
+            let html = '';
+            for (let i = 0; i <= maxCol; i++) {
+                const col = String.fromCharCode(65 + i);
+                html += `
+                    <div class="mapping-row">
+                        <span class="col-badge">${col}</span>
+                        <input type="text" class="form-control form-control-sm" id="map_${col}" 
+                               placeholder="字段名" style="width: 150px;">
+                        <small class="text-muted">→ 绑定到数据库字段</small>
+                    </div>
+                `;
+            }
+            document.getElementById('mappingList').innerHTML = html;
+        }
+        
+        function autoMapping() {
+            if (!excelData) return;
+            // 用第一行作为字段名
+            const headers = excelData.preview.data[0] || [];
+            headers.forEach((h, i) => {
+                const col = String.fromCharCode(65 + i);
+                const input = document.getElementById(`map_${col}`);
+                if (input && h) {
+                    input.value = h.toString().toLowerCase().replace(/\s+/g, '_');
+                }
+            });
+        }
+        
+        // 数据源类型切换
+        function switchDsTab(type) {
+            config.datasource_type = type;
+            document.getElementById('tabDb').classList.toggle('active', type === 'database');
+            document.getElementById('tabClass').classList.toggle('active', type === 'class');
+            document.getElementById('dsDatabase').style.display = type === 'database' ? 'block' : 'none';
+            document.getElementById('dsClass').style.display = type === 'class' ? 'block' : 'none';
+        }
+        
+        // 筛选组件管理
+        let componentCount = 0;
+        
+        function addComponent(data = {}) {
+            const id = componentCount++;
+            const html = `
+                <div class="component-pair" id="comp_${id}">
+                    <input type="text" class="form-control form-control-sm comp-label" placeholder="说明组件" value="${data.label || ''}" style="width: 100px;">
+                    <span style="color: #8c8c8c;">——</span>
+                    <select class="form-select form-select-sm comp-type" style="width: 120px;">
+                        <option value="TextEditor" ${data.type === 'TextEditor' ? 'selected' : ''}>文本框</option>
+                        <option value="DateEditor" ${data.type === 'DateEditor' ? 'selected' : ''}>日期</option>
+                        <option value="ComboBox" ${data.type === 'ComboBox' ? 'selected' : ''}>下拉框</option>
+                        <option value="TreeComboBoxEditor" ${data.type === 'TreeComboBoxEditor' ? 'selected' : ''}>树形下拉</option>
+                        <option value="NumberEditor" ${data.type === 'NumberEditor' ? 'selected' : ''}>数字</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm comp-code" placeholder="Code传值组件" value="${data.code || ''}" style="width: 120px;">
+                    <input type="text" class="form-control form-control-sm comp-default" placeholder="默认值" value="${data.default_value || ''}" style="width: 100px;">
+                    <button class="btn btn-outline-danger btn-sm" onclick="removeComponent(${id})"><i class="bi bi-trash"></i></button>
+                </div>
+            `;
+            document.getElementById('componentList').insertAdjacentHTML('beforeend', html);
+            updateBindingStatus();
+        }
+        
+        function removeComponent(id) {
+            document.getElementById(`comp_${id}`)?.remove();
+            updateBindingStatus();
+        }
+        
+        function importComponentsJson() {
+            const json = prompt('请粘贴组件 JSON:', '[]');
+            if (json) {
+                try {
+                    const components = JSON.parse(json);
+                    document.getElementById('componentList').innerHTML = '';
+                    componentCount = 0;
+                    components.forEach(c => addComponent(c));
+                } catch (e) {
+                    alert('JSON 格式错误');
+                }
+            }
+        }
+        
+        function updateBindingStatus() {
+            // 检查参数绑定状态
+            const codes = Array.from(document.querySelectorAll('.comp-code')).map(i => i.value).filter(c => c);
+            const params = extractParams();
+            
+            let html = '';
+            params.forEach(p => {
+                const bound = codes.includes(p);
+                html += `
+                    <div class="param-item ${bound ? 'bound' : 'unbound'}">
+                        <code>${p}</code>
+                        ${bound ? '<span class="badge bg-success">已绑定</span>' : '<span class="badge bg-warning">未绑定</span>'}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('bindingStatus').innerHTML = html || '<p class="text-muted">暂无参数</p>';
+        }
+        
+        function extractParams() {
+            const params = new Set();
+            
+            // 从 SQL 提取 ${xxx}
+            const sql = document.getElementById('dsSql').value;
+            (sql.match(/\$\{(\w+)\}/g) || []).forEach(m => {
+                params.add(m.replace(/[${}]/g, ''));
+            });
+            
+            // 从 Class 入参提取空值
+            try {
+                const template = JSON.parse(document.getElementById('paramTemplate').value || '{}');
+                Object.entries(template).forEach(([k, v]) => {
+                    if (v === '' || (Array.isArray(v) && v.length === 0)) {
+                        params.add(k);
+                    }
+                });
+            } catch (e) {}
+            
+            return Array.from(params);
+        }
+        
+        // 步骤导航
+        function goToStep(step) {
+            showStep(step);
+        }
+        
+        function showStep(step) {
+            currentStep = step;
+            
+            // 更新步骤指示器
+            for (let i = 1; i <= 5; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.classList.remove('active', 'done');
+                if (i < step) stepEl.classList.add('done');
+                if (i === step) stepEl.classList.add('active');
+            }
+            
+            // 显示对应面板
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`panel${i}`).style.display = i === step ? 'block' : 'none';
+            }
+            
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = step === 1;
+            document.getElementById('nextBtn').textContent = step === 5 ? '生成报表' : '下一步';
+            document.getElementById('nextBtn').innerHTML = step === 5 ? 
+                '<i class="bi bi-check-lg me-2"></i>生成报表' : 
+                '下一步<i class="bi bi-arrow-right ms-2"></i>';
+            
+            // Step 4 时更新绑定状态
+            if (step === 4) updateBindingStatus();
+        }
+        
+        function nextStep() {
+            if (currentStep < 5) {
+                showStep(currentStep + 1);
+            } else {
+                generateReport();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) showStep(currentStep - 1);
+        }
+        
+        // 收集配置
+        function collectConfig() {
+            // 数据源
+            if (config.datasource_type === 'database') {
+                config.datasource = {
+                    name: document.getElementById('dsName').value,
+                    type: 'database',
+                    database: document.getElementById('dsDatabase').value,
+                    sql: document.getElementById('dsSql').value
+                };
+            } else {
+                config.datasource = {
+                    name: document.getElementById('classDsName').value,
+                    type: 'class',
+                    class_name: document.getElementById('className').value,
+                    return_fields: JSON.parse(document.getElementById('returnFields').value || '[]'),
+                    parameter_template: JSON.parse(document.getElementById('paramTemplate').value || '{}')
+                };
+            }
+            
+            // 列映射
+            config.column_mapping = {};
+            document.querySelectorAll('[id^="map_"]').forEach(input => {
+                const col = input.id.replace('map_', '');
+                if (input.value) config.column_mapping[col] = input.value;
+            });
+            
+            // 筛选组件
+            config.filter_components = [];
+            document.querySelectorAll('.component-pair').forEach(el => {
+                config.filter_components.push({
+                    label: el.querySelector('.comp-label').value,
+                    type: el.querySelector('.comp-type').value,
+                    code: el.querySelector('.comp-code').value,
+                    default_value: el.querySelector('.comp-default').value
+                });
+            });
+            
+            // 报表信息
+            config.report = {
+                title: document.getElementById('reportTitle').value,
+                sheet_name: document.getElementById('sheetName').value
+            };
+            
+            return config;
+        }
+        
+        // 生成报表
+        function generateReport() {
+            const cfg = collectConfig();
+            
+            fetch('/api/v2/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cfg)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    alert('生成失败: ' + data.error);
+                    return;
+                }
+                
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('downloadBtn').href = data.download_url;
+            });
+        }
+        
+        function showGeneratedJson() {
+            const cfg = collectConfig();
+            alert(JSON.stringify(cfg, null, 2));
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

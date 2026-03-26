@@ -54,6 +54,11 @@ def excel_convert_page():
     """Excel 转换页面"""
     return render_template('excel_convert.html')
 
+@app.route('/excel-convert-v2')
+def excel_convert_v2_page():
+    """Excel 转换页面 V2"""
+    return render_template('excel_convert_v2.html')
+
 
 @app.route('/class-test')
 def class_test_page():
@@ -333,6 +338,98 @@ def generate_cpt_xml(title, cells, styles, ds_name, database):
 </WorkBook>''')
     
     return ''.join(xml_parts)
+
+
+# ============ V2 API ============
+
+@app.route('/api/v2/generate', methods=['POST'])
+def generate_report_v2():
+    """V2 报表生成接口"""
+    data = request.json
+    
+    try:
+        # 解析配置
+        datasource = data.get('datasource', {})
+        column_mapping = data.get('column_mapping', {})
+        filter_components = data.get('filter_components', [])
+        report_info = data.get('report', {})
+        
+        # 生成 CPT 配置
+        cpt_config = {
+            'title': report_info.get('title', '新建报表'),
+            'sheet_name': report_info.get('sheet_name', 'Sheet1'),
+            'data_sources': [],
+            'filter_controls': [],
+            'cells': []
+        }
+        
+        # 数据源配置
+        if datasource.get('type') == 'database':
+            cpt_config['data_sources'].append({
+                'name': datasource.get('name', 'main_data'),
+                'type': 'DBTableData',
+                'database': datasource.get('database', ''),
+                'sql': datasource.get('sql', ''),
+                'parameters': extract_params_from_sql(datasource.get('sql', ''))
+            })
+        elif datasource.get('type') == 'class':
+            cpt_config['data_sources'].append({
+                'name': datasource.get('name', 'main_data'),
+                'type': 'ClassTableData',
+                'class_name': datasource.get('class_name', ''),
+                'return_fields': datasource.get('return_fields', []),
+                'parameters': list(datasource.get('parameter_template', {}).keys())
+            })
+        
+        # 筛选组件配置
+        for i, comp in enumerate(filter_components):
+            cpt_config['filter_controls'].append({
+                'name': comp.get('code', f'param_{i}'),
+                'label': comp.get('label', ''),
+                'type': comp.get('type', 'TextEditor'),
+                'default': comp.get('default_value', ''),
+                'x': 100 + (i % 5) * 220,
+                'y': 10 + (i // 5) * 50
+            })
+        
+        # 单元格配置（从列映射生成）
+        row = 0
+        for col_letter, field_name in column_mapping.items():
+            col_num = ord(col_letter.upper()) - ord('A')
+            cpt_config['cells'].append({
+                'column': col_num,
+                'row': row,
+                'value': field_name,
+                'style_index': 0
+            })
+        
+        # 生成 CPT 文件
+        from parsers.cpt_generator import CPTGenerator
+        generator = CPTGenerator()
+        cpt_content = generator.generate(cpt_config)
+        
+        # 保存文件
+        output_filename = f"{report_info.get('title', 'report')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.cpt"
+        output_path = OUTPUT_FOLDER / output_filename
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(cpt_content)
+        
+        return jsonify({
+            'success': True,
+            'output_file': output_filename,
+            'download_url': f'/api/download/{output_filename}',
+            'config': cpt_config
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def extract_params_from_sql(sql):
+    """从 SQL 中提取参数名"""
+    import re
+    params = re.findall(r'\$\{(\w+)\}', sql)
+    return [{'name': p, 'default': ''} for p in params]
 
 
 # ============ 启动入口 ============

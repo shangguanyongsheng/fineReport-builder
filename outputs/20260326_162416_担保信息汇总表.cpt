@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20170720" releaseVersion="9.0.0">
+<Report name="Sheet1" class="com.fr.report.worksheet.WorkSheet">
+<TableDataMap>
+    <TableData name="data_source" class="com.fr.data.impl.DBTableData">
+        <Connection class="com.fr.data.impl.NameDatabaseConnection">
+            <DatabaseName><![CDATA[default_db]]></DatabaseName>
+        </Connection>
+        <Query><![CDATA[SELECT * FROM table_name]]></Query>
+    </TableData>
+</TableDataMap>
+<CellElementList>
+    <C c="0" r="0">
+        <O><![CDATA[序号]]></O>
+    </C>
+    <C c="1" r="0">
+        <O><![CDATA[担保编号]]></O>
+    </C>
+    <C c="2" r="0">
+        <O><![CDATA[被担保人]]></O>
+    </C>
+    <C c="3" r="0">
+        <O><![CDATA[债权人]]></O>
+    </C>
+    <C c="4" r="0">
+        <O><![CDATA[合同号]]></O>
+    </C>
+    <C c="5" r="0">
+        <O><![CDATA[合同币种]]></O>
+    </C>
+    <C c="6" r="0">
+        <O><![CDATA[合同金额]]></O>
+    </C>
+    <C c="7" r="0">
+        <O><![CDATA[担保开始日]]></O>
+    </C>
+    <C c="8" r="0">
+        <O><![CDATA[担保结束日]]></O>
+    </C>
+    <C c="9" r="0">
+        <O><![CDATA[担保方式]]></O>
+    </C>
+    <C c="10" r="0">
+        <O><![CDATA[担保债务余额]]></O>
+    </C>
+    <C c="11" r="0">
+        <O><![CDATA[抵质押物名称]]></O>
+    </C>
+    <C c="12" r="0">
+        <O><![CDATA[抵质押物担保总额]]></O>
+    </C>
+    <C c="13" r="0">
+        <O><![CDATA[担保人]]></O>
+    </C>
+    <C c="14" r="0">
+        <O><![CDATA[是否反担保]]></O>
+    </C>
+    <C c="15" r="0">
+        <O><![CDATA[担保比例（%）]]></O>
+    </C>
+    <C c="16" r="0">
+        <O><![CDATA[股权比例（%）]]></O>
+    </C>
+    <C c="17" r="0">
+        <O><![CDATA[股比担保比例（%）]]></O>
+    </C>
+</CellElementList>
+</Report>
+</WorkBook>
