@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 转 CPT - FineReport Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .navbar { background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); }
+        .navbar-brand, .nav-link { color: white !important; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        
+        .page-header { background: white; padding: 20px 0; border-bottom: 1px solid #e8e8e8; margin-bottom: 24px; }
+        .page-title { font-size: 1.5rem; font-weight: 600; color: #262626; margin: 0; }
+        
+        .upload-zone {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .upload-zone:hover, .upload-zone.dragover { border-color: #52c41a; background: #f6ffed; }
+        
+        .result-section { background: white; border-radius: 8px; padding: 24px; margin-top: 24px; }
+        
+        .preview-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 13px;
+        }
+        .preview-table th, .preview-table td { 
+            border: 1px solid #e8e8e8; 
+            padding: 8px 12px; 
+            text-align: left;
+        }
+        .preview-table th { background: #fafafa; font-weight: 600; }
+        .preview-table td:empty::before { content: '-'; color: #bfbfbf; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-file-earmark-spreadsheet me-2"></i>FineReport Builder</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">首页</a>
+                <a class="nav-link" href="/cpt-analyze">CPT 分析</a>
+                <a class="nav-link active" href="/excel-convert">Excel 转换</a>
+                <a class="nav-link" href="/class-test">Class 测试</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title"><i class="bi bi-file-earmark-excel me-2"></i>Excel 转 CPT</h1>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="container pb-5">
+        <div class="row">
+            <!-- 左侧：上传和预览 -->
+            <div class="col-lg-8">
+                <div class="result-section">
+                    <h5 class="mb-3">上传 Excel 文件</h5>
+                    <div class="upload-zone" id="uploadZone">
+                        <i class="bi bi-file-earmark-excel" style="font-size: 48px; color: #52c41a;"></i>
+                        <p class="mt-3 mb-0">拖拽 Excel 文件到此处</p>
+                        <p class="text-muted small mb-2">支持 .xlsx, .xls 格式</p>
+                        <button class="btn btn-success btn-sm">选择文件</button>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                </div>
+                
+                <!-- 预览区域 -->
+                <div class="result-section" id="previewSection" style="display: none;">
+                    <h5 class="mb-3">
+                        <i class="bi bi-table me-2"></i>数据预览
+                        <small class="text-muted ms-2" id="previewInfo"></small>
+                    </h5>
+                    <div style="overflow-x: auto;">
+                        <table class="preview-table" id="previewTable"></table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：配置 -->
+            <div class="col-lg-4">
+                <div class="result-section">
+                    <h5 class="mb-3"><i class="bi bi-gear me-2"></i>转换配置</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">数据源名称</label>
+                        <input type="text" class="form-control" id="dsName" placeholder="data_source">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">数据库连接</label>
+                        <input type="text" class="form-control" id="database" placeholder="default_db">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Sheet 索引</label>
+                        <input type="number" class="form-control" id="sheetIndex" value="0" min="0">
+                    </div>
+                    
+                    <input type="hidden" id="uploadedFilename">
+                    
+                    <button class="btn btn-success w-100" id="convertBtn" disabled>
+                        <i class="bi bi-arrow-repeat me-2"></i>转换为 CPT
+                    </button>
+                    
+                    <div id="convertResult" class="mt-3"></div>
+                </div>
+                
+                <!-- 转换结果 -->
+                <div class="result-section" id="resultSection" style="display: none;">
+                    <h5 class="mb-3"><i class="bi bi-check-circle text-success me-2"></i>转换成功</h5>
+                    <div id="resultStats"></div>
+                    <a href="#" class="btn btn-primary w-100 mt-3" id="downloadBtn">
+                        <i class="bi bi-download me-2"></i>下载 CPT 文件
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        let currentFilename = '';
+        
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        function handleFile(file) {
+            if (!file || !file.name.match(/\.(xlsx|xls)$/i)) {
+                alert('请上传 Excel 文件');
+                return;
+            }
+            
+            currentFilename = file.name;
+            document.getElementById('uploadedFilename').value = file.name;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            uploadZone.innerHTML = '<div class="spinner-border text-success" role="status"></div><p class="mt-3">正在解析...</p>';
+            
+            fetch('/api/analyze/excel', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        uploadZone.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                        return;
+                    }
+                    renderPreview(data);
+                    document.getElementById('convertBtn').disabled = false;
+                });
+        }
+        
+        function renderPreview(data) {
+            const preview = data.preview;
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('previewInfo').textContent = 
+                `Sheet: ${preview.sheet_name} | 行: ${preview.max_row + 1} | 列: ${preview.max_column + 1}`;
+            
+            let html = '';
+            preview.data.forEach((row, ri) => {
+                html += '<tr>';
+                row.forEach(cell => {
+                    const tag = ri === 0 ? 'th' : 'td';
+                    html += `<${tag}>${escapeHtml(cell)}</${tag}>`;
+                });
+                html += '</tr>';
+            });
+            
+            document.getElementById('previewTable').innerHTML = html;
+            uploadZone.innerHTML = `
+                <i class="bi bi-file-earmark-check" style="font-size: 48px; color: #52c41a;"></i>
+                <p class="mt-3 mb-0">${data.filename}</p>
+                <p class="text-muted small mb-0">点击重新选择</p>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 转换
+        document.getElementById('convertBtn').addEventListener('click', () => {
+            const data = {
+                filename: currentFilename,
+                sheet_index: parseInt(document.getElementById('sheetIndex').value) || 0,
+                ds_name: document.getElementById('dsName').value || 'data_source',
+                database: document.getElementById('database').value || 'default_db'
+            };
+            
+            document.getElementById('convertResult').innerHTML = 
+                '<div class="text-center"><div class="spinner-border spinner-border-sm text-success"></div> 转换中...</div>';
+            
+            fetch('/api/convert/excel-to-cpt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.error) {
+                    document.getElementById('convertResult').innerHTML = 
+                        `<div class="alert alert-danger">${result.error}</div>`;
+                    return;
+                }
+                
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('resultStats').innerHTML = `
+                    <p class="mb-1"><strong>单元格:</strong> ${result.stats.cells}</p>
+                    <p class="mb-1"><strong>样式:</strong> ${result.stats.styles}</p>
+                    <p class="mb-0"><strong>尺寸:</strong> ${result.stats.rows} 行 × ${result.stats.columns} 列</p>
+                `;
+                document.getElementById('downloadBtn').href = result.download_url;
+                document.getElementById('convertResult').innerHTML = '';
+            });
+        });
+    </script>
+</body>
+</html>

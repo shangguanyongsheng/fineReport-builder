@@ -1,6 +1,7 @@
 """FineReport 报表构建 Agent - 主入口"""
 import sys
 import os
+from typing import Dict, List, Any
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

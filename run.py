@@ -2,11 +2,11 @@
 """FineReport 报表构建 Agent - 主入口
 
 使用方法：
+    # 启动 Web 服务（推荐）
+    python run.py web --port 5000
+    
     # 从自然语言构建报表
     python run.py build -i "创建销售报表，按区域分组，显示金额、数量" -o sales.cpt
-    
-    # 从配置文件构建
-    python run.py build -c config.json -o output.cpt
     
     # 从 Excel 模板构建
     python run.py from-excel -f template.xlsx -o report.cpt
@@ -14,17 +14,8 @@
     # 分析现有报表
     python run.py analyze -f report.cpt
     
-    # 生成交互式测试页面（ClassTableData）
-    python run.py interactive -f report.cpt -o interactive.html
-    
-    # 启动交互式测试服务器
-    python run.py serve -f report.cpt --port 18080
-    
     # Excel 预览和转换
     python run.py excel-preview -f template.xlsx
-    
-    # 启动 GUI
-    python run.py gui
 """
 import sys
 import os
@@ -47,7 +38,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  # 从自然语言构建报表
+  # 启动 Web 服务（推荐）
   python run.py build -i "创建销售报表，按区域分组，显示金额、数量" -o sales.cpt
   
   # 分析现有报表
@@ -105,6 +96,13 @@ def main():
     
     # gui 命令
     subparsers.add_parser('gui', help='启动 GUI')
+    
+    # web 命令 - 启动 Web 服务
+    web_parser = subparsers.add_parser('web', help='启动 Web 服务（推荐）')
+    web_parser.add_argument('--host', default='0.0.0.0', help='监听地址')
+    web_parser.add_argument('--port', '-p', type=int, default=5000, help='端口号')
+    web_parser.add_argument('--debug', action='store_true', help='调试模式')
+    web_parser.add_argument('--open', '-o', action='store_true', help='自动打开浏览器')
     
     args = arg_parser.parse_args()
     
@@ -324,6 +322,39 @@ def main():
             gui_main()
         except ImportError:
             print("GUI 模块未安装，请使用命令行模式")
+    
+    elif args.command == 'web':
+        # 启动 Web 服务
+        try:
+            from web.app import app
+            
+            url = f"http://{'localhost' if args.host == '0.0.0.0' else args.host}:{args.port}"
+            
+            print(f"""
+╔══════════════════════════════════════════════════════════╗
+║         FineReport Builder Web 服务                       ║
+╠══════════════════════════════════════════════════════════╣
+║  地址: {url}                                              ║
+║  功能:                                                    ║
+║    - CPT 文件分析                                         ║
+║    - Excel 转 CPT                                         ║
+║    - ClassTableData 交互测试                              ║
+║    - 文件下载                                             ║
+╚══════════════════════════════════════════════════════════╝
+            """)
+            
+            # 自动打开浏览器
+            if args.open:
+                def open_browser():
+                    time.sleep(1.5)
+                    webbrowser.open(url)
+                threading.Thread(target=open_browser, daemon=True).start()
+            
+            app.run(host=args.host, port=args.port, debug=args.debug)
+            
+        except ImportError as e:
+            print(f"Web 模块导入失败: {e}")
+            print("请安装依赖: pip install flask flask-cors")
     
     else:
         arg_parser.print_help()

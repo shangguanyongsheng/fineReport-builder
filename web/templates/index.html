@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FineReport Builder - 帆软报表构建工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --danger-color: #ff4d4f;
+        }
+        body { background: #f0f2f5; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); }
+        .navbar-brand { font-weight: 600; color: white !important; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; }
+        .nav-link:hover, .nav-link.active { color: white !important; background: rgba(255,255,255,0.1); border-radius: 4px; }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 30px;
+        }
+        .hero-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 16px; }
+        .hero-desc { font-size: 1.1rem; opacity: 0.9; }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            height: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border: 1px solid #e8e8e8;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: var(--primary-color);
+        }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .feature-icon.blue { background: #e6f7ff; color: #1890ff; }
+        .feature-icon.green { background: #f6ffed; color: #52c41a; }
+        .feature-icon.purple { background: #f9f0ff; color: #722ed1; }
+        .feature-icon.orange { background: #fff7e6; color: #fa8c16; }
+        
+        .feature-title { font-size: 1.25rem; font-weight: 600; color: #262626; margin-bottom: 12px; }
+        .feature-desc { color: #8c8c8c; line-height: 1.6; }
+        
+        .btn-primary { background: var(--primary-color); border-color: var(--primary-color); }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        
+        .upload-zone {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover { border-color: var(--primary-color); background: #fafafa; }
+        .upload-zone.dragover { border-color: var(--primary-color); background: #e6f7ff; }
+        
+        .result-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+        .tag-blue { background: #e6f7ff; color: #1890ff; }
+        .tag-green { background: #f6ffed; color: #52c41a; }
+        .tag-purple { background: #f9f0ff; color: #722ed1; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+                FineReport Builder
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="/">首页</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/cpt-analyze">CPT 分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/excel-convert">Excel 转换</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/class-test">Class 测试</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="hero-title">FineReport Builder</h1>
+            <p class="hero-desc">帆软报表自动化构建工具 | 支持 CPT 分析、Excel 转换、ClassTableData 测试</p>
+        </div>
+    </section>
+
+    <!-- 功能卡片 -->
+    <section class="container pb-5">
+        <div class="row g-4">
+            <!-- CPT 分析 -->
+            <div class="col-md-6 col-lg-3">
+                <a href="/cpt-analyze" class="text-decoration-none">
+                    <div class="feature-card">
+                        <div class="feature-icon blue">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h3 class="feature-title">CPT 文件分析</h3>
+                        <p class="feature-desc">上传 .cpt 文件，自动解析数据源、筛选控件、单元格布局等结构信息</p>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Excel 转换 -->
+            <div class="col-md-6 col-lg-3">
+                <a href="/excel-convert" class="text-decoration-none">
+                    <div class="feature-card">
+                        <div class="feature-icon green">
+                            <i class="bi bi-file-earmark-excel"></i>
+                        </div>
+                        <h3 class="feature-title">Excel 转 CPT</h3>
+                        <p class="feature-desc">上传 Excel 模板，自动转换为帆软报表格式，保留样式和布局</p>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Class 测试 -->
+            <div class="col-md-6 col-lg-3">
+                <a href="/class-test" class="text-decoration-none">
+                    <div class="feature-card">
+                        <div class="feature-icon purple">
+                            <i class="bi bi-terminal"></i>
+                        </div>
+                        <h3 class="feature-title">ClassTableData 测试</h3>
+                        <p class="feature-desc">解析 ClassTableData 数据集，生成交互式测试页面</p>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- 文件管理 -->
+            <div class="col-md-6 col-lg-3">
+                <a href="#" class="text-decoration-none" onclick="showFiles(); return false;">
+                    <div class="feature-card">
+                        <div class="feature-icon orange">
+                            <i class="bi bi-folder2-open"></i>
+                        </div>
+                        <h3 class="feature-title">文件管理</h3>
+                        <p class="feature-desc">查看已上传和生成的文件，支持下载和删除</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 快速上传 -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="feature-card">
+                    <h3 class="feature-title mb-4"><i class="bi bi-cloud-upload me-2"></i>快速上传</h3>
+                    <div class="upload-zone" id="quickUploadZone">
+                        <i class="bi bi-cloud-arrow-up" style="font-size: 48px; color: #bfbfbf;"></i>
+                        <p class="mt-3 mb-0 text-muted">拖拽文件到此处，或点击选择文件</p>
+                        <p class="small text-muted">支持 .cpt, .xlsx, .xls 格式</p>
+                        <input type="file" id="quickUploadInput" accept=".cpt,.xlsx,.xls" style="display: none;">
+                    </div>
+                    <div id="quickUploadResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 文件列表弹窗 -->
+    <div class="modal fade" id="filesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-folder2-open me-2"></i>文件管理</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="filesModalBody">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 快速上传
+        const uploadZone = document.getElementById('quickUploadZone');
+        const uploadInput = document.getElementById('quickUploadInput');
+        
+        uploadZone.addEventListener('click', () => uploadInput.click());
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        uploadInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const file = files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            
+            const resultDiv = document.getElementById('quickUploadResult');
+            resultDiv.innerHTML = '<div class="alert alert-info">正在处理...</div>';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            let apiUrl = '';
+            if (ext === 'cpt') {
+                apiUrl = '/api/analyze/cpt';
+            } else if (ext === 'xlsx' || ext === 'xls') {
+                apiUrl = '/api/analyze/excel';
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger">不支持的文件格式</div>';
+                return;
+            }
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    return;
+                }
+                
+                let html = `<div class="alert alert-success">✅ 解析成功</div>`;
+                html += `<pre class="bg-light p-3 rounded">${JSON.stringify(data, null, 2)}</pre>`;
+                resultDiv.innerHTML = html;
+            })
+            .catch(err => {
+                resultDiv.innerHTML = `<div class="alert alert-danger">请求失败: ${err}</div>`;
+            });
+        }
+        
+        // 显示文件列表
+        function showFiles() {
+            fetch('/api/list/files')
+                .then(r => r.json())
+                .then(data => {
+                    let html = '<div class="row"><div class="col-md-6"><h6>已上传文件</h6><ul class="list-group">';
+                    data.uploads.forEach(f => {
+                        html += `<li class="list-group-item d-flex justify-content-between">
+                            <span>${f.name}</span>
+                            <small class="text-muted">${formatSize(f.size)}</small>
+                        </li>`;
+                    });
+                    if (data.uploads.length === 0) html += '<li class="list-group-item text-muted">暂无文件</li>';
+                    html += '</ul></div><div class="col-md-6"><h6>输出文件</h6><ul class="list-group">';
+                    data.outputs.forEach(f => {
+                        html += `<li class="list-group-item d-flex justify-content-between">
+                            <span>${f.name}</span>
+                            <div>
+                                <a href="/api/download/${f.name}" class="btn btn-sm btn-outline-primary">下载</a>
+                            </div>
+                        </li>`;
+                    });
+                    if (data.outputs.length === 0) html += '<li class="list-group-item text-muted">暂无文件</li>';
+                    html += '</ul></div></div>';
+                    
+                    document.getElementById('filesModalBody').innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('filesModal')).show();
+                });
+        }
+        
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>
