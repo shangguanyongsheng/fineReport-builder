@@ -1,3 +1,7 @@
 # 帆软报表构建 Agent 依赖
 
-# 无额外依赖，使用 Python 标准库
+# Excel 解析
+openpyxl>=3.1.0
+
+# 其他依赖（可选）
+# tkinter  # GUI（Python 自带）

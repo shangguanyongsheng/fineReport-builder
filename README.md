@@ -1,14 +1,23 @@
 # FineReport 报表构建 Agent
 
-基于 AI 的帆软报表自动生成工具，通过自然语言描述生成 .cpt 报表文件。
+基于 AI 的帆软报表自动生成工具，支持多种输入方式生成 .cpt 报表文件。
 
 ## 核心功能
+
+### 多种输入方式
+
+| 输入方式 | 命令 | 说明 |
+|---------|------|------|
+| 🗣️ 自然语言 | `build -i "..."` | AI 解析需求，自动生成报表 |
+| 📊 Excel 模板 | `from-excel -f template.xlsx` | 从 Excel 布局生成 .cpt |
+| 📄 .cpt 分析 | `analyze -f report.cpt` | 分析现有报表结构 |
+| 🔧 ClassTableData | `interactive -f report.cpt` | 生成交互式测试页面 |
 
 ### 三大核心模块
 
 | 模块 | 说明 | 对应 .cpt 节点 |
 |------|------|---------------|
-| **数据源** | 定义数据集、SQL查询、参数 | `TableDataMap` |
+| **数据源** | 定义数据集、SQL查询、参数、Java类 | `TableDataMap` |
 | **筛选区域** | 参数面板 UI 控件 | `ReportParameterAttr` |
 | **数据展示区** | 报表单元格、数据绑定、样式 | `Report/CellElementList` |
 
@@ -19,21 +28,19 @@ fineReport-builder/
 ├── agent/                    # Agent 核心
 │   ├── __init__.py
 │   ├── requirement_parser.py # 需求解析器
-│   ├── sql_generator.py      # SQL 生成器
 │   └── report_builder.py     # 报表构建器
-├── templates/                # 模板
-│   ├── datasource.xml        # 数据源模板
-│   ├── parameter.xml         # 参数面板模板
-│   └── report.xml            # 报表模板
 ├── parsers/                  # 解析器
 │   ├── cpt_parser.py         # .cpt 文件解析
-│   └── cpt_generator.py      # .cpt 文件生成
+│   ├── cpt_generator.py      # .cpt 文件生成
+│   ├── class_table_data.py   # ClassTableData 解析 + 交互测试
+│   └── excel_parser.py       # Excel 文件解析 + 预览
 ├── gui/                      # GUI 界面
 │   └── main_window.py
 ├── config/                   # 配置
 │   └── config.yaml
-├── examples/                 # 示例
-│   └── FinanceCreditContractAnalysis.cpt
+├── examples/                 # 示例文件
+│   ├── FinanceCreditContractAnalysis.cpt
+│   └── FinanceCreditContractAnalysis_interactive.html
 ├── run.py                    # 主入口
 └── README.md
 ```
@@ -44,102 +51,154 @@ fineReport-builder/
 # 安装依赖
 pip install -r requirements.txt
 
-# 启动 GUI
-python run.py
+# 查看帮助
+python run.py --help
 
-# 或命令行
-python run.py --input "创建销售报表，按区域分组，显示金额、数量"
+# 从自然语言构建报表
+python run.py build -i "创建销售报表，按区域分组，显示金额、数量"
+
+# 从 Excel 模板构建
+python run.py from-excel -f template.xlsx -o report.cpt
+
+# 分析现有报表
+python run.py analyze -f report.cpt
+
+# Excel 预览（浏览器交互）
+python run.py excel-preview -f template.xlsx -o
+
+# ClassTableData 交互测试
+python run.py serve -f report.cpt -o
 ```
 
-## 使用示例
+## 命令详解
 
-### 输入（自然语言）
+### 1. build - 构建报表
 
-```
-创建一个销售统计报表：
-- 数据源：sales 数据库
-- 筛选条件：日期范围、区域、产品类型
-- 展示：按区域分组，显示销售额、数量、占比
-- 支持折算币种
-```
+从自然语言或配置文件构建 .cpt 报表：
 
-### 输出
+```bash
+# 自然语言输入
+python run.py build -i "创建销售报表，按区域分组，显示金额、数量" -o sales.cpt
 
-1. **数据源配置** (SQL + 参数)
-2. **筛选面板** (日期选择器、下拉框、树形选择器)
-3. **报表模板** (.cpt 文件)
-4. **预览说明**
-
-## 核心设计
-
-### 数据源模块 (TableDataMap)
-
-```xml
-<TableData name="sales_data" class="com.fr.data.impl.DBTableData">
-    <Parameters>
-        <Parameter><Attributes name="startDate"/></Parameter>
-        <Parameter><Attributes name="endDate"/></Parameter>
-        <Parameter><Attributes name="region"/></Parameter>
-    </Parameters>
-    <Connection class="com.fr.data.impl.NameDatabaseConnection">
-        <DatabaseName><![CDATA[sales_db]]></DatabaseName>
-    </Connection>
-    <Query><![CDATA[SELECT * FROM sales WHERE date >= '${startDate}' AND date <= '${endDate}']]></Query>
-</TableData>
+# 配置文件输入
+python run.py build -c config.json -o output.cpt
 ```
 
-### 筛选区域模块 (ReportParameterAttr)
+### 2. from-excel - 从 Excel 构建
 
-支持的控件类型：
-- `TextEditor` - 文本输入
-- `DateEditor` - 日期选择
-- `ComboBox` - 下拉单选
-- `ComboCheckBox` - 下拉多选
-- `TreeComboBoxEditor` - 树形选择
+将 Excel 模板转换为 .cpt 格式：
+- 单元格布局 → CellElementList
+- Excel 样式 → StyleList
+- 合并单元格 → rowspan/colspan
 
-### 数据展示区模块 (Report)
+```bash
+python run.py from-excel -f template.xlsx \
+    --sheet 0 \
+    --ds-name "sales_data" \
+    --database "cfs-report" \
+    -o report.cpt
+```
 
-```xml
-<CellElementList>
-    <C c="0" r="0">  <!-- 第0列 第0行 -->
-        <O><![CDATA[区域]]></O>  <!-- 单元格内容 -->
-    </C>
-    <C c="0" r="1">
-        <O t="DSColumn">  <!-- 数据绑定 -->
-            <Attributes dsName="sales_data" columnName="region"/>
-        </O>
-        <Expand dir="0"/>  <!-- 纵向扩展 -->
-    </C>
-</CellElementList>
+### 3. excel-preview - Excel 预览
+
+在浏览器中预览 Excel 并配置转换参数：
+
+```bash
+python run.py excel-preview -f template.xlsx --port 18081 -o
+```
+
+### 4. analyze - 分析报表
+
+解析 .cpt 文件结构：
+
+```bash
+python run.py analyze -f report.cpt
+```
+
+输出：
+- 数据源列表（DBTableData、ClassTableData）
+- 参数面板控件
+- 单元格布局统计
+
+### 5. interactive - ClassTableData 测试
+
+为 ClassTableData 数据集生成交互式测试页面：
+
+```bash
+# 生成 HTML
+python run.py interactive -f report.cpt -o test.html
+
+# 启动测试服务器
+python run.py serve -f report.cpt --port 18080 -o
+```
+
+浏览器界面功能：
+- 填写参数值
+- 配置 API 端点
+- 发送测试请求
+- 查看请求/响应
+
+## ClassTableData 支持
+
+### 解析能力
+
+自动提取：
+- 类名（className）
+- 参数定义（name、default、type）
+- 参数类型推断（string/number/date/array/object）
+
+### 发现的数据集类型
+
+| 类名 | 说明 |
+|------|------|
+| CreditContractDetailData | 授信明细数据 |
+| CreditContractStatisticData | 授信统计数据 |
+| CreditContractUserOrgStatisticData | 用信单位统计 |
+| CreditProductStatisticData | 授信产品统计 |
+
+## Excel → .cpt 转换
+
+### 映射关系
+
+| Excel | .cpt |
+|-------|------|
+| 单元格 (A1) | `<C c="0" r="0">` |
+| 合并单元格 | `rowspan` / `colspan` |
+| 字体样式 | `<Style><FRFont>` |
+| 背景色 | `<Background>` |
+| 对齐方式 | `<Alignment>` |
+| 公式 | `<O t="Formula">` |
+
+### 转换示例
+
+```python
+from parsers.excel_parser import ExcelParser
+
+parser = ExcelParser()
+structure = parser.parse('template.xlsx')
+
+# 转换单元格
+cells = parser.to_cpt_cells(structure.sheets[0])
+
+# 转换样式
+styles = parser.to_cpt_styles(structure.sheets[0].styles)
 ```
 
 ## 工作流程
 
 ```
-用户输入 (自然语言)
-      │
-      ▼
-┌──────────────────┐
-│  需求解析器       │ → 提取：数据源、筛选条件、展示需求
-└──────────────────┘
-      │
-      ▼
-┌──────────────────┐
-│  SQL 生成器       │ → 生成：数据集 SQL、参数定义
-└──────────────────┘
-      │
-      ▼
-┌──────────────────┐
-│  控件映射器       │ → 生成：筛选面板控件配置
-└──────────────────┘
-      │
-      ▼
-┌──────────────────┐
-│  报表构建器       │ → 生成：单元格布局、数据绑定、样式
-└──────────────────┘
-      │
-      ▼
-  .cpt 文件输出
+用户输入
+  ├─ 自然语言 ──→ AI 解析 ──→ SQL + 控件配置 ──┐
+  ├─ Excel 模板 ──→ 布局解析 ──→ 单元格结构 ──┤
+  └─ 配置文件 ──→ JSON 解析 ─────────────────┘
+                                                │
+                                                ▼
+                                        ┌──────────────┐
+                                        │ CPT Generator │
+                                        └──────────────┘
+                                                │
+                                                ▼
+                                         .cpt 文件输出
 ```
 
 ## License
