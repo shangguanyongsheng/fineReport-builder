@@ -1,0 +1,171 @@
+<?xml version="1.0" ?>
+<WorkBook xmlVersion="20211223" releaseVersion="11.5.0">
+<TableDataMap>
+<TableData name="credit_data" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="orgId"/>
+<O/>
+</Parameter>
+<Parameter>
+<Attributes name="startDate"/>
+<O/>
+</Parameter>
+<Parameter>
+<Attributes name="endDate"/>
+<O/>
+</Parameter>
+<Parameter>
+<Attributes name="indexInfo"/>
+<O/>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractDetailData"/>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<Title>授信合同报-明细</Title>
+<ServerPrinter/>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="明细">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+<USE REPEAT="false" PAGE="false" WRITE="false"/>
+</ReportPageAttr>
+<RowHeight defaultValue="723900"/>
+<ColumnWidth defaultValue="2743200"/>
+<CellElementList>
+<C c="0" r="0">
+<O>序号</O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="0">
+<O>授信id</O>
+<PrivilegeControl/>
+</C>
+<C c="2" r="0">
+<O>授信类别</O>
+<PrivilegeControl/>
+</C>
+<C c="3" r="0">
+<O>授信类型</O>
+<PrivilegeControl/>
+</C>
+<C c="4" r="0">
+<O>协议编号</O>
+<PrivilegeControl/>
+</C>
+<C c="5" r="0">
+<O>被授信人</O>
+<PrivilegeControl/>
+</C>
+<C c="6" r="0">
+<O>授信机构</O>
+<PrivilegeControl/>
+</C>
+<C c="7" r="0">
+<O>机构网点</O>
+<PrivilegeControl/>
+</C>
+<C c="8" r="0">
+<O>协议类型</O>
+<PrivilegeControl/>
+</C>
+<C c="9" r="0">
+<O>额度循环</O>
+<PrivilegeControl/>
+</C>
+<C c="10" r="0">
+<O>币种</O>
+<PrivilegeControl/>
+</C>
+<C c="11" r="0">
+<O>授信总额</O>
+<PrivilegeControl/>
+</C>
+<C c="12" r="0">
+<O>已用授信总额</O>
+<PrivilegeControl/>
+</C>
+<C c="13" r="0">
+<O>可用授信总额</O>
+<PrivilegeControl/>
+</C>
+<C c="14" r="0">
+<O>敞口额度</O>
+<PrivilegeControl/>
+</C>
+<C c="15" r="0">
+<O>已用敞口额度</O>
+<PrivilegeControl/>
+</C>
+<C c="16" r="0">
+<O>可用敞口额度</O>
+<PrivilegeControl/>
+</C>
+<C c="17" r="0">
+<O>敞口受限额度</O>
+<PrivilegeControl/>
+</C>
+<C c="18" r="0">
+<O>受限说明</O>
+<PrivilegeControl/>
+</C>
+<C c="19" r="0">
+<O>备注</O>
+<PrivilegeControl/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0"/>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0" useParamsTemplate="true" currentIndex="0"/>
+<PWTitle>参数</PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="startDate"/>
+<LabelName name="开始日期"/>
+</InnerWidget>
+<BoundsAttr x="100" y="10" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="endDate"/>
+<LabelName name="结束日期"/>
+</InnerWidget>
+<BoundsAttr x="320" y="10" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<WidgetName name="orgId"/>
+<LabelName name="组织机构"/>
+</InnerWidget>
+<BoundsAttr x="540" y="10" width="135" height="28"/>
+</Widget>
+</Layout>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style style_name="默认" full="true" border_source="-1" imageLayout="1">
+<FRFont name="simhei" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesensitizationList/>
+<DesignerVersion DesignerVersion="LAA"/>
+<PreviewType PreviewType="2"/>
+<ForkIdAttrMark class="com.fr.base.iofile.attr.ForkIdAttrMark">
+<ForkIdAttrMark forkId="afdc60a1-5901-492d-93e9-a63ae5252fd6"/>
+</ForkIdAttrMark>
+</WorkBook>

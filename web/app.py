@@ -422,6 +422,25 @@ def generate_report_v2():
         
         # 单元格配置（从列映射生成）
         logger.info("配置单元格...")
+        
+        # 获取样式配置
+        styles = data.get('styles', [])
+        logger.info(f"样式配置: {len(styles)} 个")
+        
+        # 如果没有样式配置，使用默认样式
+        if not styles:
+            styles = [
+                {
+                    "name": "表头样式",
+                    "font": {"name": "宋体", "size": 12, "bold": True},
+                    "background": "#E6F7FF",
+                    "border": "all"
+                }
+            ]
+            logger.info("使用默认样式")
+        
+        cpt_config['styles'] = styles
+        
         row = 0
         for col_letter, field_name in column_mapping.items():
             col_num = ord(col_letter.upper()) - ord('A')
@@ -429,7 +448,7 @@ def generate_report_v2():
                 'column': col_num,
                 'row': row,
                 'value': field_name,
-                'style_index': 0
+                'style_index': 0  # 默认使用第一个样式
             }
             cpt_config['cells'].append(cell)
             logger.debug(f"单元格: {col_letter}({col_num}) -> {field_name}")

@@ -339,6 +339,23 @@
                 </div>
             </div>
             
+            <!-- 样式配置 -->
+            <div class="mt-4">
+                <h6><i class="bi bi-palette me-2"></i>样式配置</h6>
+                <small class="text-muted">配置报表样式，包括表头样式、数据样式等</small>
+                
+                <div class="mt-2">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="loadStyleTemplate('simple')">简洁样式</button>
+                    <button class="btn btn-outline-secondary btn-sm ms-2" onclick="loadStyleTemplate('finance')">财务样式</button>
+                    <button class="btn btn-outline-secondary btn-sm ms-2" onclick="loadStyleTemplate('list')">列表样式</button>
+                    <button class="btn btn-outline-primary btn-sm ms-2" onclick="showStyleJsonEditor()">
+                        <i class="bi bi-code-slash me-1"></i>自定义 JSON
+                    </button>
+                </div>
+                
+                <textarea class="form-control mt-2" id="styleConfig" rows="8" placeholder='样式 JSON 配置，点击上方模板按钮加载'></textarea>
+            </div>
+            
             <div class="mt-4 text-center">
                 <button class="btn btn-generate" onclick="generateReport()">
                     <i class="bi bi-arrow-repeat me-2"></i>生成 .cpt 报表
@@ -631,7 +648,99 @@
             if (currentStep > 1) showStep(currentStep - 1);
         }
         
-        // 收集配置
+        // 样式模板
+        const styleTemplates = {
+            simple: [
+                {
+                    "name": "表头样式",
+                    "font": {"name": "宋体", "size": 12, "bold": true},
+                    "background": "#E6F7FF",
+                    "border": "all",
+                    "alignment": "center"
+                },
+                {
+                    "name": "数据样式",
+                    "font": {"name": "SimSun", "size": 10},
+                    "border": "all",
+                    "alignment": "left"
+                }
+            ],
+            finance: [
+                {
+                    "name": "标题样式",
+                    "font": {"name": "黑体", "size": 14, "bold": true},
+                    "background": "#1890FF",
+                    "font_color": "#FFFFFF",
+                    "border": "all",
+                    "alignment": "center"
+                },
+                {
+                    "name": "表头样式",
+                    "font": {"name": "宋体", "size": 11, "bold": true},
+                    "background": "#E6F7FF",
+                    "border": "all",
+                    "alignment": "center"
+                },
+                {
+                    "name": "数据样式",
+                    "font": {"name": "SimSun", "size": 10},
+                    "border": "all",
+                    "alignment": "left"
+                },
+                {
+                    "name": "金额样式",
+                    "font": {"name": "SimSun", "size": 10},
+                    "border": "all",
+                    "alignment": "right",
+                    "number_format": "#,##0.00"
+                }
+            ],
+            list: [
+                {
+                    "name": "表头样式",
+                    "font": {"name": "宋体", "size": 11, "bold": true},
+                    "background": "#F5F5F5",
+                    "border": "all",
+                    "alignment": "center"
+                },
+                {
+                    "name": "数据样式",
+                    "font": {"name": "SimSun", "size": 10},
+                    "border": "all",
+                    "alignment": "left"
+                },
+                {
+                    "name": "斑马纹样式",
+                    "font": {"name": "SimSun", "size": 10},
+                    "background": "#FAFAFA",
+                    "border": "all",
+                    "alignment": "left"
+                }
+            ]
+        };
+        
+        function loadStyleTemplate(name) {
+            const template = styleTemplates[name];
+            if (template) {
+                document.getElementById('styleConfig').value = JSON.stringify(template, null, 2);
+                console.log('加载样式模板:', name, template);
+            }
+        }
+        
+        function showStyleJsonEditor() {
+            const current = document.getElementById('styleConfig').value || '[]';
+            const json = prompt('编辑样式 JSON（详见 docs/配置示例文档.md）:', current);
+            if (json !== null) {
+                try {
+                    JSON.parse(json);
+                    document.getElementById('styleConfig').value = json;
+                } catch (e) {
+                    alert('JSON 格式错误: ' + e.message);
+                }
+            }
+        }
+
+// 收集配置
         function collectConfig() {
             console.log('开始收集配置...');
             console.log('当前数据源类型:', config.datasource_type);
@@ -719,6 +828,21 @@
                 sheet_name: document.getElementById('sheetName').value || 'Sheet1'
             };
             console.log('报表信息:', config.report);
+            
+            // 样式配置
+            let styles = [];
+            const styleValue = (document.getElementById('styleConfig').value || '').trim();
+            if (styleValue) {
+                try {
+                    styles = JSON.parse(styleValue);
+                    console.log('样式配置解析成功:', styles);
+                } catch (e) {
+                    console.error('样式 JSON 解析错误:', e);
+                    alert('样式 JSON 格式错误！\n\n错误: ' + e.message);
+                    return null;
+                }
+            }
+            config.styles = styles;
             
             console.log('完整配置:', JSON.stringify(config, null, 2));
             return config;
