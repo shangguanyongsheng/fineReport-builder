@@ -1,0 +1,2146 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassTableData 交互测试</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { margin: 0; color: #333; }
+        .card-body { padding: 20px; }
+        .class-name { font-family: monospace; background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: 500; color: #555; font-size: 13px; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+        }
+        .form-group textarea { min-height: 80px; font-family: monospace; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+            outline: none; border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.2); 
+        }
+        .required::after { content: " *"; color: red; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #1890ff; color: white; }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-secondary:hover { background: #d9d9d9; }
+        .result-section { margin-top: 20px; }
+        .result-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+        .tab-btn { padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; }
+        .tab-btn.active { background: #1890ff; color: white; }
+        .result-content { background: #fafafa; border: 1px solid #eee; border-radius: 4px; padding: 16px; max-height: 500px; overflow: auto; }
+        pre { margin: 0; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
+        .json-view { font-family: monospace; }
+        .status-badge { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .api-config { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
+        .api-config input { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 ClassTableData 交互测试工具</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <span>API 配置</span>
+            </div>
+            <div class="card-body">
+                <div class="api-config">
+                    <label>接口地址:</label>
+                    <input type="text" id="apiEndpoint" placeholder="http://localhost:8080/data/dashboard/load-data" 
+                           value="">
+                    <button class="btn btn-secondary" onclick="saveApiConfig()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="ds-0">
+            <div class="card-header">
+                <h3>CreditContractDetailData</h3>
+                <span class="class-name">com.yocyl.fr.engine.tableData.finance.CreditContractDetailData</span>
+            </div>
+            <div class="card-body">
+                <form id="form-0" class="form-grid" onsubmit="return submitForm(event, 0)">
+
+                    <div class="form-group">
+                        <label class="">组织架构</label>
+                        <input type="text" name="orgStructure" value="" placeholder="组织架构">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">被授信人</label>
+                        <input type="number" name="orgId" value="" placeholder="被授信人">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">折算币种</label>
+                        <input type="number" name="convertCurrencyCode" value="" placeholder="折算币种">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">租户ID</label>
+                        <input type="text" name="fine_username9" value="" placeholder="租户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">szylb_code</label>
+                        <input type="number" name="szylb_code" value="" placeholder="szylb_code">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">fr_orgid</label>
+                        <input type="number" name="fr_orgid" value="" placeholder="fr_orgid">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">指标信息</label>
+                        <textarea name="indexInfo" placeholder='["value"]'>[         {             \"fieldCode\": \"repay.id\",             \"alias\": \"id\"         },         {             \"fieldCode\": \"repay.fi_contract_id\",             \"alias\": \"fiContractId\"         },         {             \"fieldCode\": \"repay.repay_contract_number\",             \"alias\": \"repayContractNumber\"         },         {             \"fieldCode\": \"repay.fi_contract_type\",             \"alias\": \"fiContractType\"         },         {             \"fieldCode\": \"repay.org_id\",             \"alias\": \"orgId\",             \"mappingField\": \"orgName\",             \"source\": \"org\",             \"sourceCode\": \"\"         },          {             \"fieldCode\": \"institution_type\",             \"alias\": \"institutionType\"         },         {             \"fieldCode\": \"repay.credit_product_code\",             \"alias\": \"creditProductCode\",             \"mappingField\": \"creditProductCodeName\",             \"source\": \"biz\",             \"sourceCode\": \"finance_loan_product\"                    },         {             \"fieldCode\": \"repay.amount\",             \"alias\": \"amount\"         },          {             \"fieldCode\": \"available_amount\",             \"alias\": \"availableAmount\"         },         {             \"fieldCode\": \"interest\",             \"alias\": \"interest\"         },         {             \"fieldCode\": \"repay.currency_code\",             \"alias\": \"currencyCode\"         },         {             \"fieldCode\": \"repay.lend_finance_bank_code\",             \"alias\": \"lendFinanceBankCode\"         },         {             \"fieldCode\": \"repay.lend_finance_bank_name\",             \"alias\": \"lendFinanceBankName\"         },         {             \"fieldCode\": \"repay.purpose\",             \"alias\": \"purpose\"         },         {             \"fieldCode\": \"repay.contract_code_no\",             \"alias\": \"contractCodeNo\"         },         {             \"fieldCode\": \"repay.rec_org_id\",             \"alias\": \"recOrgId\"         },         {             \"fieldCode\": \"repay.lend_finance_bank_point_id\",             \"alias\": \"lendFinanceBankPointId\"         },          {             \"fieldCode\": \"repay.lend_finance_bank_point_name\",             \"alias\": \"lendFinanceBankPointName\"         },         {             \"fieldCode\": \"repay.bond_abbreviation\",             \"alias\": \"bondAbbreviation\"         },         {             \"fieldCode\": \"repay.loan_contract_rate\",             \"alias\": \"loanContractRate\"         },         {             \"fieldCode\": \"repay.value_date\",             \"alias\": \"valueDate\"         },         {             \"fieldCode\": \"repay.end_date\",             \"alias\": \"endDate\"         },         {             \"fieldCode\": \"repay.remark\",             \"alias\": \"remark\"         },         {             \"fieldCode\": \"repay.cumulative_repay_amount\",             \"alias\": \"repayAmount\"         }     ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">银行授信机构</label>
+                        <input type="number" name="financeBankCode" value="" placeholder="银行授信机构">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">counterGuarantee</label>
+                        <input type="number" name="counterGuarantee" value="" placeholder="counterGuarantee">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">组件ID</label>
+                        <input type="number" name="widgetId" value="74" placeholder="组件ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">用户ID</label>
+                        <input type="number" name="fr_usercode" value="" placeholder="用户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">开始日期-开始</label>
+                        <input type="date" name="startStartDate" value="" placeholder="开始日期-开始">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">开始日期-结束</label>
+                        <input type="date" name="endStartDate" value="" placeholder="开始日期-结束">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">结束日期-开始</label>
+                        <input type="date" name="startEndDate" value="" placeholder="结束日期-开始">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">结束日期-结束</label>
+                        <input type="date" name="endEndDate" value="" placeholder="结束日期-结束">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">条件</label>
+                        <textarea name="condition" placeholder='[{"key": "value"}]'>{\"creditProductCode\":\"like\",\"financeBankName\":\"like\",\"startStartDate\":\"geq\",\"endStartDate\":\"leq\",\"startEndDate\":\"geq\",\"endEndDate\":\"leq\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">字段映射</label>
+                        <textarea name="fieldMapping" placeholder='[{"key": "value"}]'>{\"startStartDate\":\"effectiveDate\",\"endStartDate\":\"effectiveDate\",\"startEndDate\":\"endDate\",\"endEndDate\":\"endDate\", \"triggerRequest1\":\"triggerRequest\", \"orgTag\":\"orgId\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">triggerRequest1</label>
+                        <input type="text" name="triggerRequest1" value="true" placeholder="triggerRequest1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">组织标签</label>
+                        <input type="text" name="orgTag" value="" placeholder="组织标签">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">listBoolean</label>
+                        <textarea name="listBoolean" placeholder='["value"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">其他授信机构</label>
+                        <input type="text" name="financeBankName" value="" placeholder="其他授信机构">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">额度循环</label>
+                        <input type="text" name="isCirculate" value="" placeholder="额度循环">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">融资品种</label>
+                        <input type="number" name="creditProductCode" value="" placeholder="融资品种">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">contractCode</label>
+                        <input type="number" name="contractCode" value="" placeholder="contractCode">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">是否包含下级</label>
+                        <input type="text" name="contain" value="" placeholder="是否包含下级">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">批文/授信</label>
+                        <input type="text" name="bizType" value="" placeholder="批文/授信">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditType</label>
+                        <input type="text" name="creditType" value="" placeholder="creditType">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">协议类型</label>
+                        <input type="text" name="creditProtocolType" value="" placeholder="协议类型">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">维度</label>
+                        <textarea name="dimensions" placeholder='["value"]'>[ { \"code\": \"id\" },  {  \"code\": \"productId\" }]A</textarea>
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="submit" class="btn btn-primary">🚀 发送请求</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm(0)">🔄 重置</button>
+                    </div>
+                </form>
+                
+                <div class="result-section" id="result-0" style="display: none;">
+                    <div class="result-tabs">
+                        <button class="tab-btn active" onclick="showTab(0, 'response')">响应体</button>
+                        <button class="tab-btn" onclick="showTab(0, 'request')">请求体</button>
+                    </div>
+                    <div class="result-content">
+                        <div id="response-0" class="json-view">
+                            <pre></pre>
+                        </div>
+                        <div id="request-0" class="json-view" style="display: none;">
+                            <pre></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="ds-1">
+            <div class="card-header">
+                <h3>CreditContractStatisticDataForFinanceTypeCode</h3>
+                <span class="class-name">com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData</span>
+            </div>
+            <div class="card-body">
+                <form id="form-1" class="form-grid" onsubmit="return submitForm(event, 1)">
+
+                    <div class="form-group">
+                        <label class="">convertCurrencyCode2</label>
+                        <input type="number" name="convertCurrencyCode2" value="" placeholder="convertCurrencyCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">指标信息</label>
+                        <textarea name="indexInfo" placeholder='["value"]'>[     {       \"code\": \"amount\"     },     {       \"code\": \"debtBalance\"     },     {       \"code\": \"equityGuaranteeAmount\"     },     {       \"code\": \"equityGuaranteeCount\"     }   ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">维度</label>
+                        <textarea name="dimensions" placeholder='["value"]'>[     {       \"code\": \"financeTypeCode\"   },{       \"code\": \"currencyCode\"   }   ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">用户ID</label>
+                        <input type="number" name="fr_usercode" value="" placeholder="用户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">组件ID</label>
+                        <input type="number" name="widgetId" value="77" placeholder="组件ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">triggerRequest2</label>
+                        <input type="text" name="triggerRequest2" value="false" placeholder="triggerRequest2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">字段映射</label>
+                        <textarea name="fieldMapping" placeholder='[{"key": "value"}]'>{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\", \"convertCurrencyCode2\":\"convertCurrencyCode\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgTag2</label>
+                        <input type="text" name="orgTag2" value="" placeholder="orgTag2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">contain2</label>
+                        <input type="text" name="contain2" value="" placeholder="contain2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">listBoolean</label>
+                        <textarea name="listBoolean" placeholder='["value"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">条件</label>
+                        <textarea name="condition" placeholder='[{"key": "value"}]'>{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startStartDate2</label>
+                        <input type="date" name="startStartDate2" value="" placeholder="startStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endStartDate2</label>
+                        <input type="date" name="endStartDate2" value="" placeholder="endStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startEndDate2</label>
+                        <input type="date" name="startEndDate2" value="" placeholder="startEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endEndDate2</label>
+                        <input type="date" name="endEndDate2" value="" placeholder="endEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProtocolType2</label>
+                        <input type="text" name="creditProtocolType2" value="" placeholder="creditProtocolType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">isCirculate2</label>
+                        <input type="text" name="isCirculate2" value="" placeholder="isCirculate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgId2</label>
+                        <input type="number" name="orgId2" value="" placeholder="orgId2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankName2</label>
+                        <input type="text" name="financeBankName2" value="" placeholder="financeBankName2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankCode2</label>
+                        <input type="number" name="financeBankCode2" value="" placeholder="financeBankCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">租户ID</label>
+                        <input type="text" name="fine_username9" value="" placeholder="租户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">bizType2</label>
+                        <input type="text" name="bizType2" value="" placeholder="bizType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeTypeCode2</label>
+                        <input type="number" name="financeTypeCode2" value="" placeholder="financeTypeCode2">
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="submit" class="btn btn-primary">🚀 发送请求</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm(1)">🔄 重置</button>
+                    </div>
+                </form>
+                
+                <div class="result-section" id="result-1" style="display: none;">
+                    <div class="result-tabs">
+                        <button class="tab-btn active" onclick="showTab(1, 'response')">响应体</button>
+                        <button class="tab-btn" onclick="showTab(1, 'request')">请求体</button>
+                    </div>
+                    <div class="result-content">
+                        <div id="response-1" class="json-view">
+                            <pre></pre>
+                        </div>
+                        <div id="request-1" class="json-view" style="display: none;">
+                            <pre></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="ds-2">
+            <div class="card-header">
+                <h3>CreditContractUserOrgStatisticData</h3>
+                <span class="class-name">com.yocyl.fr.engine.tableData.finance.CreditContractUserOrgStatisticData</span>
+            </div>
+            <div class="card-body">
+                <form id="form-2" class="form-grid" onsubmit="return submitForm(event, 2)">
+
+                    <div class="form-group">
+                        <label class="required">租户ID</label>
+                        <input type="text" name="fine_username9" value="" placeholder="租户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">convertCurrencyCode2</label>
+                        <input type="number" name="convertCurrencyCode2" value="" placeholder="convertCurrencyCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">维度</label>
+                        <textarea name="dimensions" placeholder='["value"]'>[     {       \"code\": \"userOrgId\"    } ,{       \"code\": \"currencyCode\"   }  ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">用户ID</label>
+                        <input type="number" name="fr_usercode" value="" placeholder="用户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">组件ID</label>
+                        <input type="number" name="widgetId" value="76" placeholder="组件ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">triggerRequest2</label>
+                        <input type="text" name="triggerRequest2" value="false" placeholder="triggerRequest2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">字段映射</label>
+                        <textarea name="fieldMapping" placeholder='[{"key": "value"}]'>{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">contain2</label>
+                        <input type="text" name="contain2" value="" placeholder="contain2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgTag2</label>
+                        <input type="text" name="orgTag2" value="" placeholder="orgTag2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">listBoolean</label>
+                        <textarea name="listBoolean" placeholder='["value"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">条件</label>
+                        <textarea name="condition" placeholder='[{"key": "value"}]'>{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startStartDate2</label>
+                        <input type="date" name="startStartDate2" value="" placeholder="startStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endStartDate2</label>
+                        <input type="date" name="endStartDate2" value="" placeholder="endStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startEndDate2</label>
+                        <input type="date" name="startEndDate2" value="" placeholder="startEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endEndDate2</label>
+                        <input type="date" name="endEndDate2" value="" placeholder="endEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProtocolType2</label>
+                        <input type="text" name="creditProtocolType2" value="" placeholder="creditProtocolType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankCode2</label>
+                        <input type="number" name="financeBankCode2" value="" placeholder="financeBankCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankName2</label>
+                        <input type="text" name="financeBankName2" value="" placeholder="financeBankName2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">isCirculate2</label>
+                        <input type="text" name="isCirculate2" value="" placeholder="isCirculate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgId2</label>
+                        <input type="number" name="orgId2" value="" placeholder="orgId2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">bizType2</label>
+                        <input type="text" name="bizType2" value="" placeholder="bizType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeTypeCode2</label>
+                        <input type="number" name="financeTypeCode2" value="" placeholder="financeTypeCode2">
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="submit" class="btn btn-primary">🚀 发送请求</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm(2)">🔄 重置</button>
+                    </div>
+                </form>
+                
+                <div class="result-section" id="result-2" style="display: none;">
+                    <div class="result-tabs">
+                        <button class="tab-btn active" onclick="showTab(2, 'response')">响应体</button>
+                        <button class="tab-btn" onclick="showTab(2, 'request')">请求体</button>
+                    </div>
+                    <div class="result-content">
+                        <div id="response-2" class="json-view">
+                            <pre></pre>
+                        </div>
+                        <div id="request-2" class="json-view" style="display: none;">
+                            <pre></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="ds-3">
+            <div class="card-header">
+                <h3>CreditProductStatisticData</h3>
+                <span class="class-name">com.yocyl.fr.engine.tableData.finance.CreditProductStatisticData</span>
+            </div>
+            <div class="card-body">
+                <form id="form-3" class="form-grid" onsubmit="return submitForm(event, 3)">
+
+                    <div class="form-group">
+                        <label class="required">租户ID</label>
+                        <input type="text" name="fine_username9" value="" placeholder="租户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">convertCurrencyCode2</label>
+                        <input type="number" name="convertCurrencyCode2" value="" placeholder="convertCurrencyCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">维度</label>
+                        <textarea name="dimensions" placeholder='["value"]'>[     {       \"code\": \"creditProductCode\"   } ,{       \"code\": \"currencyCode\"   }   ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">用户ID</label>
+                        <input type="number" name="fr_usercode" value="" placeholder="用户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">组件ID</label>
+                        <input type="number" name="widgetId" value="78" placeholder="组件ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">triggerRequest2</label>
+                        <input type="text" name="triggerRequest2" value="false" placeholder="triggerRequest2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">字段映射</label>
+                        <textarea name="fieldMapping" placeholder='[{"key": "value"}]'>{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"creditProductCode2\":\"creditProductCode\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgTag2</label>
+                        <input type="text" name="orgTag2" value="" placeholder="orgTag2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">contain2</label>
+                        <input type="text" name="contain2" value="" placeholder="contain2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">listBoolean</label>
+                        <textarea name="listBoolean" placeholder='["value"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">条件</label>
+                        <textarea name="condition" placeholder='[{"key": "value"}]'>{\"creditProductCode2\":\"like\",\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startStartDate2</label>
+                        <input type="date" name="startStartDate2" value="" placeholder="startStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endStartDate2</label>
+                        <input type="date" name="endStartDate2" value="" placeholder="endStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startEndDate2</label>
+                        <input type="date" name="startEndDate2" value="" placeholder="startEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endEndDate2</label>
+                        <input type="date" name="endEndDate2" value="" placeholder="endEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProtocolType2</label>
+                        <input type="text" name="creditProtocolType2" value="" placeholder="creditProtocolType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProductCode2</label>
+                        <input type="number" name="creditProductCode2" value="" placeholder="creditProductCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankName2</label>
+                        <input type="text" name="financeBankName2" value="" placeholder="financeBankName2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">isCirculate2</label>
+                        <input type="text" name="isCirculate2" value="" placeholder="isCirculate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgId2</label>
+                        <input type="number" name="orgId2" value="" placeholder="orgId2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankCode2</label>
+                        <input type="number" name="financeBankCode2" value="" placeholder="financeBankCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeTypeCode2</label>
+                        <input type="number" name="financeTypeCode2" value="" placeholder="financeTypeCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">bizType2</label>
+                        <input type="text" name="bizType2" value="" placeholder="bizType2">
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="submit" class="btn btn-primary">🚀 发送请求</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm(3)">🔄 重置</button>
+                    </div>
+                </form>
+                
+                <div class="result-section" id="result-3" style="display: none;">
+                    <div class="result-tabs">
+                        <button class="tab-btn active" onclick="showTab(3, 'response')">响应体</button>
+                        <button class="tab-btn" onclick="showTab(3, 'request')">请求体</button>
+                    </div>
+                    <div class="result-content">
+                        <div id="response-3" class="json-view">
+                            <pre></pre>
+                        </div>
+                        <div id="request-3" class="json-view" style="display: none;">
+                            <pre></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="ds-4">
+            <div class="card-header">
+                <h3>CreditContractStatisticDataForOrg</h3>
+                <span class="class-name">com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData</span>
+            </div>
+            <div class="card-body">
+                <form id="form-4" class="form-grid" onsubmit="return submitForm(event, 4)">
+
+                    <div class="form-group">
+                        <label class="">convertCurrencyCode2</label>
+                        <input type="number" name="convertCurrencyCode2" value="" placeholder="convertCurrencyCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">指标信息</label>
+                        <textarea name="indexInfo" placeholder='["value"]'>[     {       \"code\": \"amount\"     },     {       \"code\": \"debtBalance\"     },     {       \"code\": \"equityGuaranteeAmount\"     },     {       \"code\": \"equityGuaranteeCount\"     }   ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">维度</label>
+                        <textarea name="dimensions" placeholder='["value"]'>[     {       \"code\": \"orgId\"    }  ,{       \"code\": \"currencyCode\"   } ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">用户ID</label>
+                        <input type="number" name="fr_usercode" value="" placeholder="用户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">组件ID</label>
+                        <input type="number" name="widgetId" value="77" placeholder="组件ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">triggerRequest2</label>
+                        <input type="text" name="triggerRequest2" value="false" placeholder="triggerRequest2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">字段映射</label>
+                        <textarea name="fieldMapping" placeholder='[{"key": "value"}]'>{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgTag2</label>
+                        <input type="text" name="orgTag2" value="" placeholder="orgTag2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">contain2</label>
+                        <input type="text" name="contain2" value="" placeholder="contain2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">listBoolean</label>
+                        <textarea name="listBoolean" placeholder='["value"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">条件</label>
+                        <textarea name="condition" placeholder='[{"key": "value"}]'>{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startStartDate2</label>
+                        <input type="date" name="startStartDate2" value="" placeholder="startStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endStartDate2</label>
+                        <input type="date" name="endStartDate2" value="" placeholder="endStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startEndDate2</label>
+                        <input type="date" name="startEndDate2" value="" placeholder="startEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endEndDate2</label>
+                        <input type="date" name="endEndDate2" value="" placeholder="endEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProductCode2</label>
+                        <input type="number" name="creditProductCode2" value="" placeholder="creditProductCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankName2</label>
+                        <input type="text" name="financeBankName2" value="" placeholder="financeBankName2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">isCirculate2</label>
+                        <input type="text" name="isCirculate2" value="" placeholder="isCirculate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgId2</label>
+                        <input type="number" name="orgId2" value="" placeholder="orgId2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankCode2</label>
+                        <input type="number" name="financeBankCode2" value="" placeholder="financeBankCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">租户ID</label>
+                        <input type="text" name="fine_username9" value="" placeholder="租户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">bizType2</label>
+                        <input type="text" name="bizType2" value="" placeholder="bizType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeTypeCode2</label>
+                        <input type="number" name="financeTypeCode2" value="" placeholder="financeTypeCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProtocolType2</label>
+                        <input type="text" name="creditProtocolType2" value="" placeholder="creditProtocolType2">
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="submit" class="btn btn-primary">🚀 发送请求</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm(4)">🔄 重置</button>
+                    </div>
+                </form>
+                
+                <div class="result-section" id="result-4" style="display: none;">
+                    <div class="result-tabs">
+                        <button class="tab-btn active" onclick="showTab(4, 'response')">响应体</button>
+                        <button class="tab-btn" onclick="showTab(4, 'request')">请求体</button>
+                    </div>
+                    <div class="result-content">
+                        <div id="response-4" class="json-view">
+                            <pre></pre>
+                        </div>
+                        <div id="request-4" class="json-view" style="display: none;">
+                            <pre></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="ds-5">
+            <div class="card-header">
+                <h3>CreditContractStatisticDataForInstution</h3>
+                <span class="class-name">com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData</span>
+            </div>
+            <div class="card-body">
+                <form id="form-5" class="form-grid" onsubmit="return submitForm(event, 5)">
+
+                    <div class="form-group">
+                        <label class="required">租户ID</label>
+                        <input type="text" name="fine_username9" value="" placeholder="租户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">convertCurrencyCode2</label>
+                        <input type="number" name="convertCurrencyCode2" value="" placeholder="convertCurrencyCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">维度</label>
+                        <textarea name="dimensions" placeholder='["value"]'>[     {       \"code\": \"financeBankCode\"     },{       \"code\": \"currencyCode\"   }   ]A</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">用户ID</label>
+                        <input type="number" name="fr_usercode" value="" placeholder="用户ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required">组件ID</label>
+                        <input type="number" name="widgetId" value="77" placeholder="组件ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">triggerRequest2</label>
+                        <input type="text" name="triggerRequest2" value="false" placeholder="triggerRequest2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">字段映射</label>
+                        <textarea name="fieldMapping" placeholder='[{"key": "value"}]'>{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\", \"convertCurrencyCode2\":\"convertCurrencyCode\",\"financeTypeCode2\":\"financeTypeCode\", \"instutionBizType\":\"bizType\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgTag2</label>
+                        <input type="text" name="orgTag2" value="" placeholder="orgTag2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">contain2</label>
+                        <input type="text" name="contain2" value="" placeholder="contain2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">listBoolean</label>
+                        <textarea name="listBoolean" placeholder='["value"]'></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">条件</label>
+                        <textarea name="condition" placeholder='[{"key": "value"}]'>{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startStartDate2</label>
+                        <input type="date" name="startStartDate2" value="" placeholder="startStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endStartDate2</label>
+                        <input type="date" name="endStartDate2" value="" placeholder="endStartDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">startEndDate2</label>
+                        <input type="date" name="startEndDate2" value="" placeholder="startEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">endEndDate2</label>
+                        <input type="date" name="endEndDate2" value="" placeholder="endEndDate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">instutionBizType</label>
+                        <input type="text" name="instutionBizType" value="1" placeholder="instutionBizType">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">creditProtocolType2</label>
+                        <input type="text" name="creditProtocolType2" value="" placeholder="creditProtocolType2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">isCirculate2</label>
+                        <input type="text" name="isCirculate2" value="" placeholder="isCirculate2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankName2</label>
+                        <input type="text" name="financeBankName2" value="" placeholder="financeBankName2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">orgId2</label>
+                        <input type="number" name="orgId2" value="" placeholder="orgId2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeBankCode2</label>
+                        <input type="number" name="financeBankCode2" value="" placeholder="financeBankCode2">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="">financeTypeCode2</label>
+                        <input type="number" name="financeTypeCode2" value="" placeholder="financeTypeCode2">
+                    </div>
+
+                    <div style="grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 12px;">
+                        <button type="submit" class="btn btn-primary">🚀 发送请求</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm(5)">🔄 重置</button>
+                    </div>
+                </form>
+                
+                <div class="result-section" id="result-5" style="display: none;">
+                    <div class="result-tabs">
+                        <button class="tab-btn active" onclick="showTab(5, 'response')">响应体</button>
+                        <button class="tab-btn" onclick="showTab(5, 'request')">请求体</button>
+                    </div>
+                    <div class="result-content">
+                        <div id="response-5" class="json-view">
+                            <pre></pre>
+                        </div>
+                        <div id="request-5" class="json-view" style="display: none;">
+                            <pre></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <script>
+        // 数据源定义
+        const dataSources = [
+  {
+    "dataSourceName": "CreditContractDetailData",
+    "className": "com.yocyl.fr.engine.tableData.finance.CreditContractDetailData",
+    "fields": [
+      {
+        "name": "orgStructure",
+        "label": "组织架构",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgId",
+        "label": "被授信人",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "convertCurrencyCode",
+        "label": "折算币种",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "fine_username9",
+        "label": "租户ID",
+        "type": "string",
+        "default": "",
+        "required": true
+      },
+      {
+        "name": "szylb_code",
+        "label": "szylb_code",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "fr_orgid",
+        "label": "fr_orgid",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "indexInfo",
+        "label": "指标信息",
+        "type": "array",
+        "default": "[         {             \\\"fieldCode\\\": \\\"repay.id\\\",             \\\"alias\\\": \\\"id\\\"         },         {             \\\"fieldCode\\\": \\\"repay.fi_contract_id\\\",             \\\"alias\\\": \\\"fiContractId\\\"         },         {             \\\"fieldCode\\\": \\\"repay.repay_contract_number\\\",             \\\"alias\\\": \\\"repayContractNumber\\\"         },         {             \\\"fieldCode\\\": \\\"repay.fi_contract_type\\\",             \\\"alias\\\": \\\"fiContractType\\\"         },         {             \\\"fieldCode\\\": \\\"repay.org_id\\\",             \\\"alias\\\": \\\"orgId\\\",             \\\"mappingField\\\": \\\"orgName\\\",             \\\"source\\\": \\\"org\\\",             \\\"sourceCode\\\": \\\"\\\"         },          {             \\\"fieldCode\\\": \\\"institution_type\\\",             \\\"alias\\\": \\\"institutionType\\\"         },         {             \\\"fieldCode\\\": \\\"repay.credit_product_code\\\",             \\\"alias\\\": \\\"creditProductCode\\\",             \\\"mappingField\\\": \\\"creditProductCodeName\\\",             \\\"source\\\": \\\"biz\\\",             \\\"sourceCode\\\": \\\"finance_loan_product\\\"                    },         {             \\\"fieldCode\\\": \\\"repay.amount\\\",             \\\"alias\\\": \\\"amount\\\"         },          {             \\\"fieldCode\\\": \\\"available_amount\\\",             \\\"alias\\\": \\\"availableAmount\\\"         },         {             \\\"fieldCode\\\": \\\"interest\\\",             \\\"alias\\\": \\\"interest\\\"         },         {             \\\"fieldCode\\\": \\\"repay.currency_code\\\",             \\\"alias\\\": \\\"currencyCode\\\"         },         {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_code\\\",             \\\"alias\\\": \\\"lendFinanceBankCode\\\"         },         {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_name\\\",             \\\"alias\\\": \\\"lendFinanceBankName\\\"         },         {             \\\"fieldCode\\\": \\\"repay.purpose\\\",             \\\"alias\\\": \\\"purpose\\\"         },         {             \\\"fieldCode\\\": \\\"repay.contract_code_no\\\",             \\\"alias\\\": \\\"contractCodeNo\\\"         },         {             \\\"fieldCode\\\": \\\"repay.rec_org_id\\\",             \\\"alias\\\": \\\"recOrgId\\\"         },         {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_point_id\\\",             \\\"alias\\\": \\\"lendFinanceBankPointId\\\"         },          {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_point_name\\\",             \\\"alias\\\": \\\"lendFinanceBankPointName\\\"         },         {             \\\"fieldCode\\\": \\\"repay.bond_abbreviation\\\",             \\\"alias\\\": \\\"bondAbbreviation\\\"         },         {             \\\"fieldCode\\\": \\\"repay.loan_contract_rate\\\",             \\\"alias\\\": \\\"loanContractRate\\\"         },         {             \\\"fieldCode\\\": \\\"repay.value_date\\\",             \\\"alias\\\": \\\"valueDate\\\"         },         {             \\\"fieldCode\\\": \\\"repay.end_date\\\",             \\\"alias\\\": \\\"endDate\\\"         },         {             \\\"fieldCode\\\": \\\"repay.remark\\\",             \\\"alias\\\": \\\"remark\\\"         },         {             \\\"fieldCode\\\": \\\"repay.cumulative_repay_amount\\\",             \\\"alias\\\": \\\"repayAmount\\\"         }     ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "financeBankCode",
+        "label": "银行授信机构",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "counterGuarantee",
+        "label": "counterGuarantee",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "widgetId",
+        "label": "组件ID",
+        "type": "number",
+        "default": "74",
+        "required": true
+      },
+      {
+        "name": "fr_usercode",
+        "label": "用户ID",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "startStartDate",
+        "label": "开始日期-开始",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endStartDate",
+        "label": "开始日期-结束",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "startEndDate",
+        "label": "结束日期-开始",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endEndDate",
+        "label": "结束日期-结束",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "condition",
+        "label": "条件",
+        "type": "object",
+        "default": "{\\\"creditProductCode\\\":\\\"like\\\",\\\"financeBankName\\\":\\\"like\\\",\\\"startStartDate\\\":\\\"geq\\\",\\\"endStartDate\\\":\\\"leq\\\",\\\"startEndDate\\\":\\\"geq\\\",\\\"endEndDate\\\":\\\"leq\\\"}",
+        "required": false
+      },
+      {
+        "name": "fieldMapping",
+        "label": "字段映射",
+        "type": "object",
+        "default": "{\\\"startStartDate\\\":\\\"effectiveDate\\\",\\\"endStartDate\\\":\\\"effectiveDate\\\",\\\"startEndDate\\\":\\\"endDate\\\",\\\"endEndDate\\\":\\\"endDate\\\", \\\"triggerRequest1\\\":\\\"triggerRequest\\\", \\\"orgTag\\\":\\\"orgId\\\"}",
+        "required": false
+      },
+      {
+        "name": "triggerRequest1",
+        "label": "triggerRequest1",
+        "type": "string",
+        "default": "true",
+        "required": false
+      },
+      {
+        "name": "orgTag",
+        "label": "组织标签",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "listBoolean",
+        "label": "listBoolean",
+        "type": "array",
+        "default": "",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "financeBankName",
+        "label": "其他授信机构",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "isCirculate",
+        "label": "额度循环",
+        "type": "boolean",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "creditProductCode",
+        "label": "融资品种",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "contractCode",
+        "label": "contractCode",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "contain",
+        "label": "是否包含下级",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "bizType",
+        "label": "批文/授信",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "creditType",
+        "label": "creditType",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "creditProtocolType",
+        "label": "协议类型",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dimensions",
+        "label": "维度",
+        "type": "array",
+        "default": "[ { \\\"code\\\": \\\"id\\\" },  {  \\\"code\\\": \\\"productId\\\" }]A",
+        "required": false,
+        "itemType": "string"
+      }
+    ]
+  },
+  {
+    "dataSourceName": "CreditContractStatisticDataForFinanceTypeCode",
+    "className": "com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData",
+    "fields": [
+      {
+        "name": "convertCurrencyCode2",
+        "label": "convertCurrencyCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "indexInfo",
+        "label": "指标信息",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"amount\\\"     },     {       \\\"code\\\": \\\"debtBalance\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeAmount\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeCount\\\"     }   ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "dimensions",
+        "label": "维度",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"financeTypeCode\\\"   },{       \\\"code\\\": \\\"currencyCode\\\"   }   ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "fr_usercode",
+        "label": "用户ID",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "widgetId",
+        "label": "组件ID",
+        "type": "number",
+        "default": "77",
+        "required": true
+      },
+      {
+        "name": "triggerRequest2",
+        "label": "triggerRequest2",
+        "type": "string",
+        "default": "false",
+        "required": false
+      },
+      {
+        "name": "fieldMapping",
+        "label": "字段映射",
+        "type": "object",
+        "default": "{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\", \\\"convertCurrencyCode2\\\":\\\"convertCurrencyCode\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}",
+        "required": false
+      },
+      {
+        "name": "orgTag2",
+        "label": "orgTag2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "contain2",
+        "label": "contain2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "listBoolean",
+        "label": "listBoolean",
+        "type": "array",
+        "default": "",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "condition",
+        "label": "条件",
+        "type": "object",
+        "default": "{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}",
+        "required": false
+      },
+      {
+        "name": "startStartDate2",
+        "label": "startStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endStartDate2",
+        "label": "endStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "startEndDate2",
+        "label": "startEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endEndDate2",
+        "label": "endEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "creditProtocolType2",
+        "label": "creditProtocolType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "isCirculate2",
+        "label": "isCirculate2",
+        "type": "boolean",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgId2",
+        "label": "orgId2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankName2",
+        "label": "financeBankName2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankCode2",
+        "label": "financeBankCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "fine_username9",
+        "label": "租户ID",
+        "type": "string",
+        "default": "",
+        "required": true
+      },
+      {
+        "name": "bizType2",
+        "label": "bizType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeTypeCode2",
+        "label": "financeTypeCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      }
+    ]
+  },
+  {
+    "dataSourceName": "CreditContractUserOrgStatisticData",
+    "className": "com.yocyl.fr.engine.tableData.finance.CreditContractUserOrgStatisticData",
+    "fields": [
+      {
+        "name": "fine_username9",
+        "label": "租户ID",
+        "type": "string",
+        "default": "",
+        "required": true
+      },
+      {
+        "name": "convertCurrencyCode2",
+        "label": "convertCurrencyCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dimensions",
+        "label": "维度",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"userOrgId\\\"    } ,{       \\\"code\\\": \\\"currencyCode\\\"   }  ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "fr_usercode",
+        "label": "用户ID",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "widgetId",
+        "label": "组件ID",
+        "type": "number",
+        "default": "76",
+        "required": true
+      },
+      {
+        "name": "triggerRequest2",
+        "label": "triggerRequest2",
+        "type": "string",
+        "default": "false",
+        "required": false
+      },
+      {
+        "name": "fieldMapping",
+        "label": "字段映射",
+        "type": "object",
+        "default": "{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}",
+        "required": false
+      },
+      {
+        "name": "contain2",
+        "label": "contain2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgTag2",
+        "label": "orgTag2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "listBoolean",
+        "label": "listBoolean",
+        "type": "array",
+        "default": "",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "condition",
+        "label": "条件",
+        "type": "object",
+        "default": "{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}",
+        "required": false
+      },
+      {
+        "name": "startStartDate2",
+        "label": "startStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endStartDate2",
+        "label": "endStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "startEndDate2",
+        "label": "startEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endEndDate2",
+        "label": "endEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "creditProtocolType2",
+        "label": "creditProtocolType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankCode2",
+        "label": "financeBankCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankName2",
+        "label": "financeBankName2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "isCirculate2",
+        "label": "isCirculate2",
+        "type": "boolean",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgId2",
+        "label": "orgId2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "bizType2",
+        "label": "bizType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeTypeCode2",
+        "label": "financeTypeCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      }
+    ]
+  },
+  {
+    "dataSourceName": "CreditProductStatisticData",
+    "className": "com.yocyl.fr.engine.tableData.finance.CreditProductStatisticData",
+    "fields": [
+      {
+        "name": "fine_username9",
+        "label": "租户ID",
+        "type": "string",
+        "default": "",
+        "required": true
+      },
+      {
+        "name": "convertCurrencyCode2",
+        "label": "convertCurrencyCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dimensions",
+        "label": "维度",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"creditProductCode\\\"   } ,{       \\\"code\\\": \\\"currencyCode\\\"   }   ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "fr_usercode",
+        "label": "用户ID",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "widgetId",
+        "label": "组件ID",
+        "type": "number",
+        "default": "78",
+        "required": true
+      },
+      {
+        "name": "triggerRequest2",
+        "label": "triggerRequest2",
+        "type": "string",
+        "default": "false",
+        "required": false
+      },
+      {
+        "name": "fieldMapping",
+        "label": "字段映射",
+        "type": "object",
+        "default": "{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"creditProductCode2\\\":\\\"creditProductCode\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}",
+        "required": false
+      },
+      {
+        "name": "orgTag2",
+        "label": "orgTag2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "contain2",
+        "label": "contain2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "listBoolean",
+        "label": "listBoolean",
+        "type": "array",
+        "default": "",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "condition",
+        "label": "条件",
+        "type": "object",
+        "default": "{\\\"creditProductCode2\\\":\\\"like\\\",\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}",
+        "required": false
+      },
+      {
+        "name": "startStartDate2",
+        "label": "startStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endStartDate2",
+        "label": "endStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "startEndDate2",
+        "label": "startEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endEndDate2",
+        "label": "endEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "creditProtocolType2",
+        "label": "creditProtocolType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "creditProductCode2",
+        "label": "creditProductCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankName2",
+        "label": "financeBankName2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "isCirculate2",
+        "label": "isCirculate2",
+        "type": "boolean",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgId2",
+        "label": "orgId2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankCode2",
+        "label": "financeBankCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeTypeCode2",
+        "label": "financeTypeCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "bizType2",
+        "label": "bizType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      }
+    ]
+  },
+  {
+    "dataSourceName": "CreditContractStatisticDataForOrg",
+    "className": "com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData",
+    "fields": [
+      {
+        "name": "convertCurrencyCode2",
+        "label": "convertCurrencyCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "indexInfo",
+        "label": "指标信息",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"amount\\\"     },     {       \\\"code\\\": \\\"debtBalance\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeAmount\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeCount\\\"     }   ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "dimensions",
+        "label": "维度",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"orgId\\\"    }  ,{       \\\"code\\\": \\\"currencyCode\\\"   } ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "fr_usercode",
+        "label": "用户ID",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "widgetId",
+        "label": "组件ID",
+        "type": "number",
+        "default": "77",
+        "required": true
+      },
+      {
+        "name": "triggerRequest2",
+        "label": "triggerRequest2",
+        "type": "string",
+        "default": "false",
+        "required": false
+      },
+      {
+        "name": "fieldMapping",
+        "label": "字段映射",
+        "type": "object",
+        "default": "{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}",
+        "required": false
+      },
+      {
+        "name": "orgTag2",
+        "label": "orgTag2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "contain2",
+        "label": "contain2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "listBoolean",
+        "label": "listBoolean",
+        "type": "array",
+        "default": "",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "condition",
+        "label": "条件",
+        "type": "object",
+        "default": "{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}",
+        "required": false
+      },
+      {
+        "name": "startStartDate2",
+        "label": "startStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endStartDate2",
+        "label": "endStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "startEndDate2",
+        "label": "startEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endEndDate2",
+        "label": "endEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "creditProductCode2",
+        "label": "creditProductCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankName2",
+        "label": "financeBankName2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "isCirculate2",
+        "label": "isCirculate2",
+        "type": "boolean",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgId2",
+        "label": "orgId2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankCode2",
+        "label": "financeBankCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "fine_username9",
+        "label": "租户ID",
+        "type": "string",
+        "default": "",
+        "required": true
+      },
+      {
+        "name": "bizType2",
+        "label": "bizType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeTypeCode2",
+        "label": "financeTypeCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "creditProtocolType2",
+        "label": "creditProtocolType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      }
+    ]
+  },
+  {
+    "dataSourceName": "CreditContractStatisticDataForInstution",
+    "className": "com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData",
+    "fields": [
+      {
+        "name": "fine_username9",
+        "label": "租户ID",
+        "type": "string",
+        "default": "",
+        "required": true
+      },
+      {
+        "name": "convertCurrencyCode2",
+        "label": "convertCurrencyCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "dimensions",
+        "label": "维度",
+        "type": "array",
+        "default": "[     {       \\\"code\\\": \\\"financeBankCode\\\"     },{       \\\"code\\\": \\\"currencyCode\\\"   }   ]A",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "fr_usercode",
+        "label": "用户ID",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "widgetId",
+        "label": "组件ID",
+        "type": "number",
+        "default": "77",
+        "required": true
+      },
+      {
+        "name": "triggerRequest2",
+        "label": "triggerRequest2",
+        "type": "string",
+        "default": "false",
+        "required": false
+      },
+      {
+        "name": "fieldMapping",
+        "label": "字段映射",
+        "type": "object",
+        "default": "{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\", \\\"convertCurrencyCode2\\\":\\\"convertCurrencyCode\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\", \\\"instutionBizType\\\":\\\"bizType\\\"}",
+        "required": false
+      },
+      {
+        "name": "orgTag2",
+        "label": "orgTag2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "contain2",
+        "label": "contain2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "listBoolean",
+        "label": "listBoolean",
+        "type": "array",
+        "default": "",
+        "required": false,
+        "itemType": "string"
+      },
+      {
+        "name": "condition",
+        "label": "条件",
+        "type": "object",
+        "default": "{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}",
+        "required": false
+      },
+      {
+        "name": "startStartDate2",
+        "label": "startStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endStartDate2",
+        "label": "endStartDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "startEndDate2",
+        "label": "startEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "endEndDate2",
+        "label": "endEndDate2",
+        "type": "date",
+        "default": "",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      {
+        "name": "instutionBizType",
+        "label": "instutionBizType",
+        "type": "string",
+        "default": "1",
+        "required": false
+      },
+      {
+        "name": "creditProtocolType2",
+        "label": "creditProtocolType2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "isCirculate2",
+        "label": "isCirculate2",
+        "type": "boolean",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankName2",
+        "label": "financeBankName2",
+        "type": "string",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "orgId2",
+        "label": "orgId2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeBankCode2",
+        "label": "financeBankCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      },
+      {
+        "name": "financeTypeCode2",
+        "label": "financeTypeCode2",
+        "type": "number",
+        "default": "",
+        "required": false
+      }
+    ]
+  }
+];
+        
+        // 获取 API 地址
+        function getApiEndpoint() {
+            return document.getElementById('apiEndpoint').value || 'http://localhost:8080/data/dashboard/load-data';
+        }
+        
+        function saveApiConfig() {
+            localStorage.setItem('apiEndpoint', getApiEndpoint());
+            alert('API 配置已保存');
+        }
+        
+        // 页面加载时恢复配置
+        window.onload = function() {
+            const saved = localStorage.getItem('apiEndpoint');
+            if (saved) {
+                document.getElementById('apiEndpoint').value = saved;
+            }
+        };
+        
+        // 提交表单
+        async function submitForm(event, dsIndex) {
+            event.preventDefault();
+            
+            const form = document.getElementById('form-' + dsIndex);
+            const formData = new FormData(form);
+            const params = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (value) {
+                    // 尝试解析 JSON
+                    if (value.startsWith('[') || value.startsWith('{')) {
+                        try {
+                            params[key] = JSON.parse(value);
+                        } catch {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                }
+            }
+            
+            // 构建请求体
+            const requestBody = {
+                widgetId: parseInt(params.widgetId) || dataSources[dsIndex].widgetId || 0,
+                tenantId: params.tenantId || params.fine_username9 || '',
+                userId: params.userId || params.fr_usercode || '',
+                ...params
+            };
+            
+            // 显示请求体
+            document.getElementById('request-' + dsIndex).querySelector('pre').textContent = 
+                JSON.stringify(requestBody, null, 2);
+            
+            // 发送请求
+            const resultSection = document.getElementById('result-' + dsIndex);
+            resultSection.style.display = 'block';
+            
+            const responseEl = document.getElementById('response-' + dsIndex).querySelector('pre');
+            responseEl.textContent = '⏳ 请求中...';
+            
+            try {
+                const response = await fetch(getApiEndpoint(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const data = await response.json();
+                responseEl.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                responseEl.textContent = '❌ 请求失败: ' + error.message;
+            }
+            
+            return false;
+        }
+        
+        // 重置表单
+        function resetForm(dsIndex) {
+            document.getElementById('form-' + dsIndex).reset();
+            document.getElementById('result-' + dsIndex).style.display = 'none';
+        }
+        
+        // 切换标签
+        function showTab(dsIndex, tab) {
+            const tabs = document.querySelectorAll('#ds-' + dsIndex + ' .tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('response-' + dsIndex).style.display = tab === 'response' ? 'block' : 'none';
+            document.getElementById('request-' + dsIndex).style.display = tab === 'request' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
