@@ -391,7 +391,9 @@ def generate_report_v2():
             
         elif datasource.get('type') == 'class':
             param_template = datasource.get('parameter_template', {})
-            params = list(param_template.keys())
+            # 转换为 CPT 生成器期望的格式: [{'name': 'param1'}, {'name': 'param2'}]
+            params = [{'name': k, 'default': v if isinstance(v, str) else ''} 
+                      for k, v in param_template.items()]
             logger.info(f"Class 入参: {params}")
             
             cpt_config['data_sources'].append({
