@@ -461,15 +461,19 @@
         }
         
         function generateMappingUI(maxCol) {
-            let html = '';
+            let html = '<p class="text-muted small">将 Excel 列映射到数据源字段。例如：A 列绑定 contractNo 字段</p>';
             for (let i = 0; i <= maxCol; i++) {
                 const col = String.fromCharCode(65 + i);
+                const exampleFields = ['region', 'product', 'amount', 'quantity', 'date', 'name', 'code'];
+                const exampleField = exampleFields[i % exampleFields.length];
                 html += `
                     <div class="mapping-row">
                         <span class="col-badge">${col}</span>
+                        <span style="color: #8c8c8c; min-width: 80px;">Excel 第${i+1}列</span>
+                        <span style="color: #52c41a;">→</span>
                         <input type="text" class="form-control form-control-sm" id="map_${col}" 
-                               placeholder="字段名" style="width: 150px;">
-                        <small class="text-muted">→ 绑定到数据库字段</small>
+                               placeholder="字段名，如: ${exampleField}" style="width: 200px;">
+                        <small class="text-muted">数据库字段 或 Class 返回字段</small>
                     </div>
                 `;
             }
@@ -630,6 +634,7 @@
         // 收集配置
         function collectConfig() {
             console.log('开始收集配置...');
+            console.log('当前数据源类型:', config.datasource_type);
             
             // 数据源
             if (config.datasource_type === 'database') {
@@ -641,30 +646,38 @@
                 };
                 console.log('数据库数据源:', config.datasource);
             } else {
-                // 安全解析 JSON
+                // Class 数据源 - 安全解析 JSON
                 let returnFields = [];
                 let paramTemplate = {};
                 
-                try {
-                    const rfValue = document.getElementById('returnFields').value;
-                    if (rfValue && rfValue.trim()) {
+                const rfValue = (document.getElementById('returnFields').value || '').trim();
+                if (rfValue) {
+                    try {
                         returnFields = JSON.parse(rfValue);
+                        console.log('返回字段解析成功:', returnFields);
+                    } catch (e) {
+                        console.error('返回字段 JSON 解析错误:', e);
+                        console.error('输入内容:', rfValue);
+                        alert('返回字段 JSON 格式错误！\n\n正确格式示例:\n[{"name": "field1"}, {"name": "field2"}]\n\n错误: ' + e.message);
+                        return null;
                     }
-                } catch (e) {
-                    console.error('返回字段 JSON 解析错误:', e);
-                    alert('返回字段 JSON 格式错误，请检查');
-                    return null;
+                } else {
+                    console.log('返回字段为空，使用默认空数组');
                 }
                 
-                try {
-                    const ptValue = document.getElementById('paramTemplate').value;
-                    if (ptValue && ptValue.trim()) {
+                const ptValue = (document.getElementById('paramTemplate').value || '').trim();
+                if (ptValue) {
+                    try {
                         paramTemplate = JSON.parse(ptValue);
+                        console.log('入参模板解析成功:', paramTemplate);
+                    } catch (e) {
+                        console.error('入参模板 JSON 解析错误:', e);
+                        console.error('输入内容:', ptValue);
+                        alert('入参模板 JSON 格式错误！\n\n正确格式示例:\n{"param1": "", "param2": "默认值"}\n\n错误: ' + e.message);
+                        return null;
                     }
-                } catch (e) {
-                    console.error('入参模板 JSON 解析错误:', e);
-                    alert('入参模板 JSON 格式错误，请检查');
-                    return null;
+                } else {
+                    console.log('入参模板为空，使用默认空对象');
                 }
                 
                 config.datasource = {
