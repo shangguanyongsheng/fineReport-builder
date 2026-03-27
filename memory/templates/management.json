@@ -1,0 +1,1050 @@
+{
+  "template_name": "FinanceCreditContractAnalysis",
+  "template_type": "管理分析报表",
+  "regions": {
+    "filter_area": {
+      "xpath": "ReportParameterAttr/ParameterUI/Layout",
+      "bounds": {
+        "start_x": 936,
+        "start_y": 83,
+        "label_width": 89,
+        "input_width": 135,
+        "gap_y": 36,
+        "max_per_row": 4,
+        "total_components": 10
+      },
+      "components": [
+        {
+          "label": "\n授信类型",
+          "code": "bizType2",
+          "type": "ComboBox",
+          "label_x": 936,
+          "input_x": 797,
+          "y": 83,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n批文/授信",
+          "code": "fine_username9",
+          "type": "TextEditor",
+          "label_x": 704,
+          "input_x": 289,
+          "y": 83,
+          "label_width": 89,
+          "input_width": 44,
+          "height": 28
+        },
+        {
+          "label": "\n额度循环",
+          "code": "financeBankName2",
+          "type": "TextEditor",
+          "label_x": 472,
+          "input_x": 333,
+          "y": 83,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n银行授信机构",
+          "code": "creditProductCode2",
+          "type": "TreeComboBoxEditor",
+          "label_x": 8,
+          "input_x": 797,
+          "y": 83,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n融资品种",
+          "code": "orgId2",
+          "type": "TreeComboBoxEditor",
+          "label_x": 704,
+          "input_x": 101,
+          "y": 47,
+          "label_width": 85,
+          "input_width": 135,
+          "height": 27
+        },
+        {
+          "label": "\n组织标签",
+          "code": "orgTag2",
+          "type": "ComboBox",
+          "label_x": 240,
+          "input_x": 333,
+          "y": 47,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n结束日期结束",
+          "code": "startEndDate2",
+          "type": "DateEditor",
+          "label_x": 936,
+          "input_x": 797,
+          "y": 11,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n结束日期开始",
+          "code": "endStartDate2",
+          "type": "DateEditor",
+          "label_x": 704,
+          "input_x": 565,
+          "y": 11,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n开始日期结束",
+          "code": "startStartDate2",
+          "type": "DateEditor",
+          "label_x": 472,
+          "input_x": 333,
+          "y": 11,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        },
+        {
+          "label": "\n开始日期开始",
+          "code": "convertCurrencyCode2",
+          "type": "ComboBox",
+          "label_x": 241,
+          "input_x": 1029,
+          "y": 11,
+          "label_width": 89,
+          "input_width": 135,
+          "height": 28
+        }
+      ]
+    },
+    "data_area": {
+      "header_row": 0,
+      "data_row": 1,
+      "columns": [
+        {
+          "column": 0,
+          "row": 0,
+          "style_index": 0,
+          "value": "\n授信类型",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 1,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n授信类型",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 2,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n币种",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 3,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n授信总额度",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 4,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n已用额度",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 5,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n可用额度",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 6,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n敞口额度",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 7,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n已用敞口",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 8,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n可用敞口",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 9,
+          "row": 0,
+          "style_index": 1,
+          "value": "\n敞口受限",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        }
+      ],
+      "data_columns": [
+        {
+          "column": 1,
+          "row": 1,
+          "style_index": 2,
+          "value": "\n综合授信",
+          "value_type": "text",
+          "data_source": null,
+          "column_name": null
+        },
+        {
+          "column": 2,
+          "row": 1,
+          "style_index": 2,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "currencyCodeName"
+        },
+        {
+          "column": 3,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "amount"
+        },
+        {
+          "column": 4,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "occupiedAmount"
+        },
+        {
+          "column": 5,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "availableAmount"
+        },
+        {
+          "column": 6,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "openAmount"
+        },
+        {
+          "column": 7,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "openOccupiedAmount"
+        },
+        {
+          "column": 8,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "openAvailableAmount"
+        },
+        {
+          "column": 9,
+          "row": 1,
+          "style_index": 3,
+          "value": "\n",
+          "value_type": "DSColumn",
+          "data_source": "CreditContractStatisticDataForFinanceTypeCode",
+          "column_name": "restrictedAmount"
+        }
+      ],
+      "total_rows": 16
+    },
+    "data_sources": [
+      {
+        "name": "orgStructure",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nSELECT so.`version`,concat(so.id,'') as id FROM u_sys_organization_structure so \nWHERE so.tenant_id = '${fine_username9}' AND so.is_deleted = 0\n${if(len(structureVersion)=0,\"AND 1=2\",if(structureVersion=1,\"AND so.structure_type =( '\"+ structureVersion +\"')  and so.effective_date<=DATE_FORMAT(NOW(),'%Y-%m-%d') and so.expiry_date>=DATE_FORMAT(NOW(),'%Y-%m-%d')\",\"AND so.structure_type =( '\"+ structureVersion +\"')\"))}",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "structureVersion",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "structureVersion",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nSELECT\n\t\tsd1.dict_key,\n\t\tsd1.dict_value \n\tFROM\n\t\tsys_dict sd1 \n\tWHERE\n\t sd1.`code` = 'org_structure' \n\tAND sd1.is_deleted = 0 \tAND sd1.`status` = 1;",
+        "parameters": []
+      },
+      {
+        "name": "Tree1",
+        "type": "RecursionTableData"
+      },
+      {
+        "name": "currency",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nselect concat(id,'') as id,code,dict_key,dict_value from sys_dict where code = 'currency' and is_deleted = 0",
+        "parameters": []
+      },
+      {
+        "name": "organization",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nSELECT so.`code`,concat(so.id,'') as id,concat(so.`code`,'-',so.`name`) as name,so.parent_id FROM sys_organization so \n${if(len(orgStructure)=0,\"\",if(structureVersion=1,\n\" INNER JOIN u_sys_organization_relation usor on usor.org_id = so.id and usor.is_deleted=0 and usor.tenant_id = ( '\"+ fine_username9 +\"') and usor.status = 1 INNER JOIN u_sys_organization_structure usos on usos.is_deleted = 0 and usos.tenant_id = ( '\"+ fine_username9 +\"') and usos.id =usor.structure_id and usor.structure_id =( '\"+ orgStructure +\"')\",\n\" INNER JOIN u_sys_organization_relation usor on usor.org_id = so.id and usor.is_deleted=0 and usor.tenant_id = ( '\"+ fine_username9 +\"') and usor.status = 1 INNER JOIN u_sys_organization_structure usos on usos.is_deleted = 0 and usos.tenant_id = ( '\"+ fine_username9 +\"') and usos.id =usor.structure_id and usor.structure_id =( '\"+ orgStructure +\"')\"))}\nWHERE so.tenant_id = '${fine_username9}' AND so.is_deleted = 0 and so.status = 1",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "orgStructure",
+            "default": "\n"
+          },
+          {
+            "name": "structureVersion",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "CreditContractDetailData",
+        "type": "ClassTableData",
+        "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractDetailData",
+        "parameters": [
+          {
+            "name": "orgStructure",
+            "default": "\n"
+          },
+          {
+            "name": "orgId",
+            "default": "\n"
+          },
+          {
+            "name": "convertCurrencyCode",
+            "default": "\n"
+          },
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "szylb_code",
+            "default": "\n"
+          },
+          {
+            "name": "fr_orgid",
+            "default": "\n"
+          },
+          {
+            "name": "indexInfo",
+            "default": "\n[         {             \\\"fieldCode\\\": \\\"repay.id\\\",             \\\"alias\\\": \\\"id\\\"         },         {             \\\"fieldCode\\\": \\\"repay.fi_contract_id\\\",             \\\"alias\\\": \\\"fiContractId\\\"         },         {             \\\"fieldCode\\\": \\\"repay.repay_contract_number\\\",             \\\"alias\\\": \\\"repayContractNumber\\\"         },         {             \\\"fieldCode\\\": \\\"repay.fi_contract_type\\\",             \\\"alias\\\": \\\"fiContractType\\\"         },         {             \\\"fieldCode\\\": \\\"repay.org_id\\\",             \\\"alias\\\": \\\"orgId\\\",             \\\"mappingField\\\": \\\"orgName\\\",             \\\"source\\\": \\\"org\\\",             \\\"sourceCode\\\": \\\"\\\"         },          {             \\\"fieldCode\\\": \\\"institution_type\\\",             \\\"alias\\\": \\\"institutionType\\\"         },         {             \\\"fieldCode\\\": \\\"repay.credit_product_code\\\",             \\\"alias\\\": \\\"creditProductCode\\\",             \\\"mappingField\\\": \\\"creditProductCodeName\\\",             \\\"source\\\": \\\"biz\\\",             \\\"sourceCode\\\": \\\"finance_loan_product\\\"                    },         {             \\\"fieldCode\\\": \\\"repay.amount\\\",             \\\"alias\\\": \\\"amount\\\"         },          {             \\\"fieldCode\\\": \\\"available_amount\\\",             \\\"alias\\\": \\\"availableAmount\\\"         },         {             \\\"fieldCode\\\": \\\"interest\\\",             \\\"alias\\\": \\\"interest\\\"         },         {             \\\"fieldCode\\\": \\\"repay.currency_code\\\",             \\\"alias\\\": \\\"currencyCode\\\"         },         {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_code\\\",             \\\"alias\\\": \\\"lendFinanceBankCode\\\"         },         {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_name\\\",             \\\"alias\\\": \\\"lendFinanceBankName\\\"         },         {             \\\"fieldCode\\\": \\\"repay.purpose\\\",             \\\"alias\\\": \\\"purpose\\\"         },         {             \\\"fieldCode\\\": \\\"repay.contract_code_no\\\",             \\\"alias\\\": \\\"contractCodeNo\\\"         },         {             \\\"fieldCode\\\": \\\"repay.rec_org_id\\\",             \\\"alias\\\": \\\"recOrgId\\\"         },         {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_point_id\\\",             \\\"alias\\\": \\\"lendFinanceBankPointId\\\"         },          {             \\\"fieldCode\\\": \\\"repay.lend_finance_bank_point_name\\\",             \\\"alias\\\": \\\"lendFinanceBankPointName\\\"         },         {             \\\"fieldCode\\\": \\\"repay.bond_abbreviation\\\",             \\\"alias\\\": \\\"bondAbbreviation\\\"         },         {             \\\"fieldCode\\\": \\\"repay.loan_contract_rate\\\",             \\\"alias\\\": \\\"loanContractRate\\\"         },         {             \\\"fieldCode\\\": \\\"repay.value_date\\\",             \\\"alias\\\": \\\"valueDate\\\"         },         {             \\\"fieldCode\\\": \\\"repay.end_date\\\",             \\\"alias\\\": \\\"endDate\\\"         },         {             \\\"fieldCode\\\": \\\"repay.remark\\\",             \\\"alias\\\": \\\"remark\\\"         },         {             \\\"fieldCode\\\": \\\"repay.cumulative_repay_amount\\\",             \\\"alias\\\": \\\"repayAmount\\\"         }     ]A"
+          },
+          {
+            "name": "financeBankCode",
+            "default": "\n"
+          },
+          {
+            "name": "counterGuarantee",
+            "default": "\n"
+          },
+          {
+            "name": "widgetId",
+            "default": "\n74"
+          },
+          {
+            "name": "fr_usercode",
+            "default": "\n"
+          },
+          {
+            "name": "startStartDate",
+            "default": "\n"
+          },
+          {
+            "name": "endStartDate",
+            "default": "\n"
+          },
+          {
+            "name": "startEndDate",
+            "default": "\n"
+          },
+          {
+            "name": "endEndDate",
+            "default": "\n"
+          },
+          {
+            "name": "condition",
+            "default": "\n{\\\"creditProductCode\\\":\\\"like\\\",\\\"financeBankName\\\":\\\"like\\\",\\\"startStartDate\\\":\\\"geq\\\",\\\"endStartDate\\\":\\\"leq\\\",\\\"startEndDate\\\":\\\"geq\\\",\\\"endEndDate\\\":\\\"leq\\\"}"
+          },
+          {
+            "name": "fieldMapping",
+            "default": "\n{\\\"startStartDate\\\":\\\"effectiveDate\\\",\\\"endStartDate\\\":\\\"effectiveDate\\\",\\\"startEndDate\\\":\\\"endDate\\\",\\\"endEndDate\\\":\\\"endDate\\\", \\\"triggerRequest1\\\":\\\"triggerRequest\\\", \\\"orgTag\\\":\\\"orgId\\\"}"
+          },
+          {
+            "name": "triggerRequest1",
+            "default": "\ntrue"
+          },
+          {
+            "name": "orgTag",
+            "default": "\n"
+          },
+          {
+            "name": "listBoolean",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankName",
+            "default": "\n"
+          },
+          {
+            "name": "isCirculate",
+            "default": "\n"
+          },
+          {
+            "name": "creditProductCode",
+            "default": "\n"
+          },
+          {
+            "name": "contractCode",
+            "default": "\n"
+          },
+          {
+            "name": "contain",
+            "default": "\n"
+          },
+          {
+            "name": "bizType",
+            "default": "\n"
+          },
+          {
+            "name": "creditType",
+            "default": "\n"
+          },
+          {
+            "name": "creditProtocolType",
+            "default": "\n"
+          },
+          {
+            "name": "dimensions",
+            "default": "\n[ { \\\"code\\\": \\\"id\\\" },  {  \\\"code\\\": \\\"productId\\\" }]A"
+          }
+        ]
+      },
+      {
+        "name": "sys_bank",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nselect * from sys_dict where code = 'bank' and is_deleted = 0",
+        "parameters": []
+      },
+      {
+        "name": "CreditContractStatisticDataForFinanceTypeCode",
+        "type": "ClassTableData",
+        "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData",
+        "parameters": [
+          {
+            "name": "convertCurrencyCode2",
+            "default": "\n"
+          },
+          {
+            "name": "indexInfo",
+            "default": "\n[     {       \\\"code\\\": \\\"amount\\\"     },     {       \\\"code\\\": \\\"debtBalance\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeAmount\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeCount\\\"     }   ]A"
+          },
+          {
+            "name": "dimensions",
+            "default": "\n[     {       \\\"code\\\": \\\"financeTypeCode\\\"   },{       \\\"code\\\": \\\"currencyCode\\\"   }   ]A"
+          },
+          {
+            "name": "fr_usercode",
+            "default": "\n"
+          },
+          {
+            "name": "widgetId",
+            "default": "\n77"
+          },
+          {
+            "name": "triggerRequest2",
+            "default": "\nfalse"
+          },
+          {
+            "name": "fieldMapping",
+            "default": "\n{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\", \\\"convertCurrencyCode2\\\":\\\"convertCurrencyCode\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}"
+          },
+          {
+            "name": "orgTag2",
+            "default": "\n"
+          },
+          {
+            "name": "contain2",
+            "default": "\n"
+          },
+          {
+            "name": "listBoolean",
+            "default": "\n"
+          },
+          {
+            "name": "condition",
+            "default": "\n{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}"
+          },
+          {
+            "name": "startStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "startEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "creditProtocolType2",
+            "default": "\n"
+          },
+          {
+            "name": "isCirculate2",
+            "default": "\n"
+          },
+          {
+            "name": "orgId2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankName2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankCode2",
+            "default": "\n"
+          },
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "bizType2",
+            "default": "\n"
+          },
+          {
+            "name": "financeTypeCode2",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "CreditContractUserOrgStatisticData",
+        "type": "ClassTableData",
+        "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractUserOrgStatisticData",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "convertCurrencyCode2",
+            "default": "\n"
+          },
+          {
+            "name": "dimensions",
+            "default": "\n[     {       \\\"code\\\": \\\"userOrgId\\\"    } ,{       \\\"code\\\": \\\"currencyCode\\\"   }  ]A"
+          },
+          {
+            "name": "fr_usercode",
+            "default": "\n"
+          },
+          {
+            "name": "widgetId",
+            "default": "\n76"
+          },
+          {
+            "name": "triggerRequest2",
+            "default": "\nfalse"
+          },
+          {
+            "name": "fieldMapping",
+            "default": "\n{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}"
+          },
+          {
+            "name": "contain2",
+            "default": "\n"
+          },
+          {
+            "name": "orgTag2",
+            "default": "\n"
+          },
+          {
+            "name": "listBoolean",
+            "default": "\n"
+          },
+          {
+            "name": "condition",
+            "default": "\n{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}"
+          },
+          {
+            "name": "startStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "startEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "creditProtocolType2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankCode2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankName2",
+            "default": "\n"
+          },
+          {
+            "name": "isCirculate2",
+            "default": "\n"
+          },
+          {
+            "name": "orgId2",
+            "default": "\n"
+          },
+          {
+            "name": "bizType2",
+            "default": "\n"
+          },
+          {
+            "name": "financeTypeCode2",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "CreditProductStatisticData",
+        "type": "ClassTableData",
+        "class_name": "com.yocyl.fr.engine.tableData.finance.CreditProductStatisticData",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "convertCurrencyCode2",
+            "default": "\n"
+          },
+          {
+            "name": "dimensions",
+            "default": "\n[     {       \\\"code\\\": \\\"creditProductCode\\\"   } ,{       \\\"code\\\": \\\"currencyCode\\\"   }   ]A"
+          },
+          {
+            "name": "fr_usercode",
+            "default": "\n"
+          },
+          {
+            "name": "widgetId",
+            "default": "\n78"
+          },
+          {
+            "name": "triggerRequest2",
+            "default": "\nfalse"
+          },
+          {
+            "name": "fieldMapping",
+            "default": "\n{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"creditProductCode2\\\":\\\"creditProductCode\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}"
+          },
+          {
+            "name": "orgTag2",
+            "default": "\n"
+          },
+          {
+            "name": "contain2",
+            "default": "\n"
+          },
+          {
+            "name": "listBoolean",
+            "default": "\n"
+          },
+          {
+            "name": "condition",
+            "default": "\n{\\\"creditProductCode2\\\":\\\"like\\\",\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}"
+          },
+          {
+            "name": "startStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "startEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "creditProtocolType2",
+            "default": "\n"
+          },
+          {
+            "name": "creditProductCode2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankName2",
+            "default": "\n"
+          },
+          {
+            "name": "isCirculate2",
+            "default": "\n"
+          },
+          {
+            "name": "orgId2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankCode2",
+            "default": "\n"
+          },
+          {
+            "name": "financeTypeCode2",
+            "default": "\n"
+          },
+          {
+            "name": "bizType2",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "orgTageCode",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nSELECT \n    t.tag_name, \n    GROUP_CONCAT(tr.relation_id ORDER BY tr.relation_id SEPARATOR ',') AS relation_ids\nFROM \n    sys_tag t\nJOIN \n    sys_tag_relation tr \n    ON t.tag_code = tr.tag_code \n    AND t.tenant_id = tr.tenant_id\nWHERE \n    t.is_deleted = 0 \n    AND tr.is_deleted = 0 AND t.tenant_id = '${fine_username9}'\nGROUP BY \n    t.id, t.tag_name\nORDER BY \n    t.sort;",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "CreditContractStatisticDataForOrg",
+        "type": "ClassTableData",
+        "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData",
+        "parameters": [
+          {
+            "name": "convertCurrencyCode2",
+            "default": "\n"
+          },
+          {
+            "name": "indexInfo",
+            "default": "\n[     {       \\\"code\\\": \\\"amount\\\"     },     {       \\\"code\\\": \\\"debtBalance\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeAmount\\\"     },     {       \\\"code\\\": \\\"equityGuaranteeCount\\\"     }   ]A"
+          },
+          {
+            "name": "dimensions",
+            "default": "\n[     {       \\\"code\\\": \\\"orgId\\\"    }  ,{       \\\"code\\\": \\\"currencyCode\\\"   } ]A"
+          },
+          {
+            "name": "fr_usercode",
+            "default": "\n"
+          },
+          {
+            "name": "widgetId",
+            "default": "\n77"
+          },
+          {
+            "name": "triggerRequest2",
+            "default": "\nfalse"
+          },
+          {
+            "name": "fieldMapping",
+            "default": "\n{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\",\\\"bizType2\\\":\\\"bizType\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\"}"
+          },
+          {
+            "name": "orgTag2",
+            "default": "\n"
+          },
+          {
+            "name": "contain2",
+            "default": "\n"
+          },
+          {
+            "name": "listBoolean",
+            "default": "\n"
+          },
+          {
+            "name": "condition",
+            "default": "\n{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}"
+          },
+          {
+            "name": "startStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "startEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "creditProductCode2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankName2",
+            "default": "\n"
+          },
+          {
+            "name": "isCirculate2",
+            "default": "\n"
+          },
+          {
+            "name": "orgId2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankCode2",
+            "default": "\n"
+          },
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "bizType2",
+            "default": "\n"
+          },
+          {
+            "name": "financeTypeCode2",
+            "default": "\n"
+          },
+          {
+            "name": "creditProtocolType2",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "CreditContractStatisticDataForInstution",
+        "type": "ClassTableData",
+        "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          },
+          {
+            "name": "convertCurrencyCode2",
+            "default": "\n"
+          },
+          {
+            "name": "dimensions",
+            "default": "\n[     {       \\\"code\\\": \\\"financeBankCode\\\"     },{       \\\"code\\\": \\\"currencyCode\\\"   }   ]A"
+          },
+          {
+            "name": "fr_usercode",
+            "default": "\n"
+          },
+          {
+            "name": "widgetId",
+            "default": "\n77"
+          },
+          {
+            "name": "triggerRequest2",
+            "default": "\nfalse"
+          },
+          {
+            "name": "fieldMapping",
+            "default": "\n{\\\"triggerRequest2\\\":\\\"triggerRequest\\\", \\\"orgTag2\\\":\\\"orgId\\\", \\\"contain2\\\":\\\"contain\\\", \\\"creditProtocolType2\\\":\\\"creditProtocolType\\\", \\\"orgId2\\\":\\\"orgId\\\", \\\"financeBankCode2\\\":\\\"financeBankCode\\\", \\\"financeBankName2\\\":\\\"financeBankName\\\", \\\"isCirculate2\\\":\\\"isCirculate\\\", \\\"startStartDate2\\\": \\\"effectiveDate\\\", \\\"endStartDate2\\\": \\\"effectiveDate\\\", \\\"startEndDate2\\\": \\\"endDate\\\", \\\"endEndDate2\\\": \\\"endDate\\\", \\\"convertCurrencyCode2\\\":\\\"convertCurrencyCode\\\",\\\"financeTypeCode2\\\":\\\"financeTypeCode\\\", \\\"instutionBizType\\\":\\\"bizType\\\"}"
+          },
+          {
+            "name": "orgTag2",
+            "default": "\n"
+          },
+          {
+            "name": "contain2",
+            "default": "\n"
+          },
+          {
+            "name": "listBoolean",
+            "default": "\n"
+          },
+          {
+            "name": "condition",
+            "default": "\n{\\\"financeBankName2\\\":\\\"like\\\",\\\"startStartDate2\\\":\\\"geq\\\",\\\"endStartDate2\\\":\\\"leq\\\",\\\"startEndDate2\\\":\\\"geq\\\",\\\"endEndDate2\\\":\\\"leq\\\"}"
+          },
+          {
+            "name": "startStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endStartDate2",
+            "default": "\n"
+          },
+          {
+            "name": "startEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "endEndDate2",
+            "default": "\n"
+          },
+          {
+            "name": "instutionBizType",
+            "default": "\n1"
+          },
+          {
+            "name": "creditProtocolType2",
+            "default": "\n"
+          },
+          {
+            "name": "isCirculate2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankName2",
+            "default": "\n"
+          },
+          {
+            "name": "orgId2",
+            "default": "\n"
+          },
+          {
+            "name": "financeBankCode2",
+            "default": "\n"
+          },
+          {
+            "name": "financeTypeCode2",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "融资品种",
+        "type": "DBTableData",
+        "database": "\ncfs-report",
+        "sql": "\nSELECT id, parent_id, dict_key, dict_value FROM sys_dict_biz WHERE is_deleted = 0 AND status = 1 AND code = 'finance_loan_product'\nAND  tenant_id = ${fine_username9}",
+        "parameters": [
+          {
+            "name": "fine_username9",
+            "default": "\n"
+          }
+        ]
+      },
+      {
+        "name": "Tree2-融资品种",
+        "type": "RecursionTableData"
+      }
+    ],
+    "styles": [
+      {
+        "index": 0,
+        "name": "Style_0",
+        "alignment": "left",
+        "background": "-1447425",
+        "has_border": true
+      },
+      {
+        "index": 1,
+        "name": "Style_1",
+        "alignment": "left",
+        "background": "-1447425",
+        "has_border": true
+      },
+      {
+        "index": 2,
+        "name": "Style_2",
+        "alignment": "left",
+        "has_border": true
+      },
+      {
+        "index": 3,
+        "name": "Style_3",
+        "alignment": "right",
+        "format": "\n#,##0.00",
+        "background": "-1",
+        "has_border": true
+      },
+      {
+        "index": 4,
+        "name": "默认",
+        "has_border": false
+      }
+    ]
+  }
+}
