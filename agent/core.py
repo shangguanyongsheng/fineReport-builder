@@ -237,7 +237,7 @@ class CPTModifier:
     def add_filter_component(self, label: str, code: str, ctrl_type: str,
                              x: int, y: int, options: Dict = None) -> bool:
         """
-        添加筛选组件（复制现有 XML 节点）
+        添加筛选组件
         
         Args:
             label: Label 文本
@@ -251,79 +251,44 @@ class CPTModifier:
         if layout is None:
             return False
         
-        # 找一个同类型的现有控件作为模板
-        template_label = None
-        template_input = None
-        template_type = ctrl_type
+        # 标准尺寸
+        LABEL_WIDTH = 70
+        INPUT_WIDTH = 135
+        HEIGHT = 28
         
-        for widget in layout:
-            inner = widget.find('InnerWidget')
-            if inner is None:
-                continue
-            
-            widget_class = inner.get('class', '')
-            
-            if 'Label' in widget_class and template_label is None:
-                template_label = widget
-            elif ctrl_type in widget_class and template_input is None:
-                template_input = widget
-            elif template_input is None and 'TextEditor' in widget_class:
-                # 找不到同类型，用 TextEditor 作为模板
-                template_input = widget
+        # ========== 生成 Label ==========
+        label_widget = ET.Element('Widget')
+        label_widget.set('class', 'com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget')
         
-        if template_label is None or template_input is None:
-            return False
+        label_inner = ET.SubElement(label_widget, 'InnerWidget')
+        label_inner.set('class', 'com.fr.form.ui.Label')
         
-        # 深拷贝 Label
-        new_label = copy.deepcopy(template_label)
-        new_label_inner = new_label.find('InnerWidget')
+        label_name = ET.SubElement(label_inner, 'WidgetName')
+        label_name.set('name', f'label_{code}')
         
-        # 修改 Label 名称
-        new_label_name = new_label_inner.find('WidgetName')
-        if new_label_name is not None:
-            new_label_name.set('name', f'label_{code}')
+        label_value = ET.SubElement(label_inner, 'widgetValue')
+        label_o = ET.SubElement(label_value, 'O')
+        label_o.text = label
         
-        # 修改 Label 文本
-        new_label_value = new_label_inner.find('widgetValue/O')
-        if new_label_value is not None:
-            new_label_value.text = label
+        label_bounds = ET.SubElement(label_widget, 'BoundsAttr')
+        label_bounds.set('x', str(x))
+        label_bounds.set('y', str(y))
+        label_bounds.set('width', str(LABEL_WIDTH))
+        label_bounds.set('height', str(HEIGHT))
         
-        # 修改 Label 位置
-        new_label_bounds = new_label.find('BoundsAttr')
-        if new_label_bounds is not None:
-            new_label_bounds.set('x', str(x))
-            new_label_bounds.set('y', str(y))
+        # ========== 生成输入控件 ==========
+        input_widget = ET.Element('Widget')
+        input_widget.set('class', 'com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget')
         
-        # 深拷贝输入控件
-        new_input = copy.deepcopy(template_input)
-        new_input_inner = new_input.find('InnerWidget')
+        input_inner = ET.SubElement(input_widget, 'InnerWidget')
+        input_inner.set('class', f'com.fr.form.ui.{ctrl_type}')
         
-        # 修改控件类型
-        new_input_inner.set('class', f'com.fr.form.ui.{ctrl_type}')
-        
-        # 修改控件名称
-        new_input_name = new_input_inner.find('WidgetName')
-        if new_input_name is not None:
-            new_input_name.set('name', code)
-        
-        # 计算输入控件位置（Label 后面）
-        label_width = int(new_label_bounds.get('width', '70')) if new_label_bounds is not None else 70
-        input_x = x + label_width + 10
-        
-        new_input_bounds = new_input.find('BoundsAttr')
-        if new_input_bounds is not None:
-            new_input_bounds.set('x', str(input_x))
-            new_input_bounds.set('y', str(y))
+        input_name = ET.SubElement(input_inner, 'WidgetName')
+        input_name.set('name', code)
         
         # 添加选项（ComboBox）
-        if options and ctrl_type == 'ComboBox':
-            # 移除现有选项
-            existing_dict = new_input_inner.find('Dictionary')
-            if existing_dict is not None:
-                new_input_inner.remove(existing_dict)
-            
-            # 添加新选项
-            dict_elem = ET.SubElement(new_input_inner, 'Dictionary')
+        if options and ctrl_type in ['ComboBox', 'ComboCheckBox']:
+            dict_elem = ET.SubElement(input_inner, 'Dictionary')
             dict_elem.set('class', 'com.fr.data.impl.CustomDictionary')
             dict_attr = ET.SubElement(dict_elem, 'CustomDictAttr')
             for key, value in options.items():
@@ -331,21 +296,25 @@ class CPTModifier:
                 dict_item.set('key', str(key))
                 dict_item.set('value', str(value))
         
+        input_bounds = ET.SubElement(input_widget, 'BoundsAttr')
+        input_bounds.set('x', str(x + LABEL_WIDTH + 10))
+        input_bounds.set('y', str(y))
+        input_bounds.set('width', str(INPUT_WIDTH))
+        input_bounds.set('height', str(HEIGHT))
+        
         # 添加到布局
-        layout.append(new_label)
-        layout.append(new_input)
+        layout.append(label_widget)
+        layout.append(input_widget)
         
         return True
     
     def recalculate_filter_positions(self):
-        """重新计算所有筛选组件的位置"""
+        """重新计算所有筛选组件的位置（使用标准布局）"""
         layout = self.root.find('.//ReportParameterAttr//Layout')
         if layout is None:
             return
         
-        pairs = self.get_filter_pairs()
-        
-        # 布局参数
+        # 标准布局参数
         START_X = 10
         START_Y = 10
         LABEL_WIDTH = 70
@@ -354,25 +323,32 @@ class CPTModifier:
         ROW_GAP = 40
         MAX_PER_ROW = 5
         
+        # 获取所有组件对
+        pairs = self.get_filter_pairs()
+        
+        # 按顺序重新分配位置
         for i, pair in enumerate(pairs):
             row = i // MAX_PER_ROW
             col = i % MAX_PER_ROW
             
-            label_x = START_X + col * (LABEL_WIDTH + INPUT_WIDTH + GAP * 2)
+            # 计算位置
+            pair_start_x = START_X + col * (LABEL_WIDTH + INPUT_WIDTH + GAP * 2)
             y = START_Y + row * ROW_GAP
-            input_x = label_x + LABEL_WIDTH + GAP
+            input_x = pair_start_x + LABEL_WIDTH + GAP
             
             # 更新 Label 位置
             label_bounds = pair['label_widget'].find('BoundsAttr')
             if label_bounds is not None:
-                label_bounds.set('x', str(label_x))
+                label_bounds.set('x', str(pair_start_x))
                 label_bounds.set('y', str(y))
+                label_bounds.set('width', str(LABEL_WIDTH))
             
             # 更新输入控件位置
             input_bounds = pair['input_widget'].find('BoundsAttr')
             if input_bounds is not None:
                 input_bounds.set('x', str(input_x))
                 input_bounds.set('y', str(y))
+                input_bounds.set('width', str(INPUT_WIDTH))
     
     # ==================== 数据列操作 ====================
     
@@ -423,7 +399,7 @@ class CPTModifier:
     
     def update_data_columns(self, columns: List[Dict], data_source: str = None) -> bool:
         """
-        更新数据列（支持增删）
+        更新数据列（replace 模式：完全重建）
         
         Args:
             columns: 列配置 [{name, field}]
@@ -433,99 +409,106 @@ class CPTModifier:
         if cell_list is None:
             return False
         
-        headers, data_cols = self.get_data_columns()
-        existing_count = len(headers)
-        target_count = len(columns)
+        # 获取现有单元格，按行分组
+        cells = list(cell_list)
+        rows = {}
+        for cell in cells:
+            r = int(cell.get('r', 0))
+            if r not in rows:
+                rows[r] = []
+            rows[r].append(cell)
         
-        # 情况1：列数相同，直接更新
-        if existing_count == target_count:
-            for i, col in enumerate(columns):
-                if i < len(headers):
-                    # 更新表头
-                    o = headers[i]['cell'].find('O')
-                    if o is not None:
-                        o.text = col.get('name', '')
-                
-                if i < len(data_cols):
-                    # 更新数据列
-                    o = data_cols[i]['cell'].find('O')
-                    if o is not None:
-                        attrs = o.find('Attributes')
-                        if attrs is not None:
-                            attrs.set('columnName', col.get('field', ''))
-                            if data_source:
-                                attrs.set('dsName', data_source)
+        # 确定表头行和数据行
+        sorted_rows = sorted(rows.keys())
+        header_row = sorted_rows[0] if sorted_rows else 0
+        data_row = sorted_rows[1] if len(sorted_rows) > 1 else 1
         
-        # 情况2：列数减少，删除多余
-        elif existing_count > target_count:
-            # 更新保留的列
-            for i, col in enumerate(columns):
-                if i < len(headers):
-                    o = headers[i]['cell'].find('O')
-                    if o is not None:
-                        o.text = col.get('name', '')
-                
-                if i < len(data_cols):
-                    o = data_cols[i]['cell'].find('O')
-                    if o is not None:
-                        attrs = o.find('Attributes')
-                        if attrs is not None:
-                            attrs.set('columnName', col.get('field', ''))
-                            if data_source:
-                                attrs.set('dsName', data_source)
+        # ========== 清理旧数据 ==========
+        # 删除表头行和数据行的所有单元格
+        cells_to_remove = []
+        for r in [header_row, data_row]:
+            if r in rows:
+                for cell in rows[r]:
+                    cells_to_remove.append(cell)
+        
+        # 同时删除其他数据相关行（如小计行等，通常是 row > data_row）
+        for r in sorted_rows:
+            if r > data_row:
+                for cell in rows[r]:
+                    cells_to_remove.append(cell)
+        
+        # 从 CellElementList 移除
+        for cell in cells_to_remove:
+            cell_list.remove(cell)
+        
+        # ========== 生成新数据列 ==========
+        # 找一个现有的单元格作为样式模板
+        template_cell = None
+        template_data_cell = None
+        
+        for cell in cells:
+            r = int(cell.get('r', 0))
+            if r < header_row:
+                template_cell = cell
+            elif r == data_row or r == header_row:
+                continue  # 跳过已删除的
+            else:
+                template_data_cell = cell
+        
+        # 如果没有模板，创建一个默认的
+        if template_cell is None:
+            template_cell = ET.Element('C')
+            template_cell.set('s', '0')
+            o = ET.SubElement(template_cell, 'O')
+            o.set('t', 'Text')
+        
+        # 获取数据源名称
+        ds_name = data_source or 'data'
+        
+        # 生成表头行
+        for i, col in enumerate(columns):
+            new_cell = copy.deepcopy(template_cell)
+            new_cell.set('c', str(i))
+            new_cell.set('r', str(header_row))
             
-            # 删除多余的列
-            for i in range(target_count, existing_count):
-                if i < len(headers):
-                    cell_list.remove(headers[i]['cell'])
-                if i < len(data_cols):
-                    cell_list.remove(data_cols[i]['cell'])
-        
-        # 情况3：列数增加，复制添加
-        elif existing_count < target_count:
-            # 更新现有列
-            for i in range(min(existing_count, target_count)):
-                if i < len(headers):
-                    o = headers[i]['cell'].find('O')
-                    if o is not None:
-                        o.text = columns[i].get('name', '')
-                
-                if i < len(data_cols):
-                    o = data_cols[i]['cell'].find('O')
-                    if o is not None:
-                        attrs = o.find('Attributes')
-                        if attrs is not None:
-                            attrs.set('columnName', columns[i].get('field', ''))
-                            if data_source:
-                                attrs.set('dsName', data_source)
+            # 设置样式（表头用样式1）
+            new_cell.set('s', '1')
             
-            # 复制添加新列
-            if headers and data_cols:
-                last_header = headers[-1]['cell']
-                last_data = data_cols[-1]['cell']
-                
-                for i in range(existing_count, target_count):
-                    col = columns[i]
-                    
-                    # 复制表头单元格
-                    new_header = copy.deepcopy(last_header)
-                    new_header.set('c', str(i))
-                    o = new_header.find('O')
-                    if o is not None:
-                        o.text = col.get('name', '')
-                    cell_list.append(new_header)
-                    
-                    # 复制数据单元格
-                    new_data = copy.deepcopy(last_data)
-                    new_data.set('c', str(i))
-                    o = new_data.find('O')
-                    if o is not None:
-                        attrs = o.find('Attributes')
-                        if attrs is not None:
-                            attrs.set('columnName', col.get('field', ''))
-                            if data_source:
-                                attrs.set('dsName', data_source)
-                    cell_list.append(new_data)
+            # 设置值
+            o = new_cell.find('O')
+            if o is None:
+                o = ET.SubElement(new_cell, 'O')
+            o.set('t', 'Text')
+            o.text = col.get('name', '')
+            
+            cell_list.append(new_cell)
+        
+        # 生成数据行
+        for i, col in enumerate(columns):
+            new_cell = copy.deepcopy(template_cell)
+            new_cell.set('c', str(i))
+            new_cell.set('r', str(data_row))
+            
+            # 判断是否金额字段
+            field_name = col.get('field', '')
+            is_amount = any(kw in field_name.lower() for kw in ['amount', 'money', '金额', 'price', '费用'])
+            new_cell.set('s', '3' if is_amount else '2')
+            
+            # 设置 DSColumn
+            o = new_cell.find('O')
+            if o is None:
+                o = ET.SubElement(new_cell, 'O')
+            o.set('t', 'DSColumn')
+            o.text = ''
+            
+            # 设置数据源属性
+            attrs = o.find('Attributes')
+            if attrs is None:
+                attrs = ET.SubElement(o, 'Attributes')
+            attrs.set('dsName', ds_name)
+            attrs.set('columnName', field_name)
+            
+            cell_list.append(new_cell)
         
         return True
     
@@ -729,43 +712,49 @@ class ReportBuilderAgent:
             existing_pairs = modifier.get_filter_pairs()
             self.react.think(f"现有筛选组件: {len(existing_pairs)}对, 需要: {len(filter_components)}对")
             
-            # ========== Action 2: 修改筛选组件 ==========
-            self.react.act("修改筛选组件", {"target": len(filter_components)})
+            # ========== Action 2: 修改筛选组件（replace 模式）============
+            self.react.act("修改筛选组件", {"operation": "replace", "target": len(filter_components)})
             
-            existing_codes = {p['code'] for p in existing_pairs}
-            target_codes = {c['code'] for c in filter_components}
-            
-            to_remove = existing_codes - target_codes
-            to_add = target_codes - existing_codes
-            
-            # 删除多余的
-            for code in to_remove:
-                modifier.remove_filter_component(code)
-                self.react.observe(f"删除组件: {code}")
-            
-            # 添加缺少的
-            for comp in filter_components:
-                if comp['code'] in to_add:
-                    # 计算位置
-                    existing = modifier.get_filter_pairs()
-                    new_index = len(existing)
-                    row = new_index // 5
-                    col = new_index % 5
-                    x = 10 + col * 220
-                    y = 10 + row * 40
+            # 获取布局节点
+            layout = modifier.root.find('.//ReportParameterAttr//Layout')
+            if layout is not None:
+                # 清空现有组件
+                for widget in list(layout):
+                    layout.remove(widget)
+                
+                # 重新生成筛选组件
+                START_X = 10
+                START_Y = 10
+                LABEL_WIDTH = 70
+                INPUT_WIDTH = 135
+                GAP = 10
+                ROW_GAP = 40
+                MAX_PER_ROW = 5
+                
+                for i, comp in enumerate(filter_components):
+                    row = i // MAX_PER_ROW
+                    col = i % MAX_PER_ROW
                     
-                    modifier.add_filter_component(
+                    pair_start_x = START_X + col * (LABEL_WIDTH + INPUT_WIDTH + GAP * 2)
+                    y = START_Y + row * ROW_GAP
+                    input_x = pair_start_x + LABEL_WIDTH + GAP
+                    
+                    # 生成 Label
+                    label_success = modifier.add_filter_component(
                         label=comp['label'],
                         code=comp['code'],
                         ctrl_type=comp.get('type', 'TextEditor'),
-                        x=x, y=y,
+                        x=pair_start_x,
+                        y=y,
                         options=comp.get('options')
                     )
-                    self.react.observe(f"添加组件: {comp['label']} ({comp['code']})")
-            
-            # 重新计算位置
-            modifier.recalculate_filter_positions()
-            self.react.observe("筛选组件位置已调整")
+                    
+                    if label_success:
+                        self.react.observe(f"生成组件: {comp['label']} ({comp['code']})")
+                    else:
+                        self.react.observe(f"生成失败: {comp['label']}", success=False)
+                
+                self.react.observe(f"筛选组件生成完成: {len(filter_components)} 对")
             
             # ========== Action 3: 更新数据源 ==========
             if data_source:
