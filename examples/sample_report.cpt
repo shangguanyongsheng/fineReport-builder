@@ -1,0 +1,281 @@
+<?xml version="1.0" ?>
+<WorkBook xmlVersion="20211223" releaseVersion="11.5.0">
+<TableDataMap>
+<TableData name="credit_data" class="com.fr.data.impl.class">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="orgId"/>
+<O/>
+</Parameter>
+<Parameter>
+<Attributes name="startDate"/>
+<O/>
+</Parameter>
+<Parameter>
+<Attributes name="endDate"/>
+<O/>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractDetailData"/>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<Title>授信合同报表</Title>
+<ServerPrinter/>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="Sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+<USE REPEAT="false" PAGE="false" WRITE="false"/>
+</ReportPageAttr>
+<RowHeight defaultValue="723900"/>
+<ColumnWidth defaultValue="2743200"/>
+<CellElementList>
+<C c="0" r="0">
+<O>合同编号</O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="0" s="1">
+<O>合同名称</O>
+<PrivilegeControl/>
+</C>
+<C c="2" r="0" s="1">
+<O>金额</O>
+<PrivilegeControl/>
+</C>
+<C c="3" r="0" s="1">
+<O>组织</O>
+<PrivilegeControl/>
+</C>
+<C c="0" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="credit_data" columnName="contractNo"/>
+</O>
+<Expand/>
+<PrivilegeControl/>
+</C>
+<C c="1" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="credit_data" columnName="contractName"/>
+</O>
+<Expand/>
+<PrivilegeControl/>
+</C>
+<C c="2" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="credit_data" columnName="amount"/>
+</O>
+<Expand/>
+<PrivilegeControl/>
+</C>
+<C c="3" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="credit_data" columnName="orgName"/>
+</O>
+<Expand/>
+<PrivilegeControl/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0"/>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0" useParamsTemplate="true" currentIndex="0"/>
+<PWTitle>参数</PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label_0"/>
+<widgetValue>
+<O>开始日期</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="10" y="10" width="70" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="startDate"/>
+</InnerWidget>
+<BoundsAttr x="90" y="10" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label_2"/>
+<widgetValue>
+<O>结束日期</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="245" y="10" width="70" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<WidgetName name="endDate"/>
+</InnerWidget>
+<BoundsAttr x="325" y="10" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label_4"/>
+<widgetValue>
+<O>组织机构</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="480" y="10" width="70" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<WidgetName name="orgId"/>
+</InnerWidget>
+<BoundsAttr x="560" y="10" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label_6"/>
+<widgetValue>
+<O>合同编号</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="715" y="10" width="70" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="contractNo"/>
+</InnerWidget>
+<BoundsAttr x="795" y="10" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label_8"/>
+<widgetValue>
+<O>区域</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="950" y="10" width="70" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="region"/>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="east" value="华东"/>
+<Dict key="south" value="华南"/>
+<Dict key="north" value="华北"/>
+</CustomDictAttr>
+</Dictionary>
+</InnerWidget>
+<BoundsAttr x="1030" y="10" width="135" height="28"/>
+</Widget>
+</Layout>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style style_name="表头左列" horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1447425"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<FineColor color="-2432266"/>
+</Top>
+<Bottom style="1">
+<FineColor color="-2432266"/>
+</Bottom>
+<Left style="1">
+<FineColor color="-2432266"/>
+</Left>
+<Right style="1">
+<FineColor color="-2432266"/>
+</Right>
+</Border>
+</Style>
+<Style style_name="表头" horizontal_alignment="2" imageLayout="1">
+<FRFont name="宋体" style="0" size="80"/>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1447425"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<FineColor color="-2432266"/>
+</Top>
+<Bottom style="1">
+<FineColor color="-2432266"/>
+</Bottom>
+<Left style="1">
+<FineColor color="-2432266"/>
+</Left>
+<Right style="1">
+<FineColor color="-2432266"/>
+</Right>
+</Border>
+</Style>
+<Style style_name="数据" horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1">
+<FineColor color="-2432266"/>
+</Top>
+<Bottom style="1">
+<FineColor color="-2432266"/>
+</Bottom>
+<Left style="1">
+<FineColor color="-2432266"/>
+</Left>
+<Right style="1">
+<FineColor color="-2432266"/>
+</Right>
+</Border>
+</Style>
+<Style style_name="金额" horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat" roundingMode="6">#,##0.00</Format>
+<FRFont name="SimSun" style="0" size="80">
+<foreground>
+<FineColor color="-8163329"/>
+</foreground>
+</FRFont>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<FineColor color="-2432266"/>
+</Top>
+<Bottom style="1">
+<FineColor color="-2432266"/>
+</Bottom>
+<Left style="1">
+<FineColor color="-2432266"/>
+</Left>
+<Right style="1">
+<FineColor color="-2432266"/>
+</Right>
+</Border>
+</Style>
+<Style style_name="默认" full="true" border_source="-1" horizontal_alignment="0" imageLayout="1">
+<FRFont name="simhei" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesensitizationList/>
+<DesignerVersion DesignerVersion="LAA"/>
+<PreviewType PreviewType="2"/>
+<ForkIdAttrMark class="com.fr.base.iofile.attr.ForkIdAttrMark">
+<ForkIdAttrMark forkId="3b77f8bd-dffc-43fb-ac73-c676ab450ecd"/>
+</ForkIdAttrMark>
+</WorkBook>

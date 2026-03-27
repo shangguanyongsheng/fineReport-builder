@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报表生成器 V3 - FineReport Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); }
+        .navbar-brand, .nav-link { color: white !important; }
+        
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .step-header {
+            background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .step-header.collapsed { background: #fafafa; }
+        .step-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1890ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+        .step-done .step-number { background: #52c41a; }
+        
+        .step-content { padding: 24px; display: block; }
+        .step-content.hidden { display: none; }
+        
+        .upload-zone {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover { border-color: #1890ff; background: #e6f7ff; }
+        .upload-zone.dragover { border-color: #52c41a; background: #f6ffed; }
+        
+        .json-editor {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            padding: 16px;
+            background: #fafafa;
+            min-height: 200px;
+            width: 100%;
+            resize: vertical;
+        }
+        .json-editor:focus { outline: none; border-color: #1890ff; background: white; }
+        
+        .mode-toggle {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 6px;
+            padding: 2px;
+            margin-bottom: 16px;
+        }
+        .mode-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .mode-btn.active { background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        
+        .style-template {
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 100%;
+        }
+        .style-template:hover { border-color: #1890ff; }
+        .style-template.selected { border-color: #52c41a; background: #f6ffed; }
+        .style-preview { font-size: 12px; margin-top: 8px; }
+        .style-preview th, .style-preview td {
+            border: 1px solid #e8e8e8;
+            padding: 4px 8px;
+            text-align: center;
+        }
+        
+        .datasource-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .datasource-header {
+            background: #fafafa;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .datasource-body { padding: 16px; }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+            border: none;
+            color: white;
+        }
+        .btn-primary-custom:hover { background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%); }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            border: none;
+            color: white;
+            padding: 16px 48px;
+            font-size: 18px;
+            border-radius: 8px;
+        }
+        .btn-generate:hover { background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%); }
+        
+        .result-card {
+            background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+        
+        .error-msg {
+            color: #ff4d4f;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        .success-msg {
+            color: #52c41a;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="bi bi-file-earmark-spreadsheet me-2"></i>FineReport Builder V3</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">首页</a>
+                <a class="nav-link" href="/excel-convert-v2">V2 版本</a>
+                <a class="nav-link active" href="#">V3 版本</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-4"><i class="bi bi-gear-fill me-2"></i>报表配置</h4>
+            </div>
+        </div>
+
+        <!-- Step 1: Excel 上传 -->
+        <div class="step-card" id="step1Card">
+            <div class="step-header" onclick="toggleStep(1)">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    上传 Excel 模板（可选）
+                </div>
+                <i class="bi bi-chevron-down" id="step1Icon"></i>
+            </div>
+            <div class="step-content" id="step1Content">
+                <div class="upload-zone" id="uploadZone">
+                    <i class="bi bi-cloud-upload" style="font-size: 48px; color: #bfbfbf;"></i>
+                    <p class="mt-3 mb-1">拖拽 Excel 文件到此处，或点击上传</p>
+                    <p class="help-text">支持 .xlsx, .xls 格式，用于自动识别列结构</p>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
+                </div>
+                <div id="excelPreview" class="mt-3" style="display: none;">
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        文件已上传: <span id="excelFileName"></span>
+                        <button class="btn btn-sm btn-outline-success float-end" onclick="clearExcel()">清除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: 数据源配置 -->
+        <div class="step-card">
+            <div class="step-header" onclick="toggleStep(2)">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    数据源配置
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="step-content">
+                <!-- 模式切换 -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setDsMode('form')">表单模式</button>
+                    <button class="mode-btn" onclick="setDsMode('json')">JSON 模式</button>
+                </div>
+                
+                <!-- 表单模式 -->
+                <div id="dsFormMode">
+                    <div id="datasourceList">
+                        <!-- 数据源卡片会动态添加 -->
+                    </div>
+                    <button class="btn btn-outline-primary" onclick="addDatasource()">
+                        <i class="bi bi-plus-lg me-1"></i>添加数据源
+                    </button>
+                </div>
+                
+                <!-- JSON 模式 -->
+                <div id="dsJsonMode" style="display: none;">
+                    <textarea class="json-editor" id="datasourceJson" rows="12" placeholder='[
+  {
+    "name": "main_data",
+    "type": "database",
+    "database": "cfs-report",
+    "sql": "SELECT * FROM table WHERE id = ${id}"
+  },
+  {
+    "name": "credit_data",
+    "type": "class",
+    "class_name": "com.xxx.DataClass",
+    "return_fields": [{"name": "field1"}],
+    "parameter_template": {"param1": ""}
+  }
+]'></textarea>
+                    <p class="help-text">支持多个数据源，数据库类型和 Class 类型可混合配置</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: 列映射 -->
+        <div class="step-card">
+            <div class="step-header" onclick="toggleStep(3)">
+                <div class="step-title">
+                    <span class="step-number">3</span>
+                    列映射配置
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="step-content">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setMappingMode('form')">表单模式</button>
+                    <button class="mode-btn" onclick="setMappingMode('json')">JSON 模式</button>
+                </div>
+                
+                <div id="mappingFormMode">
+                    <p class="help-text mb-3">将 Excel 列映射到数据源字段（A=第1列, B=第2列...）</p>
+                    <div id="mappingList">
+                        <div class="row g-2 mb-2">
+                            <div class="col-auto">
+                                <span class="badge bg-primary" style="min-width: 40px;">A</span>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control form-control-sm" id="map_A" placeholder="字段名，如：contractNo">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-auto">
+                                <span class="badge bg-primary" style="min-width: 40px;">B</span>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control form-control-sm" id="map_B" placeholder="字段名">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-auto">
+                                <span class="badge bg-primary" style="min-width: 40px;">C</span>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control form-control-sm" id="map_C" placeholder="字段名（金额字段推荐右对齐）">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-auto">
+                                <span class="badge bg-primary" style="min-width: 40px;">D</span>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control form-control-sm" id="map_D" placeholder="字段名">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="mappingJsonMode" style="display: none;">
+                    <textarea class="json-editor" id="mappingJson" rows="6" placeholder='{
+  "A": "contractNo",
+  "B": "contractName",
+  "C": "amount",
+  "D": "orgName"
+}'></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: 筛选组件 -->
+        <div class="step-card">
+            <div class="step-header" onclick="toggleStep(4)">
+                <div class="step-title">
+                    <span class="step-number">4</span>
+                    筛选组件配置
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="step-content">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setFilterMode('form')">表单模式</button>
+                    <button class="mode-btn" onclick="setFilterMode('json')">JSON 模式</button>
+                </div>
+                
+                <div id="filterFormMode">
+                    <p class="help-text mb-3">配置查询参数面板（Label + 输入控件自动配对，一行 5 对）</p>
+                    <div id="filterList">
+                        <!-- 组件会动态添加 -->
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" onclick="addFilter()">
+                        <i class="bi bi-plus-lg me-1"></i>添加组件
+                    </button>
+                </div>
+                
+                <div id="filterJsonMode" style="display: none;">
+                    <textarea class="json-editor" id="filterJson" rows="10" placeholder='[
+  {"label": "开始日期", "code": "startDate", "type": "DateEditor"},
+  {"label": "结束日期", "code": "endDate", "type": "DateEditor"},
+  {"label": "组织机构", "code": "orgId", "type": "TreeComboBoxEditor"},
+  {"label": "区域", "code": "region", "type": "ComboBox", "options": {"east": "华东", "south": "华南"}}
+]'></textarea>
+                    <p class="help-text">支持的控件类型: TextEditor, DateEditor, ComboBox, TreeComboBoxEditor, NumberEditor</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: 样式选择 -->
+        <div class="step-card">
+            <div class="step-header" onclick="toggleStep(5)">
+                <div class="step-title">
+                    <span class="step-number">5</span>
+                    样式配置
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="step-content">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setStyleMode('template')">模板选择</button>
+                    <button class="mode-btn" onclick="setStyleMode('json')">自定义 JSON</button>
+                </div>
+                
+                <div id="styleTemplateMode">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="style-template selected" onclick="selectStyle(0)" data-style="classic">
+                                <h6><i class="bi bi-check-circle-fill text-success me-1"></i>经典蓝（推荐）</h6>
+                                <p class="text-muted small mb-2">蓝色表头 + 边框，标准报表风格</p>
+                                <table class="style-preview">
+                                    <tr><th style="background:#e6f7ff;">表头</th><th style="background:#e6f7ff;">表头</th></tr>
+                                    <tr><td>数据</td><td style="text-align:right;">1,000.00</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="style-template" onclick="selectStyle(1)" data-style="simple">
+                                <h6>简约灰</h6>
+                                <p class="text-muted small mb-2">灰色表头 + 无边框，简洁风格</p>
+                                <table class="style-preview">
+                                    <tr><th style="background:#f5f5f5;">表头</th><th style="background:#f5f5f5;">表头</th></tr>
+                                    <tr><td>数据</td><td>1,000.00</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="style-template" onclick="selectStyle(2)" data-style="finance">
+                                <h6>财务报表</h6>
+                                <p class="text-muted small mb-2">强调金额列，适合财务数据</p>
+                                <table class="style-preview">
+                                    <tr><th style="background:#1890ff;color:white;">表头</th><th style="background:#e6f7ff;">金额</th></tr>
+                                    <tr><td>数据</td><td style="color:#1890ff;text-align:right;">1,000.00</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selectedStyleIndex" value="0">
+                </div>
+                
+                <div id="styleJsonMode" style="display: none;">
+                    <textarea class="json-editor" id="styleJson" rows="12" placeholder='[
+  {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
+  {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
+  {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80"}, "border": true, "format": "#,##0.00"}
+]'></textarea>
+                    <p class="help-text">对齐: 0=居中, 2=左对齐, 4=右对齐 | 颜色值如 -1447425 (蓝色背景)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: 报表信息 + 生成 -->
+        <div class="step-card">
+            <div class="step-header" onclick="toggleStep(6)">
+                <div class="step-title">
+                    <span class="step-number">6</span>
+                    报表信息
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="step-content">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">报表标题</label>
+                        <input type="text" class="form-control" id="reportTitle" value="新建报表">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sheet 名称</label>
+                        <input type="text" class="form-control" id="sheetName" value="Sheet1">
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <button class="btn btn-generate" onclick="generateReport()">
+                        <i class="bi bi-lightning-charge-fill me-2"></i>生成报表
+                    </button>
+                </div>
+                
+                <div id="resultArea" class="mt-4" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 样式模板 ==========
+        const STYLE_TEMPLATES = [
+            // 0: 经典蓝
+            [
+                {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-1447425", "border": true},
+                {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
+                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
+                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"},
+                {"name": "默认", "horizontal_alignment": "0", "font": {"name": "simhei", "size": "72"}}
+            ],
+            // 1: 简约灰
+            [
+                {"name": "表头", "horizontal_alignment": "0", "font": {"name": "宋体", "size": "80"}, "background": "-4144960"},
+                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}},
+                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80"}, "format": "#,##0.00"}
+            ],
+            // 2: 财务报表
+            [
+                {"name": "标题", "horizontal_alignment": "0", "font": {"name": "黑体", "size": "120", "color": "-1"}, "background": "-1447425", "border": true},
+                {"name": "表头", "horizontal_alignment": "0", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
+                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
+                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"},
+                {"name": "合计", "horizontal_alignment": "4", "font": {"name": "宋体", "size": "80", "color": "-65536"}, "background": "-256", "border": true, "format": "#,##0.00"}
+            ]
+        ];
+
+        // ========== 状态变量 ==========
+        let excelFile = null;
+        let datasourceCount = 0;
+        let filterCount = 0;
+        
+        // ========== 初始化 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // 上传区域
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('excelFile');
+            
+            uploadZone.addEventListener('click', () => fileInput.click());
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    handleExcelUpload(e.dataTransfer.files[0]);
+                }
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleExcelUpload(e.target.files[0]);
+                }
+            });
+            
+            // 初始化数据源和筛选组件
+            addDatasource();
+            addFilter();
+            addFilter();
+        });
+        
+        // ========== Excel 上传 ==========
+        function handleExcelUpload(file) {
+            excelFile = file;
+            document.getElementById('excelFileName').textContent = file.name;
+            document.getElementById('uploadZone').style.display = 'none';
+            document.getElementById('excelPreview').style.display = 'block';
+        }
+        
+        function clearExcel() {
+            excelFile = null;
+            document.getElementById('excelFile').value = '';
+            document.getElementById('uploadZone').style.display = 'block';
+            document.getElementById('excelPreview').style.display = 'none';
+        }
+        
+        // ========== 步骤折叠 ==========
+        function toggleStep(stepNum) {
+            const content = document.getElementById('step' + stepNum + 'Content');
+            const icon = document.querySelector('#step' + stepNum + 'Card .step-header i');
+            if (content) {
+                content.classList.toggle('hidden');
+                icon.classList.toggle('bi-chevron-down');
+                icon.classList.toggle('bi-chevron-up');
+            }
+        }
+        
+        // ========== 数据源管理 ==========
+        function addDatasource() {
+            datasourceCount++;
+            const id = 'ds_' + datasourceCount;
+            const html = `
+                <div class="datasource-card" id="${id}">
+                    <div class="datasource-header">
+                        <span><i class="bi bi-database me-2"></i>数据源 ${datasourceCount}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeDatasource('${id}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <div class="datasource-body">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <label class="form-label small">名称</label>
+                                <input type="text" class="form-control form-control-sm ds-name" value="data_${datasourceCount}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">类型</label>
+                                <select class="form-select form-select-sm ds-type" onchange="toggleDsFields('${id}')">
+                                    <option value="database">数据库</option>
+                                    <option value="class">Class</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ds-database-fields">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label small">数据库连接</label>
+                                    <input type="text" class="form-control form-control-sm ds-database" placeholder="如: cfs-report">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label small">SQL</label>
+                                    <textarea class="form-control form-control-sm ds-sql" rows="2" placeholder="SELECT * FROM table WHERE id = ${id}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ds-class-fields" style="display: none;">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-12">
+                                    <label class="form-label small">Class 名称</label>
+                                    <input type="text" class="form-control form-control-sm ds-class-name" placeholder="com.xxx.DataClass">
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small">返回字段 (JSON)</label>
+                                    <textarea class="form-control form-control-sm ds-return-fields" rows="2" placeholder='[{"name": "field1"}]'></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">入参模板 (JSON)</label>
+                                    <textarea class="form-control form-control-sm ds-params" rows="2" placeholder='{"param1": ""}'></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('datasourceList').insertAdjacentHTML('beforeend', html);
+        }
+        
+        function removeDatasource(id) {
+            document.getElementById(id)?.remove();
+        }
+        
+        function toggleDsFields(id) {
+            const card = document.getElementById(id);
+            const type = card.querySelector('.ds-type').value;
+            card.querySelector('.ds-database-fields').style.display = type === 'database' ? 'block' : 'none';
+            card.querySelector('.ds-class-fields').style.display = type === 'class' ? 'block' : 'none';
+        }
+        
+        // ========== 筛选组件管理 ==========
+        function addFilter() {
+            filterCount++;
+            const html = `
+                <div class="row g-2 mb-2" id="filter_${filterCount}">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm filter-label" placeholder="Label 文本">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm filter-code" placeholder="参数名">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm filter-type">
+                            <option value="TextEditor">文本框</option>
+                            <option value="DateEditor">日期</option>
+                            <option value="ComboBox">下拉框</option>
+                            <option value="TreeComboBoxEditor">树形下拉</option>
+                            <option value="NumberEditor">数字</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control form-control-sm filter-options" placeholder="选项(JSON,可选)">
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFilter('filter_${filterCount}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('filterList').insertAdjacentHTML('beforeend', html);
+        }
+        
+        function removeFilter(id) {
+            document.getElementById(id)?.remove();
+        }
+        
+        // ========== 模式切换 ==========
+        function setDsMode(mode) {
+            document.querySelectorAll('#step2Card .mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('dsFormMode').style.display = mode === 'form' ? 'block' : 'none';
+            document.getElementById('dsJsonMode').style.display = mode === 'json' ? 'block' : 'none';
+        }
+        
+        function setMappingMode(mode) {
+            document.querySelectorAll('#step3Card .mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('mappingFormMode').style.display = mode === 'form' ? 'block' : 'none';
+            document.getElementById('mappingJsonMode').style.display = mode === 'json' ? 'block' : 'none';
+        }
+        
+        function setFilterMode(mode) {
+            document.querySelectorAll('#step4Card .mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('filterFormMode').style.display = mode === 'form' ? 'block' : 'none';
+            document.getElementById('filterJsonMode').style.display = mode === 'json' ? 'block' : 'none';
+        }
+        
+        function setStyleMode(mode) {
+            document.querySelectorAll('#step5Card .mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('styleTemplateMode').style.display = mode === 'template' ? 'block' : 'none';
+            document.getElementById('styleJsonMode').style.display = mode === 'json' ? 'block' : 'none';
+        }
+        
+        // ========== 样式选择 ==========
+        function selectStyle(index) {
+            document.querySelectorAll('.style-template').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.style-template')[index].classList.add('selected');
+            document.getElementById('selectedStyleIndex').value = index;
+        }
+        
+        // ========== 收集配置 ==========
+        function collectConfig() {
+            const config = {
+                datasources: [],
+                column_mapping: {},
+                filter_components: [],
+                styles: [],
+                report: {
+                    title: document.getElementById('reportTitle').value || '新建报表',
+                    sheet_name: document.getElementById('sheetName').value || 'Sheet1'
+                }
+            };
+            
+            // 数据源
+            const dsMode = document.querySelector('#step2Card .mode-btn.active')?.textContent.includes('JSON') ? 'json' : 'form';
+            if (dsMode === 'json') {
+                try {
+                    config.datasources = JSON.parse(document.getElementById('datasourceJson').value || '[]');
+                } catch (e) {
+                    throw new Error('数据源 JSON 格式错误: ' + e.message);
+                }
+            } else {
+                document.querySelectorAll('.datasource-card').forEach(card => {
+                    const type = card.querySelector('.ds-type').value;
+                    const ds = {
+                        name: card.querySelector('.ds-name').value,
+                        type: type
+                    };
+                    if (type === 'database') {
+                        ds.database = card.querySelector('.ds-database').value;
+                        ds.sql = card.querySelector('.ds-sql').value;
+                    } else {
+                        ds.class_name = card.querySelector('.ds-class-name').value;
+                        try {
+                            ds.return_fields = JSON.parse(card.querySelector('.ds-return-fields').value || '[]');
+                            ds.parameter_template = JSON.parse(card.querySelector('.ds-params').value || '{}');
+                        } catch (e) {
+                            console.error('Class 数据源 JSON 解析错误:', e);
+                        }
+                    }
+                    config.datasources.push(ds);
+                });
+            }
+            
+            // 列映射
+            const mapMode = document.querySelector('#step3Card .mode-btn.active')?.textContent.includes('JSON') ? 'json' : 'form';
+            if (mapMode === 'json') {
+                try {
+                    config.column_mapping = JSON.parse(document.getElementById('mappingJson').value || '{}');
+                } catch (e) {
+                    throw new Error('列映射 JSON 格式错误: ' + e.message);
+                }
+            } else {
+                ['A', 'B', 'C', 'D', 'E', 'F'].forEach(col => {
+                    const val = document.getElementById('map_' + col)?.value;
+                    if (val) config.column_mapping[col] = val;
+                });
+            }
+            
+            // 筛选组件
+            const filterMode = document.querySelector('#step4Card .mode-btn.active')?.textContent.includes('JSON') ? 'json' : 'form';
+            if (filterMode === 'json') {
+                try {
+                    config.filter_components = JSON.parse(document.getElementById('filterJson').value || '[]');
+                } catch (e) {
+                    throw new Error('筛选组件 JSON 格式错误: ' + e.message);
+                }
+            } else {
+                document.querySelectorAll('#filterList > div').forEach(row => {
+                    const label = row.querySelector('.filter-label')?.value;
+                    const code = row.querySelector('.filter-code')?.value;
+                    const type = row.querySelector('.filter-type')?.value;
+                    const optionsStr = row.querySelector('.filter-options')?.value;
+                    
+                    if (label && code) {
+                        const comp = { label, code, type: type || 'TextEditor' };
+                        if (optionsStr) {
+                            try {
+                                comp.options = JSON.parse(optionsStr);
+                            } catch (e) {}
+                        }
+                        config.filter_components.push(comp);
+                    }
+                });
+            }
+            
+            // 样式
+            const styleMode = document.querySelector('#step5Card .mode-btn.active')?.textContent.includes('JSON') ? 'json' : 'template';
+            if (styleMode === 'json') {
+                try {
+                    config.styles = JSON.parse(document.getElementById('styleJson').value || '[]');
+                } catch (e) {
+                    throw new Error('样式 JSON 格式错误: ' + e.message);
+                }
+            } else {
+                const styleIndex = parseInt(document.getElementById('selectedStyleIndex').value) || 0;
+                config.styles = STYLE_TEMPLATES[styleIndex];
+            }
+            
+            return config;
+        }
+        
+        // ========== 生成报表 ==========
+        async function generateReport() {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.style.display = 'block';
+            resultArea.innerHTML = '<div class="text-center"><div class="spinner-border text-primary"></div><p class="mt-2">正在生成报表...</p></div>';
+            
+            try {
+                const config = collectConfig();
+                console.log('生成配置:', config);
+                
+                // 使用第一个数据源
+                const primaryDs = config.datasources[0] || {};
+                
+                const response = await fetch('/api/v2/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        datasource: primaryDs,
+                        column_mapping: config.column_mapping,
+                        filter_components: config.filter_components,
+                        styles: config.styles,
+                        report: config.report
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultArea.innerHTML = `
+                        <div class="result-card">
+                            <i class="bi bi-check-circle-fill" style="font-size: 48px; color: #52c41a;"></i>
+                            <h4 class="mt-3">报表生成成功！</h4>
+                            <p class="text-muted">${result.output_file}</p>
+                            <a href="${result.download_url}" class="btn btn-primary-custom mt-2" download>
+                                <i class="bi bi-download me-2"></i>下载报表
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(result.error || '生成失败');
+                }
+            } catch (error) {
+                resultArea.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

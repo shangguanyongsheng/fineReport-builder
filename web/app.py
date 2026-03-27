@@ -60,6 +60,12 @@ def excel_convert_v2_page():
     return render_template('excel_convert_v2.html')
 
 
+@app.route('/excel-convert-v3')
+def excel_convert_v3_page():
+    """Excel 转换页面 V3 - 支持 JSON 输入"""
+    return render_template('excel_convert_v3.html')
+
+
 @app.route('/class-test')
 def class_test_page():
     """ClassTableData 测试页面"""
@@ -427,20 +433,25 @@ def generate_report_v2():
         styles = data.get('styles', [])
         logger.info(f"样式配置: {len(styles)} 个")
         
+        # 规范化样式配置 - 确保所有值都是字符串
+        styles = normalize_styles(styles)
+        
         # 如果没有样式配置，使用默认样式
         if not styles:
             styles = [
                 {
                     "name": "表头样式",
-                    "font": {"name": "宋体", "size": 12, "bold": True},
-                    "background": "#E6F7FF",
-                    "border": "all"
+                    "horizontal_alignment": "2",
+                    "font": {"name": "宋体", "style": "0", "size": "80"},
+                    "background": "-1447425",
+                    "border": True
                 }
             ]
             logger.info("使用默认样式")
         
         cpt_config['styles'] = styles
         
+        # 单元格配置（从列映射生成表头）
         row = 0
         for col_letter, field_name in column_mapping.items():
             col_num = ord(col_letter.upper()) - ord('A')
@@ -448,10 +459,29 @@ def generate_report_v2():
                 'column': col_num,
                 'row': row,
                 'value': field_name,
-                'style_index': 0  # 默认使用第一个样式
+                'style_index': 1  # 表头样式
             }
             cpt_config['cells'].append(cell)
             logger.debug(f"单元格: {col_letter}({col_num}) -> {field_name}")
+        
+        # 添加数据行模板
+        row = 1
+        ds_name = cpt_config['data_sources'][0]['name'] if cpt_config['data_sources'] else 'data'
+        for col_letter, field_name in column_mapping.items():
+            col_num = ord(col_letter.upper()) - ord('A')
+            # 判断是否为金额字段
+            is_amount = any(kw in field_name.lower() for kw in ['amount', 'money', '金额', 'price', '费用'])
+            cell = {
+                'column': col_num,
+                'row': row,
+                'value_type': 'DSColumn',
+                'data_source': ds_name,
+                'column_name': field_name,
+                'expand_dir': 0,
+                'style_index': 3 if is_amount else 2  # 金额用样式3，其他用样式2
+            }
+            cpt_config['cells'].append(cell)
+        
         logger.info(f"单元格配置完成，共 {len(cpt_config['cells'])} 个")
         
         # 生成 CPT 文件
@@ -489,6 +519,51 @@ def extract_params_from_sql(sql):
     import re
     params = re.findall(r'\$\{(\w+)\}', sql)
     return [{'name': p, 'default': ''} for p in params]
+
+
+def normalize_styles(styles):
+    """规范化样式配置，确保所有值都是字符串类型
+    
+    解决 ElementTree 无法序列化整数的问题：
+    "cannot serialize 14 (type int)"
+    """
+    if not styles:
+        return styles
+    
+    normalized = []
+    for style in styles:
+        norm_style = {}
+        
+        # 基本属性
+        for key in ['name', 'horizontal_alignment', 'format']:
+            if key in style:
+                norm_style[key] = str(style[key])
+        
+        # 布尔属性
+        if 'border' in style:
+            norm_style['border'] = bool(style['border'])
+        if 'is_default' in style:
+            norm_style['is_default'] = bool(style['is_default'])
+        
+        # 背景
+        if 'background' in style:
+            if style['background'] is not None:
+                norm_style['background'] = str(style['background'])
+            else:
+                norm_style['background'] = None
+        
+        # 字体配置
+        if 'font' in style:
+            font = style['font']
+            norm_font = {}
+            for fk in ['name', 'style', 'size', 'color']:
+                if fk in font:
+                    norm_font[fk] = str(font[fk])
+            norm_style['font'] = norm_font
+        
+        normalized.append(norm_style)
+    
+    return normalized
 
 
 # ============ 启动入口 ============
