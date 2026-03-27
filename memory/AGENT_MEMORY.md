@@ -12,20 +12,32 @@
 **文件**: `templates/FinanceCreditContractAnalysis.cpt`
 
 #### 筛选区域
-- 位置: `ReportParameterAttr > ParameterUI > Layout`
-- 布局: 每行 5 对组件（Label + 输入控件）
-- 控件间距: 待解析
-- 现有组件: 10 对 (Label + 输入)
+- **位置**: `ReportParameterAttr > ParameterUI > Layout`
+- **筛选组件**: 10 对 (Label + 输入控件)
+- **布局**: 每行 4 对
+- **行间距**: 36px
+
+**筛选组件列表**:
+| Label | Code | Type |
+|-------|------|------|
+| 授信类型 | bizType2 | ComboBox |
+| 批文/授信 | fine_username9 | TextEditor |
+| 额度循环 | financeBankName2 | TextEditor |
+| 银行授信机构 | creditProductCode2 | TreeComboBoxEditor |
+| 融资品种 | orgId2 | TreeComboBoxEditor |
+| 组织标签 | orgTag2 | ComboBox |
+| 结束日期结束 | startEndDate2 | DateEditor |
+| 结束日期开始 | endStartDate2 | DateEditor |
+| 开始日期结束 | startStartDate2 | DateEditor |
+| 开始日期开始 | convertCurrencyCode2 | ComboBox |
 
 #### 数据区域
-- 表头行: row=0
-- 数据行: row=1
-- 样式: 待解析
+- **表头行**: row=0
+- **数据行**: row=1
+- **数据源**: 15 个
 
-#### 数据源
-- 类型: Class
-- 数量: 15 个数据源
-- 主要数据源: CreditContractDetailData
+#### 样式
+- 共 5 种样式
 
 ---
 
@@ -33,7 +45,50 @@
 
 **文件**: `templates/FinanceCreditContractAnalysisDetail.cpt`
 
-> 待解析
+#### 筛选区域
+- **位置**: `ReportParameterAttr > ParameterUI > Layout`
+- **筛选组件**: 11 对 (Label + 输入控件)
+- **布局**: 每行 4 对
+- **行间距**: 36px
+
+**筛选组件列表**:
+| Label | Code | Type |
+|-------|------|------|
+| 授信类型 | bizType | ComboBox |
+| 批文/授信 | fine_username9 | TextEditor |
+| 被授信人 | orgTag | ComboBox |
+| 其他授信机构 | listBoolean | TextEditor |
+| 组织标签 | orgId | TreeComboBoxEditor |
+| 结束日期止 | startEndDate | DateEditor |
+| 开始日期止 | endStartDate | DateEditor |
+| 结束日期起 | startStartDate | DateEditor |
+| 开始日期起 | convertCurrencyCode | DateEditor |
+| 授信状态 | creditProductCode | ComboBox |
+| 银行授信机构 | financeBankName | TreeComboBoxEditor |
+
+#### 数据区域
+- **表头行**: row=0
+- **数据行**: row=1
+- **总行数**: 3 行
+- **数据源**: 15 个
+
+#### 样式
+- 共 6 种样式
+
+---
+
+## 模板对比
+
+| 特性 | 管理分析 | 明细 |
+|------|---------|------|
+| 筛选组件数 | 10 对 | 11 对 |
+| 数据源数 | 15 个 | 15 个 |
+| 样式数 | 5 种 | 6 种 |
+| 数据行数 | - | 3 行 |
+
+**差异**:
+- 明细报表多一个筛选组件
+- 明细报表多一种样式
 
 ---
 
@@ -51,6 +106,12 @@
 - **解决**: 每个输入控件前生成独立的 Label 控件
 - **代码位置**: `parsers/cpt_generator.py:_generate_parameter_attr`
 
+### 2026-03-27: 组件 code 读取错误
+- **问题**: Label 控件没有 code 属性导致报错
+- **原因**: 遍历组件时假设所有组件都有 code
+- **解决**: Label 控件设置 code=None，遍历时检查
+- **代码位置**: `agent/core.py:get_filter_components`
+
 ---
 
 ## 成功模式
@@ -61,19 +122,34 @@
 1. 加载模板 → 解析 XML 结构
 2. 定位筛选区域 → 读取现有组件
 3. 对比用户需求 → 计算增删改
-4. 执行修改 → 调整布局位置
-5. 验证输出 → XML 格式检查
+4. 复制 XML 节点 → 修改必要属性
+5. 重新计算位置 → 调整布局
+6. 验证输出 → XML 格式检查
 ```
 
-### 样式模板
+### 筛选组件增删
 
-| 索引 | 名称 | 对齐 | 背景 | 用途 |
-|------|------|------|------|------|
-| 0 | 表头左列 | 左 | 蓝 | 第一列表头 |
-| 1 | 表头 | 左 | 蓝 | 普通表头 |
-| 2 | 数据 | 左 | 无 | 普通数据 |
-| 3 | 金额 | 右 | 白 | 金额字段 |
-| 4 | 默认 | 中 | 无 | 默认样式 |
+```python
+# 方式: 复制 XML 节点
+new_label = copy.deepcopy(template_label)
+new_label_name.set('name', f'label_{code}')
+new_label_value.text = label
+new_label_bounds.set('x', str(x))
+
+# 重新计算所有组件位置
+modifier.recalculate_filter_positions()
+```
+
+### 数据列增删
+
+```python
+# 多列: 复制最后一个单元格
+new_cell = copy.deepcopy(last_cell)
+new_cell.set('c', str(new_column_index))
+
+# 少列: 删除多余单元格
+cell_list.remove(extra_cell)
+```
 
 ---
 
@@ -115,26 +191,24 @@
   "name": "credit_data",
   "type": "ClassTableData",
   "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractDetailData",
-  "parameters": [
-    {"name": "orgId", "default": ""},
-    {"name": "startDate", "default": ""},
-    {"name": "endDate", "default": ""}
-  ]
+  "parameters": {
+    "orgId": "",
+    "startDate": "",
+    "endDate": ""
+  }
 }
 ```
 
-### 数据库数据源
+### 参数校验规则
 
-```json
-{
-  "name": "sales_data",
-  "type": "DBTableData",
-  "database": "cfs-report",
-  "sql": "SELECT * FROM table WHERE id = ${id}",
-  "parameters": [
-    {"name": "id", "default": ""}
-  ]
-}
+```
+数据源参数 vs 筛选组件 code
+
+✅ 有筛选组件 → 绑定
+✅ 有默认值 → 使用默认值
+❌ 无筛选组件且无默认值 → 错误
+
+原则：数据源参数只能多不能少
 ```
 
 ---

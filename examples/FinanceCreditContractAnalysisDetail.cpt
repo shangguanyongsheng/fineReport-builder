@@ -1,0 +1,5639 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20211223" releaseVersion="11.5.0">
+<TableDataMap>
+<TableData name="orgStructure" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="structureVersion"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT so.`version`,concat(so.id,'') as id FROM u_sys_organization_structure so 
+WHERE so.tenant_id = '${fine_username9}' AND so.is_deleted = 0
+${if(len(structureVersion)=0,"AND 1=2",if(structureVersion=1,"AND so.structure_type =( '"+ structureVersion +"')  and so.effective_date<=DATE_FORMAT(NOW(),'%Y-%m-%d') and so.expiry_date>=DATE_FORMAT(NOW(),'%Y-%m-%d')","AND so.structure_type =( '"+ structureVersion +"')"))}]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="structureVersion" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+		sd1.dict_key,
+		sd1.dict_value 
+	FROM
+		sys_dict sd1 
+	WHERE
+	 sd1.`code` = 'org_structure' 
+	AND sd1.is_deleted = 0 	AND sd1.`status` = 1;]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="Tree1" class="com.fr.data.impl.RecursionTableData">
+<Desensitizations desensitizeOpen="false"/>
+<markFields>
+<![CDATA[1]]></markFields>
+<parentmarkFields>
+<![CDATA[3]]></parentmarkFields>
+<markFieldsName>
+<![CDATA[id]]></markFieldsName>
+<parentmarkFieldsName>
+<![CDATA[parent_id]]></parentmarkFieldsName>
+<originalTableDataName>
+<![CDATA[organization]]></originalTableDataName>
+</TableData>
+<TableData name="currency" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select concat(id,'') as id,code,dict_key,dict_value from sys_dict where code = 'currency' and is_deleted = 0]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="organization" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgStructure"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="structureVersion"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT so.`code`,concat(so.id,'') as id,concat(so.`code`,'-',so.`name`) as name,so.parent_id FROM sys_organization so 
+${if(len(orgStructure)=0,"",if(structureVersion=1,
+" INNER JOIN u_sys_organization_relation usor on usor.org_id = so.id and usor.is_deleted=0 and usor.tenant_id = ( '"+ fine_username9 +"') and usor.status = 1 INNER JOIN u_sys_organization_structure usos on usos.is_deleted = 0 and usos.tenant_id = ( '"+ fine_username9 +"') and usos.id =usor.structure_id and usor.structure_id =( '"+ orgStructure +"')",
+" INNER JOIN u_sys_organization_relation usor on usor.org_id = so.id and usor.is_deleted=0 and usor.tenant_id = ( '"+ fine_username9 +"') and usor.status = 1 INNER JOIN u_sys_organization_structure usos on usos.is_deleted = 0 and usos.tenant_id = ( '"+ fine_username9 +"') and usos.id =usor.structure_id and usor.structure_id =( '"+ orgStructure +"')"))}
+WHERE so.tenant_id = '${fine_username9}' AND so.is_deleted = 0 and so.status = 1]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="CreditContractDetailData" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="orgStructure"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="convertCurrencyCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="szylb_code"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_orgid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="indexInfo"/>
+<O>
+<![CDATA[[         {             \"fieldCode\": \"repay.id\",             \"alias\": \"id\"         },         {             \"fieldCode\": \"repay.fi_contract_id\",             \"alias\": \"fiContractId\"         },         {             \"fieldCode\": \"repay.repay_contract_number\",             \"alias\": \"repayContractNumber\"         },         {             \"fieldCode\": \"repay.fi_contract_type\",             \"alias\": \"fiContractType\"         },         {             \"fieldCode\": \"repay.org_id\",             \"alias\": \"orgId\",             \"mappingField\": \"orgName\",             \"source\": \"org\",             \"sourceCode\": \"\"         },          {             \"fieldCode\": \"institution_type\",             \"alias\": \"institutionType\"         },         {             \"fieldCode\": \"repay.credit_product_code\",             \"alias\": \"creditProductCode\",             \"mappingField\": \"creditProductCodeName\",             \"source\": \"biz\",             \"sourceCode\": \"finance_loan_product\"                    },         {             \"fieldCode\": \"repay.amount\",             \"alias\": \"amount\"         },          {             \"fieldCode\": \"available_amount\",             \"alias\": \"availableAmount\"         },         {             \"fieldCode\": \"interest\",             \"alias\": \"interest\"         },         {             \"fieldCode\": \"repay.currency_code\",             \"alias\": \"currencyCode\"         },         {             \"fieldCode\": \"repay.lend_finance_bank_code\",             \"alias\": \"lendFinanceBankCode\"         },         {             \"fieldCode\": \"repay.lend_finance_bank_name\",             \"alias\": \"lendFinanceBankName\"         },         {             \"fieldCode\": \"repay.purpose\",             \"alias\": \"purpose\"         },         {             \"fieldCode\": \"repay.contract_code_no\",             \"alias\": \"contractCodeNo\"         },         {             \"fieldCode\": \"repay.rec_org_id\",             \"alias\": \"recOrgId\"         },         {             \"fieldCode\": \"repay.lend_finance_bank_point_id\",             \"alias\": \"lendFinanceBankPointId\"         },          {             \"fieldCode\": \"repay.lend_finance_bank_point_name\",             \"alias\": \"lendFinanceBankPointName\"         },         {             \"fieldCode\": \"repay.bond_abbreviation\",             \"alias\": \"bondAbbreviation\"         },         {             \"fieldCode\": \"repay.loan_contract_rate\",             \"alias\": \"loanContractRate\"         },         {             \"fieldCode\": \"repay.value_date\",             \"alias\": \"valueDate\"         },         {             \"fieldCode\": \"repay.end_date\",             \"alias\": \"endDate\"         },         {             \"fieldCode\": \"repay.remark\",             \"alias\": \"remark\"         },         {             \"fieldCode\": \"repay.cumulative_repay_amount\",             \"alias\": \"repayAmount\"         }     ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="counterGuarantee"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[74]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startStartDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endStartDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startEndDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endEndDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"creditProductCode\":\"like\",\"financeBankName\":\"like\",\"startStartDate\":\"geq\",\"endStartDate\":\"leq\",\"startEndDate\":\"geq\",\"endEndDate\":\"leq\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{\"startStartDate\":\"effectiveDate\",\"endStartDate\":\"effectiveDate\",\"startEndDate\":\"endDate\",\"endEndDate\":\"endDate\", \"triggerRequest1\":\"triggerRequest\", \"orgTag\":\"orgId\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="triggerRequest1"/>
+<O>
+<![CDATA[true]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isCirculate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProductCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contractCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="bizType"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditType"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProtocolType"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dimensions"/>
+<O>
+<![CDATA[[ { \"code\": \"id\" },  {  \"code\": \"productId\" }]A]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractDetailData"/>
+</TableData>
+<TableData name="sys_bank" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select * from sys_dict where code = 'bank' and is_deleted = 0]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="CreditContractStatisticDataForFinanceTypeCode" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="convertCurrencyCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="indexInfo"/>
+<O>
+<![CDATA[[     {       \"code\": \"amount\"     },     {       \"code\": \"debtBalance\"     },     {       \"code\": \"equityGuaranteeAmount\"     },     {       \"code\": \"equityGuaranteeCount\"     }   ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dimensions"/>
+<O>
+<![CDATA[[     {       \"code\": \"financeTypeCode\"   },{       \"code\": \"currencyCode\"   }   ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[77]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="triggerRequest2"/>
+<O>
+<![CDATA[false]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\", \"convertCurrencyCode2\":\"convertCurrencyCode\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProtocolType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isCirculate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankName2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="bizType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeTypeCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData"/>
+</TableData>
+<TableData name="CreditContractUserOrgStatisticData" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="convertCurrencyCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dimensions"/>
+<O>
+<![CDATA[[     {       \"code\": \"userOrgId\"    } ,{       \"code\": \"currencyCode\"   }  ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[76]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="triggerRequest2"/>
+<O>
+<![CDATA[false]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProtocolType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankName2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isCirculate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="bizType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeTypeCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractUserOrgStatisticData"/>
+</TableData>
+<TableData name="CreditProductStatisticData" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="convertCurrencyCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dimensions"/>
+<O>
+<![CDATA[[     {       \"code\": \"creditProductCode\"   } ,{       \"code\": \"currencyCode\"   }   ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[78]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="triggerRequest2"/>
+<O>
+<![CDATA[false]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"creditProductCode2\":\"creditProductCode\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"creditProductCode2\":\"like\",\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProtocolType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProductCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankName2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isCirculate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeTypeCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="bizType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditProductStatisticData"/>
+</TableData>
+<TableData name="orgTageCode" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT 
+    t.tag_name, 
+    GROUP_CONCAT(tr.relation_id ORDER BY tr.relation_id SEPARATOR ',') AS relation_ids
+FROM 
+    sys_tag t
+JOIN 
+    sys_tag_relation tr 
+    ON t.tag_code = tr.tag_code 
+    AND t.tenant_id = tr.tenant_id
+WHERE 
+    t.is_deleted = 0 
+    AND tr.is_deleted = 0 AND t.tenant_id = '${fine_username9}'
+GROUP BY 
+    t.id, t.tag_name
+ORDER BY 
+    t.sort;]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="CreditContractStatisticDataForOrg" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="convertCurrencyCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="indexInfo"/>
+<O>
+<![CDATA[[     {       \"code\": \"amount\"     },     {       \"code\": \"debtBalance\"     },     {       \"code\": \"equityGuaranteeAmount\"     },     {       \"code\": \"equityGuaranteeCount\"     }   ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dimensions"/>
+<O>
+<![CDATA[[     {       \"code\": \"orgId\"    }  ,{       \"code\": \"currencyCode\"   } ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[77]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="triggerRequest2"/>
+<O>
+<![CDATA[false]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\",\"bizType2\":\"bizType\",\"financeTypeCode2\":\"financeTypeCode\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProductCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankName2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isCirculate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="bizType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeTypeCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProtocolType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData"/>
+</TableData>
+<TableData name="CreditContractStatisticDataForInstution" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="convertCurrencyCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dimensions"/>
+<O>
+<![CDATA[[     {       \"code\": \"financeBankCode\"     },{       \"code\": \"currencyCode\"   }   ]A]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[77]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="triggerRequest2"/>
+<O>
+<![CDATA[false]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{\"triggerRequest2\":\"triggerRequest\", \"orgTag2\":\"orgId\", \"contain2\":\"contain\", \"creditProtocolType2\":\"creditProtocolType\", \"orgId2\":\"orgId\", \"financeBankCode2\":\"financeBankCode\", \"financeBankName2\":\"financeBankName\", \"isCirculate2\":\"isCirculate\", \"startStartDate2\": \"effectiveDate\", \"endStartDate2\": \"effectiveDate\", \"startEndDate2\": \"endDate\", \"endEndDate2\": \"endDate\", \"convertCurrencyCode2\":\"convertCurrencyCode\",\"financeTypeCode2\":\"financeTypeCode\", \"instutionBizType\":\"bizType\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"financeBankName2\":\"like\",\"startStartDate2\":\"geq\",\"endStartDate2\":\"leq\",\"startEndDate2\":\"geq\",\"endEndDate2\":\"leq\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endStartDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="startEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endEndDate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="instutionBizType"/>
+<O>
+<![CDATA[1]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="creditProtocolType2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isCirculate2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankName2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeBankCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="financeTypeCode2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.CreditContractStatisticData"/>
+</TableData>
+<TableData name="融资品种" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT id, parent_id, dict_key, dict_value FROM sys_dict_biz WHERE is_deleted = 0 AND status = 1 AND code = 'finance_loan_product'
+AND  tenant_id = ${fine_username9}]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="Tree2-融资品种" class="com.fr.data.impl.RecursionTableData">
+<Desensitizations desensitizeOpen="false"/>
+<markFields>
+<![CDATA[0]]></markFields>
+<parentmarkFields>
+<![CDATA[1]]></parentmarkFields>
+<markFieldsName>
+<![CDATA[id]]></markFieldsName>
+<parentmarkFieldsName>
+<![CDATA[parent_id]]></parentmarkFieldsName>
+<originalTableDataName>
+<![CDATA[融资品种]]></originalTableDataName>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<Title>
+<![CDATA[授信一览报表]]></Title>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_ReportServerP_First')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_ReportServerP_Previous')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_ReportServerP_Next')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_ReportServerP_Last')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="false" showAsImage="false" autoScale="false" tdHeavy="false" pageFixedRow="false" pageFixedRowCount="30"/>
+</WebPageContent>
+<WebViewContent>
+<Listener event="startload">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[var sheet1Widgets = [
+    "组织架构", "orgStructure",
+    "架构版本", "structureVersion",
+    "开始日期开始", "startStartDate",
+    "开始日期结束", "endStartDate",
+    "结束日期开始", "startEndDate",
+    "结束日期结束", "endEndDate",
+    "架构版本","structureVersion",
+    "被授信人","orgId",
+    "组织标签","orgTag",
+    "是否包含下级","contain",
+    "额度循环","isCirculate",
+    "协议类型","creditProtocolType",
+    "银行授信机构","financeBankCode",
+    "其他授信机构","financeBankName",
+    "融资品种","creditProductCode",
+    "折算币种","convertCurrencyCode",
+    "协议编号","contractCode",
+    "授信类型","creditType",
+    "批文授信","bizType",
+    "Label统计列", "cols",
+    "Reload", "Search"
+]A;
+
+// --- 【Sheet2 控件组】→ 仅在非 "明细" 的 Sheet 中显示（即 Sheet2 / Sheet3...）
+var sheet2Widgets = [
+    "开始日期开始2", "startStartDate2",
+    "开始日期结束2", "endStartDate2",
+    "结束日期开始2", "startEndDate2",
+    "结束日期结束2", "endEndDate2",
+    "被授信人2","orgId2",
+    "组织标签2","orgTag2",
+    "是否包含下级2","contain2",
+    "额度循环2","isCirculate2",
+    "协议类型2","creditProtocolType2",
+    "银行授信机构2","financeBankCode2",
+    "其他授信机构2","financeBankName2",
+    "融资品种2","creditProductCode2",
+    "折算币种2","convertCurrencyCode2",
+    "授信类型2","financeTypeCode2",
+    "批文授信2","bizType2",
+    "Reload2", "Search2"
+]A; 
+
+
+if (contentPane.$contentPane.data('TabPane')) {
+    contentPane.$contentPane.data('TabPane').on('tabchange', function(event, newIndex) {
+        // ✅ 安全获取当前 Sheet 名（兼容 FR 10.x / 11.x，规避 ?. 语法报错）
+        var tabPane = contentPane.$contentPane.data('TabPane');
+        var tabBtns = tabPane && tabPane.tabBtns;
+        var tabBtn = tabBtns && newIndex >= 0 && newIndex < tabBtns.length ? tabBtns[newIndex]A : null;
+        var currentSheetName = tabBtn && tabBtn.options && tabBtn.options.name || "";
+        console.log("🔄 当前 Sheet 名:", currentSheetName);
+
+        // ✅ 核心判断：Sheet1 = "明细"；其余均为 Sheet2（可按需扩展为多 Sheet）
+        var isSheet1 = (currentSheetName === "明细");
+
+        // ▶️ Step 1：控制显隐
+        sheet1Widgets.forEach(function(name) {
+            var w = contentPane.parameterEl.getWidgetByName(name);
+            if (w) w.setVisible(isSheet1); // 只在 Sheet1 显示
+        });
+
+        sheet2Widgets.forEach(function(name) {
+            var w = contentPane.parameterEl.getWidgetByName(name);
+            if (w) {
+                w.setVisible(!isSheet1); // 在非 Sheet1 的所有 Sheet 显示（即 Sheet2+）
+            }
+        });
+
+    contentPane.parameterEl.getWidgetByName("triggerRequest1").setValue(isSheet1);
+    contentPane.parameterEl.getWidgetByName("triggerRequest2").setValue(!isSheet1);
+        console.log("✅ Sheet 切换完成：当前为 Sheet1（明细）=" + isSheet1);
+    
+//        _g().parameterCommit();
+
+  
+
+        
+    });
+    
+}
+ ]]></Content>
+</JavaScript>
+</Listener>
+<Listener event="afterload">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[var sheet1Widgets = [
+    "组织架构", "orgStructure",
+    "架构版本", "structureVersion",
+    "开始日期开始", "startStartDate",
+    "开始日期结束", "endStartDate",
+    "结束日期开始", "startEndDate",
+    "结束日期结束", "endEndDate",
+    "架构版本","structureVersion",
+    "被授信人","orgId",
+    "组织标签","orgTag",
+    "是否包含下级","contain",
+    "额度循环","isCirculate",
+    "协议类型","creditProtocolType",
+    "银行授信机构","financeBankCode",
+    "其他授信机构","financeBankName",
+    "融资品种","creditProductCode",
+    "折算币种","convertCurrencyCode",
+    "协议编号","contractCode",
+    "授信类型","creditType",
+    "批文授信","bizType",
+    "Label统计列", "cols",
+    "Reload", "Search"
+]A;
+
+// --- 【Sheet2 控件组】→ 仅在非 "明细" 的 Sheet 中显示（即 Sheet2 / Sheet3...）
+var sheet2Widgets = [
+    "开始日期开始2", "startStartDate2",
+    "开始日期结束2", "endStartDate2",
+    "结束日期开始2", "startEndDate2",
+    "结束日期结束2", "endEndDate2",
+    "被授信人2","orgId2",
+    "组织标签2","orgTag2",
+    "是否包含下级2","contain2",
+    "额度循环2","isCirculate2",
+    "协议类型2","creditProtocolType2",
+    "银行授信机构2","financeBankCode2",
+    "其他授信机构2","financeBankName2",
+    "融资品种2","creditProductCode2",
+    "折算币种2","convertCurrencyCode2",
+    "授信类型2","financeTypeCode2",
+    "批文授信2","bizType2",
+    "Reload2", "Search2"
+]A; 
+
+
+if (contentPane.$contentPane.data('TabPane')) {
+    contentPane.$contentPane.data('TabPane').on('tabchange', function(event, newIndex) {
+        // ✅ 安全获取当前 Sheet 名（兼容 FR 10.x / 11.x，规避 ?. 语法报错）
+        var tabPane = contentPane.$contentPane.data('TabPane');
+        var tabBtns = tabPane && tabPane.tabBtns;
+        var tabBtn = tabBtns && newIndex >= 0 && newIndex < tabBtns.length ? tabBtns[newIndex]A : null;
+        var currentSheetName = tabBtn && tabBtn.options && tabBtn.options.name || "";
+        console.log("🔄 当前 Sheet 名:", currentSheetName);
+
+        // ✅ 核心判断：Sheet1 = "明细"；其余均为 Sheet2（可按需扩展为多 Sheet）
+        var isSheet1 = (currentSheetName === "明细");
+
+        // ▶️ Step 1：控制显隐
+        sheet1Widgets.forEach(function(name) {
+            var w = contentPane.parameterEl.getWidgetByName(name);
+            if (w) w.setVisible(isSheet1); // 只在 Sheet1 显示
+        });
+
+        sheet2Widgets.forEach(function(name) {
+            var w = contentPane.parameterEl.getWidgetByName(name);
+            if (w) {
+                w.setVisible(!isSheet1); // 在非 Sheet1 的所有 Sheet 显示（即 Sheet2+）
+            }
+        });
+
+    contentPane.parameterEl.getWidgetByName("triggerRequest1").setValue(isSheet1);
+    contentPane.parameterEl.getWidgetByName("triggerRequest2").setValue(!isSheet1);
+        console.log("✅ Sheet 切换完成：当前为 Sheet1（明细）=" + isSheet1);
+    
+//        _g().parameterCommit();
+
+  
+
+        
+    });
+    
+}
+ ]]></Content>
+</JavaScript>
+</Listener>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.PageSetup">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_Page_Setup')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[pagesetup]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.PrintPreview">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_PrintP_Print_Preview')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[preview]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.NewPrint">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Print')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[print]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_Email')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[email]]></IconName>
+<EmailButton customConsignee="true" consigneeByDepartment="false" consigneeByRole="false"/>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<SortFuncCheck check="true"/>
+<ConditionFuncCheck check="true"/>
+<ListFuncCheck check="true"/>
+</WebViewContent>
+</ReportWebAttr>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false" allowDoubleClickOrZoom="true" functionalWhenUnactivated="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="明细">
+<ReportPageAttr>
+<HR F="0" T="0"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+<USE REPEAT="true" PAGE="true" WRITE="false"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1368000,1368000,1368000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[2880000,0,0,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,0,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" s="0">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="1">
+<cellSortAttr>
+<sortExpressions/>
+<sortHeader sortArea="A1"/>
+</cellSortAttr>
+</Expand>
+</C>
+<C c="1" r="0" s="1">
+<O>
+<![CDATA[授信id]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="2" r="0" s="1">
+<O>
+<![CDATA[授信类别]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="3" r="0" s="0">
+<O>
+<![CDATA[授信类型]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('creditType',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="4" r="0" s="0">
+<O>
+<![CDATA[协议编号]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('contractCode',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="5" r="0" s="0">
+<O>
+<![CDATA[被授信人]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('applyOrgName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="6" r="0" s="0">
+<O>
+<![CDATA[授信机构]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('financeBankName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="7" r="0" s="0">
+<O>
+<![CDATA[机构网点]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('financeBankPointName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="8" r="0" s="0">
+<O>
+<![CDATA[协议类型]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('creditProtocolType',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="9" r="0" s="0">
+<O>
+<![CDATA[额度循环]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('isCirculate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="10" r="0" s="0">
+<O>
+<![CDATA[币种]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('currencyCode',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="11" r="0" s="0">
+<O>
+<![CDATA[授信总额]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('amount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="12" r="0" s="0">
+<O>
+<![CDATA[已用授信总额]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('occupiedAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="13" r="0" s="0">
+<O>
+<![CDATA[可用授信总额]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('availableAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="14" r="0" s="0">
+<O>
+<![CDATA[敞口额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('openAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="15" r="0" s="0">
+<O>
+<![CDATA[已用敞口额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('occupiedOpenAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="16" r="0" s="0">
+<O>
+<![CDATA[可用敞口额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('availableOpenAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="17" r="0" s="0">
+<O>
+<![CDATA[敞口受限额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('restrictedAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="18" r="0" s="0">
+<O>
+<![CDATA[受限说明]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('restrictedMemo',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="19" r="0" s="0">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('memo',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="20" r="0" s="0">
+<O>
+<![CDATA[协议开始日]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('effectiveDate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="21" r="0" s="0">
+<O>
+<![CDATA[协议截止日]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('endDate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="22" r="0" s="0">
+<O>
+<![CDATA[增信方式]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'creditEnhancementWay\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="23" r="0" s="0">
+<O>
+<![CDATA[担保单位]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'guaranteeOrgNames\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="24" r="0" s="0">
+<O>
+<![CDATA[抵质押物名称]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'pledgeNames\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="25" r="0" s="1">
+<O>
+<![CDATA[产品id]]></O>
+<PrivilegeControl/>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="26" r="0" s="0">
+<O>
+<![CDATA[授信产品]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'creditProductCode\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="27" r="0" s="0">
+<O>
+<![CDATA[产品币种]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('productCurrencyCode',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="28" r="0" s="0">
+<O>
+<![CDATA[产品授信额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="29" r="0" s="0">
+<O>
+<![CDATA[产品已用授信]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productOccupiedAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="30" r="0" s="0">
+<O>
+<![CDATA[产品可用授信]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productAvailableAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="31" r="0" s="0">
+<O>
+<![CDATA[产品敞口额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productOpenAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="32" r="0" s="0">
+<O>
+<![CDATA[产品敞口已用]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productOpenOccupiedAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="33" r="0" s="0">
+<O>
+<![CDATA[产品敞口可用]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productOpenAvailableAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="34" r="0" s="0">
+<O>
+<![CDATA[产品敞口受限]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productRestrictedAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="35" r="0" s="0">
+<O>
+<![CDATA[产品低风险额度]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productLowRiskAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="36" r="0" s="0">
+<O>
+<![CDATA[产品低风险已用]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productLowRiskOccupiedAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="37" r="0" s="0">
+<O>
+<![CDATA[产品低风险可用]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[INARRAY(\'productLowRiskAvailableAmount\',$cols) = 0]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="0" r="1" s="2">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="1" leftParentDefault="false" left="B2">
+<cellSortAttr>
+<sortExpressions/>
+<sortHeader sortArea="A2"/>
+</cellSortAttr>
+</Expand>
+</C>
+<C c="1" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="id"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="2" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="bizType"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="3" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="creditTypeName"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[IF(C2 == 2, '注册批文', $$$)]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr pageFixedRow="true"/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="4" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="contractCode"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="5" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="orgName"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="6" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="financeBankName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="7" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="financeBankPointName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="8" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="creditProtocolTypeName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="9" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="isCirculateName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="10" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="currencyCodeName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="11" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="amount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="12" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="occupiedAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="13" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="availableAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="14" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="openAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="15" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="occupiedOpenAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="16" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="availableOpenAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="17" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="restrictedAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="18" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="restrictedMemo"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="19" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="memo"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="20" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="effectiveDate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="21" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="endDate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="22" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="creditEnhancementWayName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="23" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="guaranteeOrgNames"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="24" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="pledgeNames"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="25" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productId"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="26" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="creditProductCodeName"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="27" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productCurrencyCodeName"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="28" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productAmount"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="29" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productOccupiedAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="30" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productAvailableAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="31" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productOpenAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="32" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productOpenOccupiedAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="33" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productOpenAvailableAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="34" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productRestrictedAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="35" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productLowRiskAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="36" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productLowRiskOccupiedAmount"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="37" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="CreditContractDetailData" columnName="productLowRiskAvailableAmount"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="0" r="2" cs="11" s="5">
+<O>
+<![CDATA[小计：]]></O>
+<PrivilegeControl/>
+<CellGUIAttr showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand upParentDefault="false" up="A1">
+<cellSortAttr>
+<sortExpressions/>
+<sortHeader sortArea="A3"/>
+</cellSortAttr>
+</Expand>
+</C>
+<C c="11" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(L2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="12" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(M2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="13" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(N2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="14" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(O2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="15" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(P2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="16" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(Q2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="17" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(R2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="18" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="19" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="20" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="21" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="22" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="23" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="24" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="26" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="27" r="2" s="2">
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="28" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AC2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="29" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AD2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="30" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AE2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="31" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AF2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="32" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AG2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="33" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AH2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="34" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AI2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="35" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AJ2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+<C c="36" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AK2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="37" r="2" s="3">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=SUM(AK2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting/>
+<FollowingTheme background="true"/>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</color>
+</Background>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0" useParamsTemplate="true" currentIndex="8"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<FollowingTheme borderStyle="false"/>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" borderRadius="0" type="0" borderStyle="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-723465" hor="-1" ver="-1"/>
+</color>
+</Background>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="creditType"/>
+<WidgetID widgetID="95855d01-180a-473e-b629-5871fc12082f"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="creditProtocolType_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="ZHSX" value="综合授信"/>
+<Dict key="NBSX" value="内部授信"/>
+<Dict key="ZXSX" value="专项授信"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr/>
+</InnerWidget>
+<BoundsAttr x="565" y="120" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="financeBankCode"/>
+<WidgetID widgetID="95855d01-180a-473e-b629-5871fc12082f"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="creditProtocolType_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[sys_bank]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr/>
+</InnerWidget>
+<BoundsAttr x="333" y="83" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="creditProtocolType"/>
+<WidgetID widgetID="95855d01-180a-473e-b629-5871fc12082f"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="comboCheckBox0"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="FRAME" value="集团授信框架协议"/>
+<Dict key="SUB" value="授信子协议"/>
+<Dict key="SINGLE" value="单体协议"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<RAAttr/>
+</InnerWidget>
+<BoundsAttr x="101" y="83" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="授信类型"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="授信类型_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[授信类型]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="472" y="120" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="bizType"/>
+<LabelName name="bizType"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="financeBankCode_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="1" value="授信"/>
+<Dict key="2" value="批文"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="333" y="120" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="批文授信"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="批文/授信"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[批文/授信]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="240" y="120" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="fine_username9"/>
+<LabelName name="租户id"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr invisible="true" aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="fr_usercode_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[999666]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="289" y="398" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="fr_usercode"/>
+<LabelName name="用户id"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr invisible="true" aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="fr_"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[1985220290507186178]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="222" y="398" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<WidgetName name="creditProductCode"/>
+<LabelName name="creditProductCode"/>
+<WidgetID widgetID="31c8aa47-3d67-4fc7-a4e6-70a0ec0485b2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeOrgId_c_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TreeAttr selectLeafOnly="false"/>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[Tree2-融资品种]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<isLayerBuild isLayerBuild="false"/>
+<isAutoBuild autoBuild="true"/>
+<isPerformanceFirst performanceFirst="false"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<ReturnTypeAttr delimiter=";" startSymbol="" endSymbol="" returnString="false"/>
+</InnerWidget>
+<BoundsAttr x="797" y="83" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="融资品种"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="银行授信机构_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[融资品种]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="704" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="银行授信机构"/>
+<LabelName name="协议类型"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="被授信人_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[银行授信机构]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="240" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="协议类型"/>
+<LabelName name="折算币种"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="是否反担保_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[协议类型]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="被授信人"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保人"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[被授信人]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="240" y="47" width="85" height="27"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="orgTag"/>
+<LabelName name="guaranteeDebtorId2"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgTag2_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="relation_ids" viName="tag_name"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[orgTageCode]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="565" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="financeBankName"/>
+<LabelName name="financeBankName"/>
+<WidgetID widgetID="7d1af66e-6bda-4ed7-8034-e9fda5705e5c"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeDebtorName2"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="565" y="83" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="其他授信机构"/>
+<LabelName name="银行授信机构"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="被担保人2"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[其他授信机构]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="472" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="listBoolean"/>
+<LabelName name="listBoolean"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr invisible="true" aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="triggerRequest2_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[true]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="157" y="398" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="contain"/>
+<LabelName name="contain"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeDebtorId_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="true" value="是"/>
+<Dict key="false" value="否"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="797" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="是否包含下级"/>
+<LabelName name="组织标签"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="组织标签_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[是否包含下级]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="704" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="组织标签"/>
+<LabelName name="担保开始日期"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="折算币种_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[组织标签]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="472" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<WidgetName name="orgId"/>
+<LabelName name="applyOrgId"/>
+<WidgetID widgetID="31c8aa47-3d67-4fc7-a4e6-70a0ec0485b2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="applyOrgId"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TreeAttr mutiSelect="true" selectLeafOnly="false"/>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="id" viName="name"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[Tree1]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<isLayerBuild isLayerBuild="false"/>
+<isAutoBuild autoBuild="true"/>
+<isPerformanceFirst performanceFirst="false"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<ReturnTypeAttr delimiter=";" startSymbol="" endSymbol="" returnString="false"/>
+</InnerWidget>
+<BoundsAttr x="333" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[// ✅ 校验：开始日期开始 <= 开始日期结束
+function validateDateRange() {
+    // 1. 获取两个控件
+    var startWidget = contentPane.parameterEl.getWidgetByName("startEndDate");
+    var endWidget   = contentPane.parameterEl.getWidgetByName("endEndDate");
+
+    if (!startWidget || !endWidget) {
+        return true;
+    }
+
+    // 2. 获取值（字符串）
+    var startDateStr = startWidget.getValue(); // 如 "2025-03-01"
+    var endDateStr   = endWidget.getValue();
+
+    // 4. 转为 Date 对象（注意：帆软日期格式为 YYYY-MM-DD）
+    var startDate = new Date(startDateStr);
+    var endDate   = new Date(endDateStr);
+
+    // 5. 校验有效性（防止无效日期，如 "2025-02-30"）
+    // 6. 核心逻辑：开始日期 > 结束日期？ → 不合法！
+    if (startDate > endDate) {
+        alert("开始日期不能晚于结束日期！\n请调整：开始日期开始 ≤ 开始日期结束");
+        endWidget.setValue("");
+        return false;
+    }
+
+
+    // ✅ 校验通过
+    return true;
+}
+
+// 执行校验并返回结果（关键！必须 return false 阻止提交）
+return validateDateRange();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="endEndDate"/>
+<LabelName name="endEndDate"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="endtEndDate"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<EMSG>
+<![CDATA[贷款开始日期不可为空]]></EMSG>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[='']]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="1029" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="结束日期结束"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保开始日期_c_c_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[结束日期止]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="936" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[// ✅ 校验：开始日期开始 <= 开始日期结束
+function validateDateRange() {
+    // 1. 获取两个控件
+    var startWidget = contentPane.parameterEl.getWidgetByName("startEndDate");
+    var endWidget   = contentPane.parameterEl.getWidgetByName("endEndDate");
+
+    if (!startWidget || !endWidget) {
+        return true;
+    }
+
+    // 2. 获取值（字符串）
+    var startDateStr = startWidget.getValue(); // 如 "2025-03-01"
+    var endDateStr   = endWidget.getValue();
+
+    // 4. 转为 Date 对象（注意：帆软日期格式为 YYYY-MM-DD）
+    var startDate = new Date(startDateStr);
+    var endDate   = new Date(endDateStr);
+
+    // 6. 核心逻辑：开始日期 > 结束日期？ → 不合法！
+    if (startDate > endDate) {
+        alert("开始日期不能晚于结束日期！\n请调整：开始日期开始 ≤ 开始日期结束");
+        startWidget.setValue("");
+        return false;
+    }
+
+
+    // ✅ 校验通过
+    return true;
+}
+
+// 执行校验并返回结果（关键！必须 return false 阻止提交）
+return validateDateRange();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="startEndDate"/>
+<LabelName name="startEndDate"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="planStartDate_c_c_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<EMSG>
+<![CDATA[贷款开始日期不可为空]]></EMSG>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[='']]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="797" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="结束日期开始"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保开始日期_c_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[结束日期起]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="704" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="contractCode"/>
+<LabelName name="contractCode"/>
+<WidgetID widgetID="7d1af66e-6bda-4ed7-8034-e9fda5705e5c"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeContractNo"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="101" y="120" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="convertCurrencyCode"/>
+<LabelName name="convertCurrencyCode"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgStructure_c_c_c_c_c_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[currency]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="1029" y="83" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="折算币种"/>
+<LabelName name="是否包含下级"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保合同编号_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[折算币种]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="936" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[// ✅ 校验：开始日期开始 <= 开始日期结束
+function validateDateRange() {
+    // 1. 获取两个控件
+    var startWidget = contentPane.parameterEl.getWidgetByName("startStartDate");
+    var endWidget   = contentPane.parameterEl.getWidgetByName("endStartDate");
+
+    if (!startWidget || !endWidget) {
+        return true;
+    }
+
+    // 2. 获取值（字符串）
+    var startDateStr = startWidget.getValue(); // 如 "2025-03-01"
+    var endDateStr   = endWidget.getValue();
+
+    // 4. 转为 Date 对象（注意：帆软日期格式为 YYYY-MM-DD）
+    var startDate = new Date(startDateStr);
+    var endDate   = new Date(endDateStr);
+
+    // 5. 校验有效性（防止无效日期，如 "2025-02-30"）
+    // 6. 核心逻辑：开始日期 > 结束日期？ → 不合法！
+    if (startDate > endDate) {
+        alert("开始日期不能晚于结束日期！\n请调整：开始日期开始 ≤ 开始日期结束");
+        endWidget.setValue("");
+        return false;
+    }
+
+
+    // ✅ 校验通过
+    return true;
+}
+
+// 执行校验并返回结果（关键！必须 return false 阻止提交）
+return validateDateRange();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="endStartDate"/>
+<LabelName name="endStartDate"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="planStartDate_c_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<EMSG>
+<![CDATA[贷款开始日期不可为空]]></EMSG>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[='']]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="565" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="开始日期结束"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保结束日期"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[开始日期止]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="472" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[// ✅ 校验：开始日期开始 <= 开始日期结束
+function validateDateRange() {
+    // 1. 获取两个控件
+    var startWidget = contentPane.parameterEl.getWidgetByName("startStartDate");
+    var endWidget   = contentPane.parameterEl.getWidgetByName("endStartDate");
+
+    if (!startWidget || !endWidget) {
+        return true;
+    }
+
+    // 2. 获取值（字符串）
+    var startDateStr = startWidget.getValue(); // 如 "2025-03-01"
+    var endDateStr   = endWidget.getValue();
+
+    // 4. 转为 Date 对象（注意：帆软日期格式为 YYYY-MM-DD）
+    var startDate = new Date(startDateStr);
+    var endDate   = new Date(endDateStr);
+
+    // 6. 核心逻辑：开始日期 > 结束日期？ → 不合法！
+    if (startDate > endDate) {
+        alert("❌ 开始日期不能晚于结束日期！\n请调整：开始日期开始 ≤ 开始日期结束");
+        startWidget.setValue("");
+        return false;
+    }
+
+
+    // ✅ 校验通过
+    return true;
+}
+
+// 执行校验并返回结果（关键！必须 return false 阻止提交）
+return validateDateRange();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="startStartDate"/>
+<LabelName name="startStartDate"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="planStartDate_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<EMSG>
+<![CDATA[贷款开始日期不可为空]]></EMSG>
+<DateAttr/>
+<widgetValue>
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[='']]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="333" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="开始日期开始"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保开始日期开始"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[开始日期起]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="240" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="isCirculate"/>
+<LabelName name="isCirculate"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="counterGuarantee"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="1" value="是"/>
+<Dict key="0" value="否"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="1029" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="额度循环"/>
+<LabelName name="折算币种"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="是否反担保"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[额度循环]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="936" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="协议编号"/>
+<LabelName name="债权人"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保合同编号"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[协议编号]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="120" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="structureVersion"/>
+<LabelName name="组织架构"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgStructure_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[structureVersion]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="101" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="orgStructure"/>
+<LabelName name="组织架构"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgStructure_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="id" viName="version"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[orgStructure]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="101" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<Listener event="click" name="点击2">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[var sheet1Widgets = [
+  "orgStructure",
+"structureVersion",
+"startStartDate",
+"endStartDate",
+"startEndDate",
+"endEndDate",
+"structureVersion",
+"orgId",
+"orgTag",
+"contain",
+"isCirculate",
+"creditProtocolType",
+"financeBankCode",
+"financeBankName",
+"creditProductCode",
+"convertCurrencyCode",
+"contractCode",
+"cols",
+"creditType",
+"bizType"
+]A;
+
+  var form = this.options.form;
+ sheet1Widgets.forEach(function(name) {
+            console.log("sheet1Widgets 重置开始");
+            form.getWidgetByName(name).reset();
+        });
+       
+
+
+this.options.form.getWidgetByName("cols").setValue('授信类型,协议编号,被授信人,授信机构,机构网点,协议类型,额度循环,币种,授信总额,已用授信总额,可用授信总额,敞口额度,可用敞口额度,敞口受限额度,受限说明,备注,协议开始日,协议截止日,增信方式,担保单位,抵质押物名称,授信产品,产品币种,产品授信额度,产品已用授信,产品可用授信,产品敞口额度,产品敞口已用,产品敞口可用,产品敞口受限,产品低风险额度,产品低风险已用,产品低风险可用');]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="Reload"/>
+<LabelName name="出票人名称"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="Reload_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaNormalButtonTheme">
+<FollowingTheme styleSetting="true"/>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+<ButtonBackground>
+<initial>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</color>
+</Background>
+</initial>
+<over>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-864773453" hor="-1" ver="-1"/>
+</color>
+</Background>
+</over>
+<click>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-864773453" hor="-1" ver="-1"/>
+</color>
+</Background>
+</click>
+</ButtonBackground>
+</WidgetTheme>
+</WidgetAttr>
+<Text>
+<![CDATA[重置]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="981" y="155" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="Search"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="Search_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaNormalButtonTheme">
+<FollowingTheme styleSetting="true"/>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+<ButtonBackground>
+<initial>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</color>
+</Background>
+</initial>
+<over>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-864773453" hor="-1" ver="-1"/>
+</color>
+</Background>
+</over>
+<click>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-864773453" hor="-1" ver="-1"/>
+</color>
+</Background>
+</click>
+</ButtonBackground>
+</WidgetTheme>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="1075" y="155" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="cols"/>
+<LabelName name="动态列"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="cols_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.ParaEditorTheme">
+<FollowingTheme styleSetting="true"/>
+<ThemeColor>
+<FineColor color="-13732432" hor="-1" ver="-1"/>
+</ThemeColor>
+<selectBackgroundColor>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</selectBackgroundColor>
+<BorderStyle radius="2.0" lineType="1">
+<borderColor>
+<FineColor color="-1720411469" hor="-1" ver="-1"/>
+</borderColor>
+</BorderStyle>
+<Background name="ColorBackground">
+<color>
+<FineColor color="259300019" hor="-1" ver="-1"/>
+</color>
+</Background>
+<IconColor>
+<FineColor color="-9135437" hor="-1" ver="-1"/>
+</IconColor>
+<FontStyle fontSize="12" fontName="宋体" bold="false" italic="false">
+<fontColor>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</fontColor>
+</FontStyle>
+</WidgetTheme>
+</WidgetAttr>
+<EMSG>
+<![CDATA[列不允许为空]]></EMSG>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<fontSize>
+<![CDATA[10]]></fontSize>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="creditType" value="授信类型"/>
+<Dict key="contractCode" value="协议编号"/>
+<Dict key="applyOrgName" value="被授信人"/>
+<Dict key="financeBankName" value="授信机构"/>
+<Dict key="financeBankPointName" value="机构网点"/>
+<Dict key="creditProtocolTypeName" value="协议类型"/>
+<Dict key="isCirculate" value="额度循环"/>
+<Dict key="currencyCode" value="币种"/>
+<Dict key="amount" value="授信总额"/>
+<Dict key="occupiedAmount" value="已用授信总额"/>
+<Dict key="availableAmount" value="可用授信总额"/>
+<Dict key="openAmount" value="敞口额度"/>
+<Dict key="occupiedOpenAmount" value="已用敞口额度"/>
+<Dict key="availableOpenAmount" value="可用敞口额度"/>
+<Dict key="restrictedAmount" value="敞口受限额度"/>
+<Dict key="restrictedMemo" value="受限说明"/>
+<Dict key="memo" value="备注"/>
+<Dict key="effectiveDate" value="协议开始日"/>
+<Dict key="endDate" value="协议截止日"/>
+<Dict key="creditEnhancementWayName" value="增信方式"/>
+<Dict key="guaranteeOrgNames" value="担保单位"/>
+<Dict key="pledgeNames" value="抵质押物名称"/>
+<Dict key="creditProductCode" value="授信产品"/>
+<Dict key="productCurrencyCode" value="产品币种"/>
+<Dict key="productAmount" value="产品授信额度"/>
+<Dict key="productOccupiedAmount" value="产品已用授信"/>
+<Dict key="productAvailableAmount" value="产品可用授信"/>
+<Dict key="productOpenAmount" value="产品敞口额度"/>
+<Dict key="productOpenOccupiedAmount" value="产品敞口已用"/>
+<Dict key="productOpenAvailableAmount" value="产品敞口可用"/>
+<Dict key="productRestrictedAmount" value="产品敞口受限"/>
+<Dict key="productLowRiskAmount" value="产品低风险额度"/>
+<Dict key="productLowRiskOccupiedAmount" value="产品低风险已用"/>
+<Dict key="productLowRiskAvailableAmount" value="产品低风险可用"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[授信类型,协议编号,被授信人,授信机构,机构网点,协议类型,额度循环,币种,授信总额,已用授信总额,可用授信总额,敞口额度,可用敞口额度,敞口受限额度,受限说明,备注,协议开始日,协议截止日,增信方式,担保单位,抵质押物名称,授信产品,产品币种,产品授信额度,产品已用授信,产品可用授信,产品敞口额度,产品敞口已用,产品敞口可用,产品敞口受限,产品低风险额度,产品低风险已用,产品低风险可用]]></O>
+</widgetValue>
+<RAAttr/>
+</InnerWidget>
+<BoundsAttr x="100" y="155" width="876" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Label统计列"/>
+<LabelName name="折算币种"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="Label统计列_c"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[动态列]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="155" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="架构版本"/>
+<WidgetID widgetID="b84da362-47be-456f-b5e4-1ffaf37f1a93"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="l架构版本"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[架构版本]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="组织架构"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="l组织架构"/>
+<PrivilegeControl/>
+<WidgetTheme class="com.fr.widgettheme.theme.widget.theme.LabelTheme">
+<FollowingTheme styleSetting="true"/>
+<FRFont name="宋体" style="0" size="96">
+<foreground>
+<FineColor color="-16179648" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+</WidgetTheme>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[组织架构]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="11" width="89" height="28"/>
+</Widget>
+<ShowBookmarks showBookmarks="false"/>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="orgStructure"/>
+<Widget widgetName="startStartDate"/>
+<Widget widgetName="endStartDate"/>
+<Widget widgetName="startEndDate"/>
+<Widget widgetName="endEndDate"/>
+<Widget widgetName="structureVersion"/>
+<Widget widgetName="orgId"/>
+<Widget widgetName="orgTag"/>
+<Widget widgetName="contain"/>
+<Widget widgetName="isCirculate"/>
+<Widget widgetName="creditProtocolType"/>
+<Widget widgetName="financeBankCode"/>
+<Widget widgetName="financeBankName"/>
+<Widget widgetName="creditProductCode"/>
+<Widget widgetName="convertCurrencyCode"/>
+<Widget widgetName="contractCode"/>
+<Widget widgetName="bizType"/>
+<Widget widgetName="creditType"/>
+<Widget widgetName="cols"/>
+<Widget widgetName="Reload"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="listBoolean"/>
+<Widget widgetName="fr_usercode"/>
+<Widget widgetName="fine_username9"/>
+</MobileWidgetList>
+<FrozenWidgets/>
+<MobileBookMarkStyle class="com.fr.form.ui.mobile.impl.DefaultMobileBookMarkStyle"/>
+<Display display="true"/>
+<DelayDisplayContent delay="false"/>
+<UseParamsTemplate use="true"/>
+<paramFireStopEdit fireEvent="false"/>
+<Position position="0"/>
+<Design_Width design_width="1267"/>
+<NameTagModified/>
+<WidgetNameTagMap/>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+<ParamStyle class="com.fr.form.ui.mobile.impl.DefaultMobileParameterStyle"/>
+<FollowingTheme background="true"/>
+</Layout>
+<DesignAttr width="1267" height="190"/>
+</ParameterUI>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-723465" hor="-1" ver="-1"/>
+</color>
+</Background>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1447425" hor="-1" ver="-1"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style style_name="默认" full="true" border_source="-1" imageLayout="1">
+<FRFont name="simhei" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat" roundingMode="6">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80">
+<foreground>
+<FineColor color="-8163329" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<Format class="com.fr.general.date.FineDateFormat">
+<![CDATA[yyyy-MM-dd]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+</Border>
+</Style>
+</StyleList>
+<DesensitizationList/>
+<DesignerVersion DesignerVersion="LAA"/>
+<PreviewType PreviewType="2"/>
+<TemplateThemeAttrMark class="com.fr.base.iofile.attr.TemplateThemeAttrMark">
+<TemplateThemeAttrMark name="经典浅灰" dark="false"/>
+</TemplateThemeAttrMark>
+<StrategyConfigsAttr class="com.fr.esd.core.strategy.persistence.StrategyConfigsAttr">
+<StrategyConfigs>
+<StrategyConfig dsName="sys_bank" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="orgTageCode" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="orgStructure" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="organization" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="融资品种" enabled="true" useGlobal="false" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="currency" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="structureVersion" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+</StrategyConfigs>
+</StrategyConfigsAttr>
+<ForkIdAttrMark class="com.fr.base.iofile.attr.ForkIdAttrMark">
+<ForkIdAttrMark forkId="f3af09b0-de9a-4558-81fe-d7952b2a9c4f"/>
+</ForkIdAttrMark>
+<TemplateCloudInfoAttrMark class="com.fr.plugin.cloud.analytics.attr.TemplateInfoAttrMark" pluginID="com.fr.plugin.cloud.analytics.v11" plugin-version="3.37.17">
+<TemplateCloudInfoAttrMark createTime="1756100971823"/>
+</TemplateCloudInfoAttrMark>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="f3af09b0-de9a-4558-81fe-d7952b2a9c4f"/>
+</TemplateIdAttMark>
+</WorkBook>
