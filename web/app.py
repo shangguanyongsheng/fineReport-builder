@@ -366,6 +366,7 @@ def generate_report_v2():
         column_mapping = data.get('column_mapping', {})
         filter_components = data.get('filter_components', [])
         report_info = data.get('report', {})
+        enable_dynamic_columns = data.get('enable_dynamic_columns', False)  # 动态列开关
         
         logger.info(f"数据源类型: {datasource.get('type')}")
         logger.info(f"列映射: {column_mapping}")
@@ -377,7 +378,8 @@ def generate_report_v2():
             'sheet_name': report_info.get('sheet_name', 'Sheet1'),
             'data_sources': [],
             'filter_controls': [],
-            'cells': []
+            'cells': [],
+            'enable_dynamic_columns': enable_dynamic_columns  # 动态列开关
         }
         
         # 数据源配置
@@ -503,11 +505,14 @@ def generate_report_v2():
         # 支持两种格式：
         # 1. 简单格式：{"A": "tenantId"} - 表头和字段都用 tenantId
         # 2. 详细格式：{"A": {"header": "租户ID", "field": "tenantId"}} - 表头用中文，字段用英文名
-        
+
+        # 收集所有表头名称（用于动态列）
+        column_headers = []
+
         row = 0  # 表头行
         for col_letter, mapping_value in column_mapping.items():
             col_num = ord(col_letter.upper()) - ord('A')
-            
+
             # 解析映射值
             if isinstance(mapping_value, dict):
                 header_name = mapping_value.get('header', mapping_value.get('field', ''))
@@ -516,10 +521,13 @@ def generate_report_v2():
                 # 简单格式，表头和字段相同
                 header_name = mapping_value
                 field_name = mapping_value
-            
-            if not field_name:
+
+            # 只要有表头就添加（字段名可以为空）
+            if not header_name:
                 continue
-            
+
+            column_headers.append(header_name)
+
             # 表头单元格
             cell = {
                 'column': col_num,
@@ -558,8 +566,13 @@ def generate_report_v2():
             }
             cpt_config['cells'].append(cell)
             logger.debug(f"数据单元格: {col_letter}({col_num}) -> {field_name}")
-        
+
         logger.info(f"单元格配置完成，共 {len(cpt_config['cells'])} 个")
+
+        # 动态列配置：传递表头名称列表
+        if enable_dynamic_columns and column_headers:
+            cpt_config['column_headers'] = column_headers
+            logger.info(f"启用动态列，列名: {column_headers}")
 
         # 行高列宽配置
         row_height = data.get('row_height', {})

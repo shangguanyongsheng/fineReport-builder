@@ -308,6 +308,16 @@
                 
                 <div id="mappingFormMode">
                     <p class="help-text mb-3">每列配置：第1行=表头（中文），第2行=字段名（英文）</p>
+
+                    <!-- 动态列选项 -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="enableDynamicColumns" checked>
+                        <label class="form-check-label" for="enableDynamicColumns">
+                            启用动态列（用户可选择显示/隐藏列）
+                        </label>
+                        <small class="text-muted d-block mt-1">动态列组件将添加到筛选区域最后一行，默认显示全部列</small>
+                    </div>
+
                     <div class="row g-2 mb-2 align-items-center">
                         <div class="col-auto"><small class="text-muted">列</small></div>
                         <div class="col-3"><small class="text-muted">表头（A1行）</small></div>
@@ -1141,21 +1151,25 @@
             }
             
             // 列映射 - 新格式：{"A": {"header": "序号", "field": "tenantId"}}
+            // 修改：只要有表头就加入，字段名可以为空
             for (let i = 0; i < 18; i++) {
                 const colLetter = String.fromCharCode(65 + i);  // A, B, C... R
                 const headerInput = document.getElementById(`col_${i}_header`);
                 const fieldInput = document.getElementById(`col_${i}_field`);
                 const header = headerInput?.value?.trim();
-                const field = fieldInput?.value?.trim();
-                
-                if (field) {
+                const field = fieldInput?.value?.trim() || '';
+
+                if (header) {
                     config.column_mapping[colLetter] = {
-                        header: header || field,  // 如果没填表头，用字段名
+                        header: header,
                         field: field
                     };
                 }
             }
-            
+
+            // 动态列配置
+            config.enable_dynamic_columns = document.getElementById('enableDynamicColumns')?.checked || false;
+
             // 筛选组件 - 从每行 JSON 输入收集
             const filterRows = document.querySelectorAll('.filter-row-json');
             filterRows.forEach((textarea, rowIndex) => {
@@ -1216,7 +1230,8 @@
                         column_mapping: config.column_mapping,
                         filter_components: config.filter_components,
                         styles: config.styles,
-                        report: config.report
+                        report: config.report,
+                        enable_dynamic_columns: config.enable_dynamic_columns
                     })
                 });
                 

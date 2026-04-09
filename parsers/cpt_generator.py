@@ -48,7 +48,7 @@ class CPTGenerator:
         root.append(report)
         
         # 4. 参数面板
-        report_parameter_attr = self._generate_parameter_attr(config.get('filter_controls', []))
+        report_parameter_attr = self._generate_parameter_attr(config.get('filter_controls', []), config)
         root.append(report_parameter_attr)
         
         # 5. 样式列表
@@ -180,9 +180,18 @@ class CPTGenerator:
         
         # 单元格列表
         cell_list = ET.SubElement(report, 'CellElementList')
-        
+
+        # 获取动态列配置
+        column_headers = config.get('column_headers', [])
+        enable_dynamic_columns = config.get('enable_dynamic_columns', False)
+
         for cell in config.get('cells', []):
-            cell_elem = self._generate_cell(cell)
+            # 传递动态列配置给单元格生成
+            cell_elem = self._generate_cell(
+                cell,
+                column_headers=column_headers,
+                enable_dynamic_columns=enable_dynamic_columns
+            )
             cell_list.append(cell_elem)
         
         # 报表属性设置
@@ -195,63 +204,117 @@ class CPTGenerator:
         
         return report
     
-    def _generate_cell(self, cell: Dict) -> ET.Element:
-        """生成单元格元素"""
+    def _generate_cell(self, cell: Dict, column_headers: List[str] = None,
+                        enable_dynamic_columns: bool = False) -> ET.Element:
+        """生成单元格元素
+
+        Args:
+            cell: 单元格配置
+            column_headers: 表头名称列表（用于动态列条件）
+            enable_dynamic_columns: 是否启用动态列
+        """
+        if column_headers is None:
+            column_headers = []
+
         cell_elem = ET.Element('C')
         cell_elem.set('c', str(cell.get('column', 0)))
         cell_elem.set('r', str(cell.get('row', 0)))
-        
+
         if cell.get('row_span', 1) > 1:
             cell_elem.set('rs', str(cell['row_span']))
         if cell.get('col_span', 1) > 1:
             cell_elem.set('cs', str(cell['col_span']))
-        
+
         # 样式
         if cell.get('style_index'):
             cell_elem.set('s', str(cell['style_index']))
-        
+
         # 值
         value = cell.get('value', '')
         value_type = cell.get('value_type', 'text')
-        
+
         value_elem = ET.SubElement(cell_elem, 'O')
-        
+
         if value_type == 'DSColumn':
             value_elem.set('t', 'DSColumn')
             attrs = ET.SubElement(value_elem, 'Attributes')
             attrs.set('dsName', cell.get('data_source', ''))
             attrs.set('columnName', cell.get('column_name', ''))
-            
+
             # 扩展
             expand = ET.SubElement(cell_elem, 'Expand')
             if cell.get('expand_dir'):
                 expand.set('dir', str(cell['expand_dir']))
-        
+
         elif value_type == 'Formula':
             value_elem.set('t', 'XMLable')
             value_elem.set('class', 'com.fr.base.Formula')
             attrs = ET.SubElement(value_elem, 'Attributes')
             attrs.text = value
-        
+
         else:
             value_elem.text = value
-        
+
         # 权限控制
+        privilege = ET.SubElement(cell_elem, 'PrivilegeControl')
+
+        # ===== 动态列条件属性（仅表头行）=====
+        is_header_row = cell.get('row', 0) == 0
+        if enable_dynamic_columns and is_header_row and value:
+            # 获取当前列的表头名称
+            header_name = str(value)
+            if header_name in column_headers:
+                self._add_dynamic_column_condition(cell_elem, header_name)
+
+        return cell_elem
+
+    def _add_dynamic_column_condition(self, cell_elem: ET.Element, header_name: str):
+        """为单元格添加动态列条件属性
+
+        条件公式：INARRAY('表头名称', $cols) = 0
+        当表头名称不在选中列表时，设置列宽=0（隐藏该列）
+        """
+        highlight_list = ET.SubElement(cell_elem, 'HighlightList')
+
+        highlight = ET.SubElement(highlight_list, 'Highlight')
+        highlight.set('class', 'com.fr.report.cell.cellattr.highlight.DefaultHighlight')
+
+        # 条件名称
+        name = ET.SubElement(highlight, 'Name')
+        name.text = '条件属性1'
+
+        # 条件公式
+        condition = ET.SubElement(highlight, 'Condition')
+        condition.set('class', 'com.fr.data.condition.FormulaCondition')
+
+        formula = ET.SubElement(condition, 'Formula')
+        # 使用中文名称判断
+        formula.text = f"INARRAY('{header_name}',$cols) = 0"
+
+        # 动作：设置列宽为0（隐藏列）
+        action = ET.SubElement(highlight, 'HighlightAction')
+        action.set('class', 'com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction')
         privilege = ET.SubElement(cell_elem, 'PrivilegeControl')
         
         return cell_elem
     
-    def _generate_parameter_attr(self, controls: List[Dict]) -> ET.Element:
+    def _generate_parameter_attr(self, controls: List[Dict], config: Dict = None) -> ET.Element:
         """生成参数面板
-        
+
         布局规则：一行 5 对组件（Label + 输入控件）
-        - Label 宽度: 70px
-        - 输入控件宽度: 135px  
-        - 每对间距: 10px
-        - 行间距: 10px
+        - Label 宽度: 89px
+        - 输入控件宽度: 135px
+        - Label与输入框间距: 4px
+        - 同一行组件对间距: 4px
+        - 行间距: 8px
+
+        支持动态列：在筛选区域最后一行添加动态列组件
         """
+        if config is None:
+            config = {}
+
         param_attr = ET.Element('ReportParameterAttr')
-        
+
         # 属性
         attrs = ET.SubElement(param_attr, 'Attributes')
         attrs.set('showWindow', 'true')
@@ -260,22 +323,22 @@ class CPTGenerator:
         attrs.set('align', '0')
         attrs.set('useParamsTemplate', 'true')
         attrs.set('currentIndex', '0')
-        
+
         # 标题
         title = ET.SubElement(param_attr, 'PWTitle')
         title.text = '参数'
-        
+
         # 参数 UI
         param_ui = ET.SubElement(param_attr, 'ParameterUI')
         param_ui.set('class', 'com.fr.form.main.parameter.FormParameterUI')
-        
+
         # 布局
         layout = ET.SubElement(param_ui, 'Layout')
         layout.set('class', 'com.fr.form.ui.container.WParameterLayout')
-        
+
         widget_name = ET.SubElement(layout, 'WidgetName')
         widget_name.set('name', 'para')
-        
+
         # ===== 筛选组件布局规范 =====
         LABEL_WIDTH = 89      # Label 控件宽度（规范：89）
         INPUT_WIDTH = 135     # 输入控件宽度（规范：135）
@@ -285,21 +348,21 @@ class CPTGenerator:
         PAIRS_PER_ROW = 5     # 每行组件对数
         START_X = 10          # 起始 X 坐标
         START_Y = 10          # 起始 Y 坐标
-        
+
         # 生成控件（每对：Label + 输入控件）
         widget_index = 0
         for i, ctrl in enumerate(controls):
             # 计算位置
             row = i // PAIRS_PER_ROW
             col = i % PAIRS_PER_ROW
-            
+
             # 每对的总宽度 = Label + 横向间距 + Input
             pair_width = LABEL_WIDTH + LABEL_INPUT_GAP + INPUT_WIDTH
             # 每对之间的间距（同一行组件间距统一为4px）
             PAIR_GAP = 4
             pair_start_x = START_X + col * (pair_width + PAIR_GAP)
             pair_start_y = START_Y + row * (ROW_HEIGHT + ROW_GAP)
-            
+
             # 1. 生成 Label 控件
             label_text = ctrl.get('label', ctrl.get('name', f'控件{i+1}'))
             label_widget = self._generate_label_widget(
@@ -312,10 +375,10 @@ class CPTGenerator:
             )
             layout.append(label_widget)
             widget_index += 1
-            
+
             # 2. 生成输入控件
             input_widget = self._generate_widget(
-                ctrl, 
+                ctrl,
                 x=pair_start_x + LABEL_WIDTH + LABEL_INPUT_GAP,
                 y=pair_start_y,
                 width=INPUT_WIDTH,
@@ -324,7 +387,44 @@ class CPTGenerator:
             )
             layout.append(input_widget)
             widget_index += 1
-        
+
+        # ===== 动态列组件（放在最后一行）=====
+        column_headers = config.get('column_headers', [])
+        enable_dynamic_columns = config.get('enable_dynamic_columns', False)
+
+        if enable_dynamic_columns and column_headers:
+            # 计算动态列组件位置（最后一行）
+            last_row = (len(controls) - 1) // PAIRS_PER_ROW + 1 if controls else 0
+            dynamic_col = 0  # 放在行的第一个位置
+
+            pair_width = LABEL_WIDTH + LABEL_INPUT_GAP + INPUT_WIDTH
+            PAIR_GAP = 4
+            pair_start_x = START_X + dynamic_col * (pair_width + PAIR_GAP)
+            pair_start_y = START_Y + last_row * (ROW_HEIGHT + ROW_GAP)
+
+            # 生成动态列 Label
+            label_widget = self._generate_label_widget(
+                text='动态列',
+                x=pair_start_x,
+                y=pair_start_y,
+                width=LABEL_WIDTH,
+                height=ROW_HEIGHT,
+                index=widget_index
+            )
+            layout.append(label_widget)
+            widget_index += 1
+
+            # 生成动态列 ComboCheckBox
+            dynamic_widget = self._generate_dynamic_column_widget(
+                column_headers=column_headers,
+                x=pair_start_x + LABEL_WIDTH + LABEL_INPUT_GAP,
+                y=pair_start_y,
+                width=INPUT_WIDTH,
+                height=ROW_HEIGHT,
+                index=widget_index
+            )
+            layout.append(dynamic_widget)
+
         return param_attr
     
     def _generate_label_widget(self, text: str, x: int, y: int, width: int, height: int, index: int) -> ET.Element:
@@ -399,7 +499,63 @@ class CPTGenerator:
         bounds.set('y', str(y if y is not None else ctrl.get('y', 10)))
         bounds.set('width', str(width))
         bounds.set('height', str(height))
-        
+
+        return widget
+
+    def _generate_dynamic_column_widget(self, column_headers: List[str], x: int, y: int,
+                                          width: int, height: int, index: int) -> ET.Element:
+        """生成动态列 ComboCheckBox 组件
+
+        Args:
+            column_headers: 表头名称列表（用于下拉选项）
+            x, y: 位置坐标
+            width, height: 尺寸
+            index: 控件索引
+        """
+        widget = ET.Element('Widget')
+        widget.set('class', 'com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget')
+
+        inner = ET.SubElement(widget, 'InnerWidget')
+        inner.set('class', 'com.fr.form.ui.ComboCheckBox')
+
+        # 控件名称（固定为 cols）
+        name = ET.SubElement(inner, 'WidgetName')
+        name.set('name', 'cols')
+
+        # 标签名称
+        label_name = ET.SubElement(inner, 'LabelName')
+        label_name.set('name', '动态列')
+
+        # 控件属性
+        widget_attr = ET.SubElement(inner, 'WidgetAttr')
+        widget_attr.set('aspectRatioLocked', 'false')
+
+        # 权限控制
+        privilege = ET.SubElement(inner, 'PrivilegeControl')
+
+        # 数据字典（表头名称作为 key 和 value）
+        dictionary = ET.SubElement(inner, 'Dictionary')
+        dictionary.set('class', 'com.fr.data.impl.CustomDictionary')
+
+        dict_attr = ET.SubElement(dictionary, 'CustomDictAttr')
+        for header in column_headers:
+            dict_item = ET.SubElement(dict_attr, 'Dict')
+            dict_item.set('key', header)
+            dict_item.set('value', header)
+
+        # 默认值：全部列
+        widget_value = ET.SubElement(inner, 'widgetValue')
+        o = ET.SubElement(widget_value, 'O')
+        # 使用逗号分隔的所有表头名称作为默认值
+        o.text = ','.join(column_headers)
+
+        # 位置
+        bounds = ET.SubElement(widget, 'BoundsAttr')
+        bounds.set('x', str(x))
+        bounds.set('y', str(y))
+        bounds.set('width', str(width))
+        bounds.set('height', str(height))
+
         return widget
     
     def _generate_style_list(self, styles: List[Dict]) -> ET.Element:
