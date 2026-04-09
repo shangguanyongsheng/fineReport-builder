@@ -64,20 +64,23 @@ class CPTGenerator:
     def _generate_table_data_map(self, data_sources: List[Dict]) -> ET.Element:
         """生成数据源映射"""
         table_data_map = ET.Element('TableDataMap')
-        
+
         for ds in data_sources:
             table_data = ET.SubElement(table_data_map, 'TableData')
             table_data.set('name', ds.get('name', ''))
             table_data.set('class', f"com.fr.data.impl.{ds.get('type', 'DBTableData')}")
-            
+
             # 脱敏设置
             desensitizations = ET.SubElement(table_data, 'Desensitizations')
             desensitizations.set('desensitizeOpen', 'false')
-            
-            # 参数
-            if ds.get('parameters'):
+
+            # 参数 - 对于 ClassTableData，即使参数为空也要生成 Parameters 节点
+            # 帆软设计器需要看到参数定义才能正确绑定
+            is_class_table_data = ds.get('type') == 'ClassTableData' or ds.get('class_name')
+            if 'parameters' in ds or is_class_table_data:
+                params = ds.get('parameters', [])
                 params_elem = ET.SubElement(table_data, 'Parameters')
-                for param in ds['parameters']:
+                for param in params:
                     param_elem = ET.SubElement(params_elem, 'Parameter')
                     attr = ET.SubElement(param_elem, 'Attributes')
                     attr.set('name', param.get('name', ''))
@@ -136,11 +139,44 @@ class CPTGenerator:
         use_elem.set('WRITE', 'false')
         
         # 行高列宽
+        # 模板实际值：
+        # - 表头行高: 107.7pt = 1368000 EMU
+        # - 数据行高: 57pt = 723900 EMU
+        # - 数据列宽: 362.8pt = 4608000 EMU
+        # - 默认列宽: 216pt = 2743200 EMU
+        row_height_config = config.get('row_height', {})
+        col_width_config = config.get('column_width', {})
+
+        # 默认值
+        default_row_height = row_height_config.get('default', 723900)  # 57pt
+        default_col_width = col_width_config.get('default', 2743200)   # 216pt
+        header_row_height = row_height_config.get('header', 1368000)   # 107.7pt 表头行高
+        data_col_width = col_width_config.get('data', 4608000)         # 362.8pt 数据列宽
+
+        # 计算行高列表（根据单元格行数）
+        max_row = max([c.get('row', 0) for c in config.get('cells', [])], default=0)
+        row_heights = []
+        for r in range(max_row + 1):
+            if r == 0:
+                row_heights.append(str(header_row_height))  # 表头行
+            else:
+                row_heights.append(str(default_row_height))  # 数据行
+
         row_height = ET.SubElement(report, 'RowHeight')
-        row_height.set('defaultValue', '723900')
-        
+        row_height.set('defaultValue', str(default_row_height))
+        if row_heights:
+            row_height.text = '<![CDATA[' + ','.join(row_heights) + ']]>'
+
+        # 计算列宽列表（根据单元格列数）
+        max_col = max([c.get('column', 0) for c in config.get('cells', [])], default=0)
+        col_widths = []
+        for c in range(max_col + 1):
+            col_widths.append(str(data_col_width))
+
         col_width = ET.SubElement(report, 'ColumnWidth')
-        col_width.set('defaultValue', '2743200')
+        col_width.set('defaultValue', str(default_col_width))
+        if col_widths:
+            col_width.text = '<![CDATA[' + ','.join(col_widths) + ']]>'
         
         # 单元格列表
         cell_list = ET.SubElement(report, 'CellElementList')
@@ -393,14 +429,19 @@ class CPTGenerator:
         return style_list
     
     def _get_default_styles(self) -> List[Dict]:
-        """获取默认样式集（规范：表头背景 RGB 233,233,255 → -16771561，边框 RGB 218,226,246 → -2432266）"""
+        """获取默认样式集
+
+        颜色计算说明（Java 有符号整数）：
+        - RGB(233, 233, 255) = 0xFFE9E9FF = -1447425（表头背景）
+        - RGB(218, 226, 246) = 0xFFDAE2F6 = -2432266（边框颜色）
+        """
         return [
             # Style 0: 表头左列样式（规范背景色，左对齐）
             {
                 "name": "表头左列",
                 "horizontal_alignment": "2",
                 "font": {"name": "SimSun", "style": "0", "size": "80"},
-                "background": "-16771561",  # RGB(233, 233, 255) 规范：淡蓝色背景
+                "background": "-1447425",  # RGB(233, 233, 255) 表头背景色
                 "border": True
             },
             # Style 1: 表头样式（规范背景色，左对齐）
@@ -408,7 +449,7 @@ class CPTGenerator:
                 "name": "表头",
                 "horizontal_alignment": "2",
                 "font": {"name": "宋体", "style": "0", "size": "80"},
-                "background": "-16771561",  # RGB(233, 233, 255) 规范：淡蓝色背景
+                "background": "-1447425",  # RGB(233, 233, 255) 表头背景色
                 "border": True
             },
             # Style 2: 数据样式（无背景，左对齐，有边框）
@@ -442,15 +483,13 @@ class CPTGenerator:
     def _create_style_element(self, config: Dict) -> ET.Element:
         """创建单个样式元素"""
         style = ET.Element('Style')
-        
-        # 样式名称
-        style.set('style_name', str(config.get('name', 'Style')))
-        
+
         # 默认样式标记
         if config.get('is_default'):
+            style.set('style_name', str(config.get('name', 'Style')))
             style.set('full', 'true')
             style.set('border_source', '-1')
-        
+
         # 对齐方式 - 确保转换为字符串
         if config.get('horizontal_alignment') is not None:
             style.set('horizontal_alignment', str(config['horizontal_alignment']))
@@ -476,6 +515,8 @@ class CPTGenerator:
             fg = ET.SubElement(font, 'foreground')
             color = ET.SubElement(fg, 'FineColor')
             color.set('color', str(font_config['color']))
+            color.set('hor', '-1')
+            color.set('ver', '-1')
         
         # 背景
         bg = ET.SubElement(style, 'Background')
@@ -485,17 +526,22 @@ class CPTGenerator:
             color_elem = ET.SubElement(bg, 'color')
             fine_color = ET.SubElement(color_elem, 'FineColor')
             fine_color.set('color', str(bg_color))
+            fine_color.set('hor', '-1')
+            fine_color.set('ver', '-1')
         else:
             bg.set('name', 'NullBackground')
-        
+
         # 边框
         if config.get('border'):
             border = ET.SubElement(style, 'Border')
             for side in ['Top', 'Bottom', 'Left', 'Right']:
                 side_elem = ET.SubElement(border, side)
                 side_elem.set('style', '1')
-                color = ET.SubElement(side_elem, 'FineColor')
-                color.set('color', '-2432266')  # RGB(218, 226, 246) 规范：淡蓝色边框
+                color = ET.SubElement(side_elem, 'color')
+                fine_color = ET.SubElement(color, 'FineColor')
+                fine_color.set('color', '-2432266')  # RGB(218, 226, 246) 边框颜色
+                fine_color.set('hor', '-1')
+                fine_color.set('ver', '-1')
         elif config.get('is_default'):
             ET.SubElement(style, 'Border')
         
@@ -524,19 +570,47 @@ class CPTGenerator:
     def _prettify(self, elem: ET.Element) -> str:
         """格式化 XML 输出"""
         rough_string = ET.tostring(elem, encoding='unicode')
-        
+
         # 使用 minidom 格式化
         dom = minidom.parseString(rough_string)
         pretty = dom.toprettyxml(indent='', encoding=None)
-        
+
         # 移除空行
         lines = [line for line in pretty.split('\n') if line.strip()]
-        
+
         # 添加 XML 声明
         if not lines[0].startswith('<?xml'):
             lines.insert(0, '<?xml version="1.0" encoding="UTF-8"?>')
-        
-        return '\n'.join(lines)
+
+        result = '\n'.join(lines)
+
+        import re
+
+        # 处理 CDATA 转义（行高列宽等）
+        result = result.replace('&lt;![CDATA[', '<![CDATA[')
+        result = result.replace(']]&gt;', ']]>')
+
+        # 帆软兼容性处理：将 <O/> 和 <O></O> 转换为 CDATA 格式
+        # <O/> -> <O>\n<![CDATA[]]></O>
+        # <O>value</O> -> <O>\n<![CDATA[value]]></O>
+
+        # 处理自闭合标签 <O/>
+        result = re.sub(r'<O\s*/>', '<O>\n<![CDATA[]]></O>', result)
+
+        # 处理空标签 <O></O>
+        result = re.sub(r'<O></O>', '<O>\n<![CDATA[]]></O>', result)
+
+        # 处理有值的标签 <O>value</O>
+        # 注意：不处理已经包含 CDATA 的标签
+        def replace_o_tag(match):
+            content = match.group(1)
+            if 'CDATA' in content:
+                return match.group(0)  # 已经是 CDATA，不处理
+            return f'<O>\n<![CDATA[{content}]]></O>'
+
+        result = re.sub(r'<O>([^<]*)</O>', replace_o_tag, result)
+
+        return result
 
 
 # 示例配置

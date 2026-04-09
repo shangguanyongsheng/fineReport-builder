@@ -18,11 +18,11 @@
 
 | 文档 | 说明 |
 |------|------|
-| [Agent 架构设计](docs/AGENT_DESIGN.md) | 双记忆系统、ReAct 循环、进化机制 |
-| [需求确认](docs/REQUIREMENTS.md) | 筛选组件、数据源、列数处理规则 |
+| [知识库索引](docs/KNOWLEDGE.md) | **入口文档**，核心概念速查 |
+| [Agent 架构设计](docs/AGENT_DESIGN.md) | ReAct 循环、双记忆系统、进化机制 |
+| [V3 界面设计](docs/excel-convert-v3-design.md) | Web 界面功能、API 接口 |
 | [数据模型设计](docs/数据模型设计.md) | JSON 配置格式、字段说明 |
-| [配置示例](docs/配置示例文档.md) | 完整配置示例、快速复制模板 |
-| [样式模板](docs/样式模板.md) | 预设样式、颜色对照表 |
+| [需求确认](docs/REQUIREMENTS.md) | 筛选组件、数据源、列数处理规则 |
 
 ---
 

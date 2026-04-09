@@ -400,7 +400,7 @@ def generate_report_v2():
             # 入参格式: [{"paramName": ""}, {"paramName": "defaultValue"}, {"paramName": {complexJSON}}]
             # 每个对象只有一个 key，空值表示从筛选组件获取，有值表示写死默认值
             params = []
-            if isinstance(param_template, list):
+            if isinstance(param_template, list) and len(param_template) > 0:
                 for item in param_template:
                     if isinstance(item, dict):
                         for param_name, param_value in item.items():
@@ -414,13 +414,21 @@ def generate_report_v2():
                             else:
                                 # 简单值：直接作为默认值
                                 params.append({'name': param_name, 'default': str(param_value)})
-            elif isinstance(param_template, dict):
+            elif isinstance(param_template, dict) and len(param_template) > 0:
                 # 兼容旧格式 {"param1": "", "param2": "value"}
                 for k, v in param_template.items():
                     if isinstance(v, (dict, list)):
                         params.append({'name': k, 'default': json.dumps(v, ensure_ascii=False)})
                     else:
                         params.append({'name': k, 'default': v if isinstance(v, str) else ''})
+            else:
+                # 如果没有 parameter_template，从 filter_components 自动推断参数
+                # 这样用户不需要手动填写入参模板，系统会自动绑定筛选组件
+                for comp in filter_components:
+                    code = comp.get('code')
+                    if code:
+                        params.append({'name': code, 'default': ''})
+                logger.info(f"从筛选组件自动推断入参: {[p['name'] for p in params]}")
             logger.info(f"Class 入参: {params}")
             
             # 出参格式: ["field1", "field2", ...] 字段名数组
@@ -542,7 +550,15 @@ def generate_report_v2():
             logger.debug(f"数据单元格: {col_letter}({col_num}) -> {field_name}")
         
         logger.info(f"单元格配置完成，共 {len(cpt_config['cells'])} 个")
-        
+
+        # 行高列宽配置
+        row_height = data.get('row_height', {})
+        column_width = data.get('column_width', {})
+        if row_height:
+            cpt_config['row_height'] = row_height
+        if column_width:
+            cpt_config['column_width'] = column_width
+
         # 生成 CPT 文件
         logger.info("开始生成 CPT 文件...")
         from parsers.cpt_generator import CPTGenerator

@@ -409,30 +409,32 @@
 
     <script>
         // ========== 样式模板 ==========
+        // 颜色说明：RGB(233,233,255) = -1447425（表头背景），RGB(218,226,246) = -2432266（边框）
         const STYLE_TEMPLATES = [
-            // 0: 经典蓝
+            // 0: 经典蓝（默认）
             [
                 {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-1447425", "border": true},
                 {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
                 {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
                 {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"},
                 {"name": "默认", "horizontal_alignment": "0", "font": {"name": "simhei", "size": "72"}}
-            ],
-            // 1: 简约灰
-            [
-                {"name": "表头", "horizontal_alignment": "0", "font": {"name": "宋体", "size": "80"}, "background": "-4144960"},
-                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}},
-                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80"}, "format": "#,##0.00"}
-            ],
-            // 2: 财务报表
-            [
-                {"name": "标题", "horizontal_alignment": "0", "font": {"name": "黑体", "size": "120", "color": "-1"}, "background": "-1447425", "border": true},
-                {"name": "表头", "horizontal_alignment": "0", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
-                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
-                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"},
-                {"name": "合计", "horizontal_alignment": "4", "font": {"name": "宋体", "size": "80", "color": "-65536"}, "background": "-256", "border": true, "format": "#,##0.00"}
             ]
         ];
+
+        // ========== 行高列宽规范 ==========
+        // 单位：EMU (1 pt = 12700 EMU)
+        // 模板实际值：
+        // - 表头行高: 107.7pt = 1368000 EMU
+        // - 数据行高: 57pt = 723900 EMU
+        // - 数据列宽: 362.8pt = 4608000 EMU
+        const ROW_HEIGHT_CONFIG = {
+            default: 723900,    // 57pt - 数据行高
+            header: 1368000     // 107.7pt - 表头行高
+        };
+        const COL_WIDTH_CONFIG = {
+            default: 2743200,   // 216pt - 默认列宽
+            data: 4608000       // 362.8pt - 数据列宽
+        };
 
         // ========== 状态变量 ==========
         let excelFile = null;
@@ -700,15 +702,144 @@
         function setDsMode(mode) {
             document.querySelectorAll('#step2Card .mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            document.getElementById('dsFormMode').style.display = mode === 'form' ? 'block' : 'none';
-            document.getElementById('dsJsonMode').style.display = mode === 'json' ? 'block' : 'none';
+
+            if (mode === 'json') {
+                // 表单 → JSON：收集表单数据并填充到 JSON 编辑器
+                const datasources = [];
+                document.querySelectorAll('.datasource-card').forEach(card => {
+                    const type = card.querySelector('.ds-type').value;
+                    const ds = {
+                        name: card.querySelector('.ds-name').value,
+                        type: type
+                    };
+                    if (type === 'database') {
+                        ds.database = card.querySelector('.ds-database').value;
+                        ds.sql = card.querySelector('.ds-sql').value;
+                    } else {
+                        ds.class_name = card.querySelector('.ds-class-name').value;
+                        try {
+                            ds.return_fields = JSON.parse(card.querySelector('.ds-return-fields').value || '[]');
+                            ds.parameter_template = JSON.parse(card.querySelector('.ds-params').value || '[]');
+                        } catch (e) {
+                            ds.return_fields = [];
+                            ds.parameter_template = [];
+                        }
+                    }
+                    datasources.push(ds);
+                });
+
+                const textarea = document.getElementById('datasourceJson');
+                textarea.value = JSON.stringify(datasources, null, 2);
+                document.getElementById('dsFormMode').style.display = 'none';
+                document.getElementById('dsJsonMode').style.display = 'block';
+            } else {
+                // JSON → 表单：解析 JSON 并重建数据源卡片
+                try {
+                    const textarea = document.getElementById('datasourceJson');
+                    const datasources = JSON.parse(textarea.value || '[]');
+
+                    // 清空现有卡片
+                    document.getElementById('datasourceList').innerHTML = '';
+                    datasourceCount = 0;
+
+                    // 根据 JSON 创建新卡片
+                    datasources.forEach(ds => {
+                        addDatasource();
+                        const card = document.querySelector('.datasource-card:last-child');
+                        card.querySelector('.ds-name').value = ds.name || '';
+                        card.querySelector('.ds-type').value = ds.type || 'database';
+                        toggleDsFields(card.id);
+
+                        if (ds.type === 'database') {
+                            card.querySelector('.ds-database').value = ds.database || '';
+                            card.querySelector('.ds-sql').value = ds.sql || '';
+                        } else {
+                            card.querySelector('.ds-class-name').value = ds.class_name || '';
+                            card.querySelector('.ds-return-fields').value = JSON.stringify(ds.return_fields || []);
+                            card.querySelector('.ds-params').value = JSON.stringify(ds.parameter_template || []);
+                        }
+                    });
+
+                    // 如果没有数据源，添加一个空的
+                    if (datasources.length === 0) {
+                        addDatasource();
+                    }
+
+                } catch (e) {
+                    console.warn('JSON 解析失败:', e);
+                    alert('数据源 JSON 格式错误: ' + e.message);
+                }
+
+                document.getElementById('dsFormMode').style.display = 'block';
+                document.getElementById('dsJsonMode').style.display = 'none';
+            }
         }
         
         function setMappingMode(mode) {
             document.querySelectorAll('#step3Card .mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            document.getElementById('mappingFormMode').style.display = mode === 'form' ? 'block' : 'none';
-            document.getElementById('mappingJsonMode').style.display = mode === 'json' ? 'block' : 'none';
+
+            if (mode === 'json') {
+                // 表单 → JSON：收集表单数据并填充到 JSON 编辑器
+                const mappingJson = {};
+                for (let i = 0; i < 18; i++) {
+                    const colLetter = String.fromCharCode(65 + i);
+                    const headerInput = document.getElementById(`col_${i}_header`);
+                    const fieldInput = document.getElementById(`col_${i}_field`);
+                    const header = headerInput?.value?.trim();
+                    const field = fieldInput?.value?.trim();
+
+                    if (field) {
+                        mappingJson[colLetter] = {
+                            header: header || field,
+                            field: field
+                        };
+                    }
+                }
+
+                const textarea = document.getElementById('mappingJson');
+                textarea.value = JSON.stringify(mappingJson, null, 2);
+                document.getElementById('mappingFormMode').style.display = 'none';
+                document.getElementById('mappingJsonMode').style.display = 'block';
+            } else {
+                // JSON → 表单：解析 JSON 并填充到表单输入框
+                try {
+                    const textarea = document.getElementById('mappingJson');
+                    const mappingJson = JSON.parse(textarea.value || '{}');
+
+                    // 先清空所有表单输入
+                    for (let i = 0; i < 18; i++) {
+                        const headerInput = document.getElementById(`col_${i}_header`);
+                        const fieldInput = document.getElementById(`col_${i}_field`);
+                        if (headerInput) headerInput.value = '';
+                        if (fieldInput) fieldInput.value = '';
+                    }
+
+                    // 填充 JSON 数据
+                    for (const colLetter of Object.keys(mappingJson)) {
+                        const index = colLetter.charCodeAt(0) - 65;  // A=0, B=1...
+                        if (index >= 0 && index < 18) {
+                            const mapping = mappingJson[colLetter];
+                            const headerInput = document.getElementById(`col_${index}_header`);
+                            const fieldInput = document.getElementById(`col_${index}_field`);
+                            if (headerInput && mapping.header) headerInput.value = mapping.header;
+                            if (fieldInput && mapping.field) fieldInput.value = mapping.field;
+                        }
+                    }
+
+                    // 更新列数计数
+                    const maxCol = Math.max(...Object.keys(mappingJson).map(c => c.charCodeAt(0) - 65), -1);
+                    const mappingList = document.getElementById('mappingList');
+                    mappingList.dataset.count = Math.max(maxCol + 1, 6);
+
+                } catch (e) {
+                    console.warn('JSON 解析失败:', e);
+                    alert('JSON 格式错误: ' + e.message);
+                }
+
+                document.getElementById('mappingFormMode').style.display = 'block';
+                document.getElementById('mappingJsonMode').style.display = 'none';
+            }
         }
         
         function setFilterMode(mode) {
@@ -817,13 +948,23 @@
             });
             
             // 样式 - 使用默认规范样式
+            // 颜色：RGB(233,233,255) = -1447425（表头背景），RGB(218,226,246) = -2432266（边框）
             config.styles = [
-                {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-16771561", "border": true},
-                {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-16771561", "border": true},
+                {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-1447425", "border": true},
+                {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
                 {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
                 {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"}
             ];
-            
+
+            // 行高列宽配置
+            // 单位：EMU (1 pt = 12700 EMU)
+            config.row_height = {
+                default: 723900   // 57pt
+            };
+            config.column_width = {
+                default: 2743200  // 216pt
+            };
+
             return config;
         }
         
