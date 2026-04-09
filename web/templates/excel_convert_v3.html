@@ -163,6 +163,20 @@
             font-size: 13px;
             margin-top: 8px;
         }
+
+        .style-preview-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .style-preview-card .card-header {
+            background: #fafafa;
+        }
+        #stylePreviewTable th, #stylePreviewTable td {
+            border: 1px solid #d9d9d9;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -347,29 +361,48 @@
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="step-content">
-                <p class="help-text mb-3"><strong>默认样式规范</strong>：表头背景 RGB(233,233,255) + 边框 RGB(218,226,246) + 金额右对齐</p>
-                <input type="hidden" id="selectedStyleIndex" value="0">
-                
-                <div class="card">
+                <!-- 样式选择器 -->
+                <div class="mb-3">
+                    <label class="form-label">选择样式模板</label>
+                    <select class="form-select" id="styleTemplateSelect" onchange="onStyleChange()">
+                        <option value="0">经典蓝（默认）</option>
+                        <!-- 后续可添加更多样式 -->
+                    </select>
+                </div>
+
+                <!-- 样式预览 -->
+                <div class="card style-preview-card">
+                    <div class="card-header py-2">
+                        <small class="text-muted">样式预览</small>
+                    </div>
                     <div class="card-body">
-                        <table class="table table-sm mb-0">
+                        <table class="table table-sm mb-0" id="stylePreviewTable">
                             <thead>
-                                <tr style="background: rgb(233, 233, 255);">
+                                <tr id="previewHeaderRow">
                                     <th>表头</th>
                                     <th>表头</th>
                                     <th>金额</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr id="previewDataRow">
                                     <td>数据</td>
                                     <td>数据</td>
-                                    <td style="text-align: right; color: #1890ff;">1,000.00</td>
+                                    <td id="previewAmountCell">1,000.00</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+
+                <!-- 样式说明 -->
+                <div class="mt-3">
+                    <p class="help-text" id="styleDescription">
+                        <strong>经典蓝样式</strong>：表头背景 RGB(233,233,255) + 边框 RGB(218,226,246) + 金额右对齐蓝色字体
+                    </p>
+                </div>
+
+                <input type="hidden" id="selectedStyleIndex" value="0">
             </div>
         </div>
 
@@ -408,18 +441,85 @@
     </div>
 
     <script>
-        // ========== 样式模板 ==========
-        // 颜色说明：RGB(233,233,255) = -1447425（表头背景），RGB(218,226,246) = -2432266（边框）
-        const STYLE_TEMPLATES = [
-            // 0: 经典蓝（默认）
-            [
-                {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-1447425", "border": true},
-                {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
-                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
-                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"},
-                {"name": "默认", "horizontal_alignment": "0", "font": {"name": "simhei", "size": "72"}}
-            ]
-        ];
+        // ========== 样式管理器（封装）==========
+        const StyleManager = {
+            // 颜色常量（Java 有符号整数）
+            COLORS: {
+                HEADER_BG: -1447425,      // RGB(233,233,255) 表头背景
+                BORDER: -2432266,         // RGB(218,226,246) 边框
+                AMOUNT_FONT: -8163329,    // RGB(0,102,204) 金额字体
+                WHITE: -1                 // 白色
+            },
+
+            // 样式模板库
+            templates: {
+                0: {
+                    name: '经典蓝',
+                    description: '表头背景 RGB(233,233,255) + 边框 RGB(218,226,246) + 金额右对齐蓝色字体',
+                    previewBg: 'rgb(233, 233, 255)',
+                    previewAmountColor: '#0066cc',
+                    styles: [
+                        {name: "表头左列", horizontal_alignment: "2", font: {name: "SimSun", size: "80"}, background: -1447425, border: true},
+                        {name: "表头", horizontal_alignment: "2", font: {name: "宋体", size: "80"}, background: -1447425, border: true},
+                        {name: "数据", horizontal_alignment: "2", font: {name: "SimSun", size: "80"}, border: true},
+                        {name: "金额", horizontal_alignment: "4", font: {name: "SimSun", size: "80", color: -8163329}, background: -1, border: true, format: "#,##0.00"},
+                        {name: "默认", horizontal_alignment: "0", font: {name: "simhei", size: "72"}}
+                    ]
+                }
+                // 后续可添加更多样式模板，如：
+                // 1: { name: '简约白', ... }
+                // 2: { name: '商务灰', ... }
+            },
+
+            // 获取当前选中的样式
+            getSelectedIndex() {
+                return parseInt(document.getElementById('selectedStyleIndex').value) || 0;
+            },
+
+            // 获取样式数据（用于生成 CPT）
+            getStyles(index = null) {
+                const idx = index !== null ? index : this.getSelectedIndex();
+                return this.templates[idx]?.styles || this.templates[0].styles;
+            },
+
+            // 更新预览
+            updatePreview(index) {
+                const template = this.templates[index];
+                if (!template) return;
+
+                // 更新表头背景
+                const headerRow = document.getElementById('previewHeaderRow');
+                if (headerRow) {
+                    headerRow.style.background = template.previewBg;
+                }
+
+                // 更新金额样式
+                const amountCell = document.getElementById('previewAmountCell');
+                if (amountCell) {
+                    amountCell.style.textAlign = 'right';
+                    amountCell.style.color = template.previewAmountColor;
+                }
+
+                // 更新描述
+                const desc = document.getElementById('styleDescription');
+                if (desc) {
+                    desc.innerHTML = `<strong>${template.name}样式</strong>：${template.description}`;
+                }
+            },
+
+            // 初始化样式选择
+            init() {
+                this.updatePreview(0);
+            }
+        };
+
+        // ========== 样式切换事件 ==========
+        function onStyleChange() {
+            const select = document.getElementById('styleTemplateSelect');
+            const index = parseInt(select.value);
+            document.getElementById('selectedStyleIndex').value = index;
+            StyleManager.updatePreview(index);
+        }
 
         // ========== 行高列宽规范 ==========
         // 单位：EMU (1 pt = 12700 EMU)
@@ -445,6 +545,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 初始化列映射输入框
             initMappingInputs();
+
+            // 初始化样式管理器
+            StyleManager.init();
             
             // 上传区域
             const uploadZone = document.getElementById('uploadZone');
@@ -947,14 +1050,8 @@
                 }
             });
             
-            // 样式 - 使用默认规范样式
-            // 颜色：RGB(233,233,255) = -1447425（表头背景），RGB(218,226,246) = -2432266（边框）
-            config.styles = [
-                {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-1447425", "border": true},
-                {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
-                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
-                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"}
-            ];
+            // 样式 - 从样式管理器获取选中的样式
+            config.styles = StyleManager.getStyles();
 
             // 行高列宽配置
             // 单位：EMU (1 pt = 12700 EMU)
