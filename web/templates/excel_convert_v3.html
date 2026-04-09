@@ -868,7 +868,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small">入参模板（对象数组）</label>
-                                    <textarea class="form-control form-control-sm ds-params" rows="2" placeholder='[{"orgId":""}, {"startDate":""}, {"endDate":""}]'></textarea>
+                                    <textarea class="form-control form-control-sm ds-params" rows="3" placeholder='示例（有默认值的参数）:
+[{"orgId": ""}, {"indexInfo": {"fieldCode": "repay.id"}}]
+↑ 空值从筛选组件获取，JSON对象作为默认值'></textarea>
+                                    <small class="text-muted">空值="" 从筛选获取，JSON对象会自动转字符串</small>
                                 </div>
                             </div>
                         </div>

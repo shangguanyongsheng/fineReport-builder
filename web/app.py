@@ -397,30 +397,39 @@ def generate_report_v2():
             
         elif datasource.get('type') == 'class':
             param_template = datasource.get('parameter_template', [])
-            # 入参格式: [{"paramName": ""}, {"paramName": "defaultValue"}, {"paramName": {complexJSON}}]
+            # 入参格式: [{"paramName": ""}, {"paramName": "defaultValue"}]
             # 每个对象只有一个 key，空值表示从筛选组件获取，有值表示写死默认值
+            # ⭐ 用户传什么默认值就用什么，不做转换
             params = []
             if isinstance(param_template, list) and len(param_template) > 0:
                 for item in param_template:
                     if isinstance(item, dict):
                         for param_name, param_value in item.items():
-                            # 处理默认值
-                            if param_value == '' or param_value is None:
-                                # 空值：从筛选组件获取，不需要默认值
-                                params.append({'name': param_name, 'default': ''})
+                            # 处理默认值 - 原封不动使用用户输入
+                            if param_value is None:
+                                default_value = ''
+                            elif isinstance(param_value, str):
+                                default_value = param_value
                             elif isinstance(param_value, (dict, list)):
-                                # 复杂JSON：需要转成 JSON 字符串作为默认值
-                                params.append({'name': param_name, 'default': json.dumps(param_value, ensure_ascii=False)})
+                                # 如果是对象/数组，转成 JSON 字符串
+                                default_value = json.dumps(param_value, ensure_ascii=False)
                             else:
-                                # 简单值：直接作为默认值
-                                params.append({'name': param_name, 'default': str(param_value)})
+                                default_value = str(param_value)
+
+                            params.append({'name': param_name, 'default': default_value})
+
             elif isinstance(param_template, dict) and len(param_template) > 0:
                 # 兼容旧格式 {"param1": "", "param2": "value"}
                 for k, v in param_template.items():
-                    if isinstance(v, (dict, list)):
-                        params.append({'name': k, 'default': json.dumps(v, ensure_ascii=False)})
+                    if v is None:
+                        default_value = ''
+                    elif isinstance(v, str):
+                        default_value = v
+                    elif isinstance(v, (dict, list)):
+                        default_value = json.dumps(v, ensure_ascii=False)
                     else:
-                        params.append({'name': k, 'default': v if isinstance(v, str) else ''})
+                        default_value = str(v)
+                    params.append({'name': k, 'default': default_value})
             else:
                 # 如果没有 parameter_template，从 filter_components 自动推断参数
                 # 这样用户不需要手动填写入参模板，系统会自动绑定筛选组件
@@ -429,6 +438,7 @@ def generate_report_v2():
                     if code:
                         params.append({'name': code, 'default': ''})
                 logger.info(f"从筛选组件自动推断入参: {[p['name'] for p in params]}")
+            logger.info(f"原始 parameter_template: {param_template}")
             logger.info(f"Class 入参: {params}")
             
             # 出参格式: ["field1", "field2", ...] 字段名数组
