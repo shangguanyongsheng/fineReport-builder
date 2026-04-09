@@ -67,11 +67,12 @@
             font-size: 13px;
             border: 1px solid #d9d9d9;
             border-radius: 8px;
-            padding: 16px;
+            padding: 12px;
             background: #fafafa;
-            min-height: 200px;
+            min-height: 120px;
             width: 100%;
             resize: vertical;
+            line-height: 1.5;
         }
         .json-editor:focus { outline: none; border-color: #1890ff; background: white; }
         
@@ -291,7 +292,7 @@
                 
                 <!-- JSON 模式 -->
                 <div id="dsJsonMode" style="display: none;">
-                    <textarea class="json-editor" id="datasourceJson" rows="12" placeholder='[
+                    <textarea class="json-editor" id="datasourceJson" rows="16" placeholder='[
   {
     "name": "main_data",
     "type": "database",
@@ -1061,15 +1062,20 @@
                                     <input type="text" class="form-control form-control-sm ds-class-name" placeholder="com.xxx.DataClass">
                                 </div>
                             </div>
-                            <div class="row g-2">
-                                <div class="col-md-6">
+                            <!-- 出参：返回字段 -->
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-12">
                                     <label class="form-label small">返回字段（字符串数组）</label>
-                                    <textarea class="form-control form-control-sm ds-return-fields" rows="2" placeholder='["tenantId", "guaranteeDebtorId", "guaranteeDebtorName"]'></textarea>
+                                    <textarea class="form-control form-control-sm ds-return-fields json-editor" rows="3" placeholder='["tenantId", "guaranteeDebtorId", "guaranteeDebtorName"]'></textarea>
                                 </div>
-                                <div class="col-md-6">
+                            </div>
+                            <!-- 入参：参数模板 -->
+                            <div class="row g-2">
+                                <div class="col-md-12">
                                     <label class="form-label small">入参模板（对象数组）</label>
-                                    <textarea class="form-control form-control-sm ds-params" rows="3" placeholder='示例（有默认值的参数）:
-[{"orgId": ""}, {"indexInfo": {"fieldCode": "repay.id"}}]
+                                    <textarea class="form-control form-control-sm ds-params json-editor" rows="4" placeholder='示例：
+[{"orgId": ""}, {"startDate": ""}, {"indexInfo": {"fieldCode": "repay.id"}}]
+
 ↑ 空值从筛选组件获取，JSON对象作为默认值'></textarea>
                                     <small class="text-muted">空值="" 从筛选获取，JSON对象会自动转字符串</small>
                                 </div>
