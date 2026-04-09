@@ -441,7 +441,11 @@ def generate_report_v2():
                         params.append({'name': code, 'default': ''})
                 logger.info(f"从筛选组件自动推断入参: {[p['name'] for p in params]}")
             logger.info(f"原始 parameter_template: {param_template}")
-            logger.info(f"Class 入参: {params}")
+            logger.info(f"处理后的 params: {params}")
+
+            # 打印每个参数的详细信息
+            for p in params:
+                logger.info(f"  参数: {p['name']} = {p['default'][:50] if p['default'] else '(空)'}")
             
             # 出参格式: ["field1", "field2", ...] 字段名数组
             return_fields = datasource.get('return_fields', [])

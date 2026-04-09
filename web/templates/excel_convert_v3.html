@@ -313,9 +313,8 @@
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="enableDynamicColumns" checked>
                         <label class="form-check-label" for="enableDynamicColumns">
-                            启用动态列（用户可选择显示/隐藏列）
+                            启用动态列（用户可选择显示/隐藏列，默认显示全部列）
                         </label>
-                        <small class="text-muted d-block mt-1">动态列组件将添加到筛选区域最后一行，默认显示全部列</small>
                     </div>
 
                     <div class="row g-2 mb-2 align-items-center">
@@ -1218,9 +1217,11 @@
             try {
                 const config = collectConfig();
                 console.log('生成配置:', config);
-                
+
                 // 使用第一个数据源
                 const primaryDs = config.datasources[0] || {};
+                console.log('数据源:', primaryDs);
+                console.log('参数模板:', primaryDs.parameter_template);
                 
                 const response = await fetch('/api/v2/generate', {
                     method: 'POST',
