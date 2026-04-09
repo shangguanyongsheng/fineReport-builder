@@ -602,13 +602,21 @@ class CPTGenerator:
 
         # 处理有值的标签 <O>value</O>
         # 注意：不处理已经包含 CDATA 的标签
+        # 重要：XML 中的特殊字符可能被转义（如 &quot; &amp; 等），需要先反转义再放入 CDATA
         def replace_o_tag(match):
             content = match.group(1)
             if 'CDATA' in content:
                 return match.group(0)  # 已经是 CDATA，不处理
+
+            # 反转义 XML 实体（JSON 字符串中的特殊字符）
+            import html
+            content = html.unescape(content)
+
             return f'<O>\n<![CDATA[{content}]]></O>'
 
-        result = re.sub(r'<O>([^<]*)</O>', replace_o_tag, result)
+        # 修改正则：匹配可能包含 & 开头的转义实体的内容
+        # [^<] 不能匹配 &lt; 等实体，改用更宽松的模式
+        result = re.sub(r'<O>(.*?)</O>', replace_o_tag, result)
 
         return result
 
