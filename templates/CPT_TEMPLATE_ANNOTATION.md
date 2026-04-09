@@ -340,16 +340,16 @@ def calc_col_widths(max_col, data_width=4608000):
 Label 尺寸：89px × 28px
 输入控件尺寸：135px × 28px
 Label 与输入控件间距：4px
-控件对之间间距：10px
-行间距：36px
+控件对之间间距：4px（同一行所有组件间距统一为4px）
+行间距：8px
 
 位置计算公式：
   行号 row = index // 5
   列号 col = index % 5
   
-  Label_X = 10 + col × (89 + 4 + 135 + 10)
+  Label_X = 10 + col × (89 + 4 + 135 + 4)
   Input_X = Label_X + 89 + 4
-  Y = 10 + row × 36
+  Y = 10 + row × (28 + 8)
 ```
 
 ---

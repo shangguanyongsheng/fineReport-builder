@@ -295,8 +295,8 @@ class CPTGenerator:
             
             # 每对的总宽度 = Label + 横向间距 + Input
             pair_width = LABEL_WIDTH + LABEL_INPUT_GAP + INPUT_WIDTH
-            # 每对之间的间距
-            PAIR_GAP = 10  # 组件对之间的横向间距
+            # 每对之间的间距（同一行组件间距统一为4px）
+            PAIR_GAP = 4
             pair_start_x = START_X + col * (pair_width + PAIR_GAP)
             pair_start_y = START_Y + row * (ROW_HEIGHT + ROW_GAP)
             
