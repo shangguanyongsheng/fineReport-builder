@@ -396,17 +396,47 @@ def generate_report_v2():
             logger.info(f"数据库数据源已配置: {datasource.get('name')}")
             
         elif datasource.get('type') == 'class':
-            param_template = datasource.get('parameter_template', {})
-            # 转换为 CPT 生成器期望的格式: [{'name': 'param1'}, {'name': 'param2'}]
-            params = [{'name': k, 'default': v if isinstance(v, str) else ''} 
-                      for k, v in param_template.items()]
+            param_template = datasource.get('parameter_template', [])
+            # 入参格式: [{"paramName": ""}, {"paramName": "defaultValue"}, {"paramName": {complexJSON}}]
+            # 每个对象只有一个 key，空值表示从筛选组件获取，有值表示写死默认值
+            params = []
+            if isinstance(param_template, list):
+                for item in param_template:
+                    if isinstance(item, dict):
+                        for param_name, param_value in item.items():
+                            # 处理默认值
+                            if param_value == '' or param_value is None:
+                                # 空值：从筛选组件获取，不需要默认值
+                                params.append({'name': param_name, 'default': ''})
+                            elif isinstance(param_value, (dict, list)):
+                                # 复杂JSON：需要转成 JSON 字符串作为默认值
+                                params.append({'name': param_name, 'default': json.dumps(param_value, ensure_ascii=False)})
+                            else:
+                                # 简单值：直接作为默认值
+                                params.append({'name': param_name, 'default': str(param_value)})
+            elif isinstance(param_template, dict):
+                # 兼容旧格式 {"param1": "", "param2": "value"}
+                for k, v in param_template.items():
+                    if isinstance(v, (dict, list)):
+                        params.append({'name': k, 'default': json.dumps(v, ensure_ascii=False)})
+                    else:
+                        params.append({'name': k, 'default': v if isinstance(v, str) else ''})
             logger.info(f"Class 入参: {params}")
+            
+            # 出参格式: ["field1", "field2", ...] 字段名数组
+            return_fields = datasource.get('return_fields', [])
+            if isinstance(return_fields, list) and len(return_fields) > 0:
+                # 确保 return_fields 是字符串数组
+                if isinstance(return_fields[0], dict):
+                    # 旧格式 [{"name": "field1"}]，转换为字符串数组
+                    return_fields = [f.get('name', '') for f in return_fields if isinstance(f, dict)]
+            logger.info(f"Class 出参: {return_fields}")
             
             cpt_config['data_sources'].append({
                 'name': datasource.get('name', 'main_data'),
                 'type': 'ClassTableData',
                 'class_name': datasource.get('class_name', ''),
-                'return_fields': datasource.get('return_fields', []),
+                'return_fields': return_fields,
                 'parameters': params
             })
             logger.info(f"Class 数据源已配置: {datasource.get('name')}")
@@ -451,24 +481,52 @@ def generate_report_v2():
         
         cpt_config['styles'] = styles
         
-        # 单元格配置（从列映射生成表头）
-        row = 0
-        for col_letter, field_name in column_mapping.items():
+        # 单元格配置（从列映射生成表头和数据行）
+        # 支持两种格式：
+        # 1. 简单格式：{"A": "tenantId"} - 表头和字段都用 tenantId
+        # 2. 详细格式：{"A": {"header": "租户ID", "field": "tenantId"}} - 表头用中文，字段用英文名
+        
+        row = 0  # 表头行
+        for col_letter, mapping_value in column_mapping.items():
             col_num = ord(col_letter.upper()) - ord('A')
+            
+            # 解析映射值
+            if isinstance(mapping_value, dict):
+                header_name = mapping_value.get('header', mapping_value.get('field', ''))
+                field_name = mapping_value.get('field', '')
+            else:
+                # 简单格式，表头和字段相同
+                header_name = mapping_value
+                field_name = mapping_value
+            
+            if not field_name:
+                continue
+            
+            # 表头单元格
             cell = {
                 'column': col_num,
                 'row': row,
-                'value': field_name,
+                'value': header_name,
                 'style_index': 1  # 表头样式
             }
             cpt_config['cells'].append(cell)
-            logger.debug(f"单元格: {col_letter}({col_num}) -> {field_name}")
+            logger.debug(f"表头单元格: {col_letter}({col_num}) -> {header_name}")
         
-        # 添加数据行模板
+        # 数据行模板
         row = 1
         ds_name = cpt_config['data_sources'][0]['name'] if cpt_config['data_sources'] else 'data'
-        for col_letter, field_name in column_mapping.items():
+        for col_letter, mapping_value in column_mapping.items():
             col_num = ord(col_letter.upper()) - ord('A')
+            
+            # 解析映射值
+            if isinstance(mapping_value, dict):
+                field_name = mapping_value.get('field', '')
+            else:
+                field_name = mapping_value
+            
+            if not field_name:
+                continue
+            
             # 判断是否为金额字段
             is_amount = any(kw in field_name.lower() for kw in ['amount', 'money', '金额', 'price', '费用'])
             cell = {
@@ -481,6 +539,7 @@ def generate_report_v2():
                 'style_index': 3 if is_amount else 2  # 金额用样式3，其他用样式2
             }
             cpt_config['cells'].append(cell)
+            logger.debug(f"数据单元格: {col_letter}({col_num}) -> {field_name}")
         
         logger.info(f"单元格配置完成，共 {len(cpt_config['cells'])} 个")
         

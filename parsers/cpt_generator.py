@@ -240,11 +240,12 @@ class CPTGenerator:
         widget_name = ET.SubElement(layout, 'WidgetName')
         widget_name.set('name', 'para')
         
-        # 布局参数
-        LABEL_WIDTH = 70      # Label 控件宽度
-        INPUT_WIDTH = 135     # 输入控件宽度
-        GAP = 10              # 控件间距
-        ROW_HEIGHT = 28       # 控件高度
+        # ===== 筛选组件布局规范 =====
+        LABEL_WIDTH = 89      # Label 控件宽度（规范：89）
+        INPUT_WIDTH = 135     # 输入控件宽度（规范：135）
+        LABEL_INPUT_GAP = 4   # Label 与输入框横向间距（规范：4）
+        ROW_GAP = 8           # 行间距（规范：8）
+        ROW_HEIGHT = 28       # 控件高度（规范：28）
         PAIRS_PER_ROW = 5     # 每行组件对数
         START_X = 10          # 起始 X 坐标
         START_Y = 10          # 起始 Y 坐标
@@ -256,10 +257,12 @@ class CPTGenerator:
             row = i // PAIRS_PER_ROW
             col = i % PAIRS_PER_ROW
             
-            # 每对的总宽度 = Label + GAP + Input
-            pair_width = LABEL_WIDTH + GAP + INPUT_WIDTH
-            pair_start_x = START_X + col * (pair_width + GAP * 2)
-            pair_start_y = START_Y + row * (ROW_HEIGHT + GAP)
+            # 每对的总宽度 = Label + 横向间距 + Input
+            pair_width = LABEL_WIDTH + LABEL_INPUT_GAP + INPUT_WIDTH
+            # 每对之间的间距
+            PAIR_GAP = 10  # 组件对之间的横向间距
+            pair_start_x = START_X + col * (pair_width + PAIR_GAP)
+            pair_start_y = START_Y + row * (ROW_HEIGHT + ROW_GAP)
             
             # 1. 生成 Label 控件
             label_text = ctrl.get('label', ctrl.get('name', f'控件{i+1}'))
@@ -277,7 +280,7 @@ class CPTGenerator:
             # 2. 生成输入控件
             input_widget = self._generate_widget(
                 ctrl, 
-                x=pair_start_x + LABEL_WIDTH + GAP,
+                x=pair_start_x + LABEL_WIDTH + LABEL_INPUT_GAP,
                 y=pair_start_y,
                 width=INPUT_WIDTH,
                 height=ROW_HEIGHT,
@@ -390,22 +393,22 @@ class CPTGenerator:
         return style_list
     
     def _get_default_styles(self) -> List[Dict]:
-        """获取默认样式集（参考 FinanceCreditContractAnalysis.cpt）"""
+        """获取默认样式集（规范：表头背景 RGB 233,233,255 → -16771561，边框 RGB 218,226,246 → -2432266）"""
         return [
-            # Style 0: 表头左列样式（蓝色背景，左对齐）
+            # Style 0: 表头左列样式（规范背景色，左对齐）
             {
                 "name": "表头左列",
                 "horizontal_alignment": "2",
                 "font": {"name": "SimSun", "style": "0", "size": "80"},
-                "background": "-1447425",  # 淡蓝色背景
+                "background": "-16771561",  # RGB(233, 233, 255) 规范：淡蓝色背景
                 "border": True
             },
-            # Style 1: 表头样式（蓝色背景，左对齐）
+            # Style 1: 表头样式（规范背景色，左对齐）
             {
                 "name": "表头",
                 "horizontal_alignment": "2",
                 "font": {"name": "宋体", "style": "0", "size": "80"},
-                "background": "-1447425",
+                "background": "-16771561",  # RGB(233, 233, 255) 规范：淡蓝色背景
                 "border": True
             },
             # Style 2: 数据样式（无背景，左对齐，有边框）
@@ -492,7 +495,7 @@ class CPTGenerator:
                 side_elem = ET.SubElement(border, side)
                 side_elem.set('style', '1')
                 color = ET.SubElement(side_elem, 'FineColor')
-                color.set('color', '-2432266')  # 灰色边框
+                color.set('color', '-2432266')  # RGB(218, 226, 246) 规范：淡蓝色边框
         elif config.get('is_default'):
             ET.SubElement(style, 'Border')
         
