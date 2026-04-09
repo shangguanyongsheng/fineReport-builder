@@ -269,18 +269,34 @@
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="step-content">
-                <p class="help-text mb-3">每列配置：第1行=表头（中文），第2行=字段名（英文）</p>
-                <div class="row g-2 mb-2 align-items-center">
-                    <div class="col-auto"><small class="text-muted">列</small></div>
-                    <div class="col-3"><small class="text-muted">表头（A1行）</small></div>
-                    <div class="col"><small class="text-muted">字段名（A2行）</small></div>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setMappingMode('form')">表单模式</button>
+                    <button class="mode-btn" onclick="setMappingMode('json')">JSON 模式</button>
                 </div>
-                <div id="mappingList">
-                    <!-- 动态生成 -->
+                
+                <div id="mappingFormMode">
+                    <p class="help-text mb-3">每列配置：第1行=表头（中文），第2行=字段名（英文）</p>
+                    <div class="row g-2 mb-2 align-items-center">
+                        <div class="col-auto"><small class="text-muted">列</small></div>
+                        <div class="col-3"><small class="text-muted">表头（A1行）</small></div>
+                        <div class="col"><small class="text-muted">字段名（A2行）</small></div>
+                    </div>
+                    <div id="mappingList">
+                        <!-- 动态生成 -->
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm mt-2" onclick="addMappingColumn()">
+                        <i class="bi bi-plus-lg me-1"></i>添加更多列
+                    </button>
                 </div>
-                <button class="btn btn-outline-primary btn-sm mt-2" onclick="addMappingColumn()">
-                    <i class="bi bi-plus-lg me-1"></i>添加更多列
-                </button>
+                
+                <div id="mappingJsonMode" style="display: none;">
+                    <textarea class="json-editor" id="mappingJson" rows="10" placeholder='{
+  "A": {"header": "序号", "field": "tenantId"},
+  "B": {"header": "担保人", "field": "guaranteeDebtorName"},
+  "C": {"header": "金额", "field": "amount"}
+}'></textarea>
+                    <p class="help-text">格式：{"列": {"header": "表头", "field": "字段名"}}</p>
+                </div>
             </div>
         </div>
 
@@ -294,150 +310,34 @@
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="step-content">
-                <p class="help-text mb-2"><strong>一行五列布局</strong>：每行配置5个筛选组件（Label文本框宽89×高28 + 输入框宽135×高28）</p>
-                <p class="help-text mb-3">空行请留空，系统会自动跳过</p>
+                <p class="help-text mb-2"><strong>一行五列布局</strong>：每行5个筛选组件（Label宽89×高28 + 输入框宽135×高28 + 间距4px + 行间距8px）</p>
                 
-                <!-- 第1行：5个筛选组件 -->
-                <div class="card mb-3">
-                    <div class="card-header py-1"><small class="text-muted">第1行（第1-5列）</small></div>
-                    <div class="card-body py-2">
-                        <div class="row g-2">
-                            <div class="col">
-                                <label class="form-label small">第1列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_1_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_1_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_1_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第2列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_2_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_2_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_2_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第3列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_3_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_3_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_3_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第4列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_4_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_4_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_4_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第5列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_5_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_5_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_5_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
+                <div id="filterRowsContainer">
+                    <!-- 第1行 -->
+                    <div class="card mb-3 filter-row-card">
+                        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">第1行（第1-5列）</small>
+                        </div>
+                        <div class="card-body py-2">
+                            <textarea class="json-editor filter-row-json" id="filter_row_1" rows="6" placeholder='[
+  {"label": "开始日期", "code": "startDate", "type": "DateEditor"},
+  {"label": "结束日期", "code": "endDate", "type": "DateEditor"},
+  {"label": "组织", "code": "orgId", "type": "TreeComboBoxEditor"},
+  {"label": "区域", "code": "region", "type": "ComboBox"},
+  {"label": "状态", "code": "status", "type": "ComboBox"}
+]'></textarea>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 第2行：5个筛选组件 -->
-                <div class="card mb-3">
-                    <div class="card-header py-1"><small class="text-muted">第2行（第6-10列）- 可选</small></div>
-                    <div class="card-body py-2">
-                        <div class="row g-2">
-                            <div class="col">
-                                <label class="form-label small">第6列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_6_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_6_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_6_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第7列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_7_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_7_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_7_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第8列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_8_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_8_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_8_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第9列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_9_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_9_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_9_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label class="form-label small">第10列</label>
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_10_label" placeholder="Label文本">
-                                <input type="text" class="form-control form-control-sm mb-1" id="filter_10_code" placeholder="字段名">
-                                <select class="form-select form-select-sm" id="filter_10_type">
-                                    <option value="TextEditor">文本框</option>
-                                    <option value="DateEditor">日期</option>
-                                    <option value="ComboBox">下拉框</option>
-                                    <option value="TreeComboBoxEditor">树形下拉</option>
-                                    <option value="NumberEditor">数字</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <button class="btn btn-outline-primary btn-sm" onclick="addFilterRow()">
+                    <i class="bi bi-plus-lg me-1"></i>添加更多行
+                </button>
+                <p class="help-text mt-2">每行最多5个组件，留空或[]表示空行。类型：TextEditor/DateEditor/ComboBox/TreeComboBoxEditor/NumberEditor</p>
             </div>
         </div>
 
-        <!-- Step 5: 样式选择 -->
+        <!-- Step 5: 样式配置 -->
         <div class="step-card">
             <div class="step-header" onclick="toggleStep(5)">
                 <div class="step-title">
@@ -447,54 +347,28 @@
                 <i class="bi bi-chevron-down"></i>
             </div>
             <div class="step-content">
-                <div class="mode-toggle">
-                    <button class="mode-btn active" onclick="setStyleMode('template')">模板选择</button>
-                    <button class="mode-btn" onclick="setStyleMode('json')">自定义 JSON</button>
-                </div>
+                <p class="help-text mb-3"><strong>默认样式规范</strong>：表头背景 RGB(233,233,255) + 边框 RGB(218,226,246) + 金额右对齐</p>
+                <input type="hidden" id="selectedStyleIndex" value="0">
                 
-                <div id="styleTemplateMode">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="style-template selected" onclick="selectStyle(0)" data-style="classic">
-                                <h6><i class="bi bi-check-circle-fill text-success me-1"></i>经典蓝（推荐）</h6>
-                                <p class="text-muted small mb-2">蓝色表头 + 边框，标准报表风格</p>
-                                <table class="style-preview">
-                                    <tr><th style="background:#e6f7ff;">表头</th><th style="background:#e6f7ff;">表头</th></tr>
-                                    <tr><td>数据</td><td style="text-align:right;">1,000.00</td></tr>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="style-template" onclick="selectStyle(1)" data-style="simple">
-                                <h6>简约灰</h6>
-                                <p class="text-muted small mb-2">灰色表头 + 无边框，简洁风格</p>
-                                <table class="style-preview">
-                                    <tr><th style="background:#f5f5f5;">表头</th><th style="background:#f5f5f5;">表头</th></tr>
-                                    <tr><td>数据</td><td>1,000.00</td></tr>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="style-template" onclick="selectStyle(2)" data-style="finance">
-                                <h6>财务报表</h6>
-                                <p class="text-muted small mb-2">强调金额列，适合财务数据</p>
-                                <table class="style-preview">
-                                    <tr><th style="background:#1890ff;color:white;">表头</th><th style="background:#e6f7ff;">金额</th></tr>
-                                    <tr><td>数据</td><td style="color:#1890ff;text-align:right;">1,000.00</td></tr>
-                                </table>
-                            </div>
-                        </div>
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr style="background: rgb(233, 233, 255);">
+                                    <th>表头</th>
+                                    <th>表头</th>
+                                    <th>金额</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>数据</td>
+                                    <td>数据</td>
+                                    <td style="text-align: right; color: #1890ff;">1,000.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <input type="hidden" id="selectedStyleIndex" value="0">
-                </div>
-                
-                <div id="styleJsonMode" style="display: none;">
-                    <textarea class="json-editor" id="styleJson" rows="12" placeholder='[
-  {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-1447425", "border": true},
-  {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
-  {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80"}, "border": true, "format": "#,##0.00"}
-]'></textarea>
-                    <p class="help-text">对齐: 0=居中, 2=左对齐, 4=右对齐 | 颜色值如 -1447425 (蓝色背景)</p>
                 </div>
             </div>
         </div>
@@ -657,6 +531,33 @@
             }
             
             mappingList.dataset.count = Math.min(currentCount + 6, 18);
+        }
+        
+        // ========== 添加筛选组件行 ==========
+        let filterRowCount = 1;
+        function addFilterRow() {
+            filterRowCount++;
+            const container = document.getElementById('filterRowsContainer');
+            const html = `
+                <div class="card mb-3 filter-row-card">
+                    <div class="card-header py-1 d-flex justify-content-between align-items-center">
+                        <small class="text-muted">第${filterRowCount}行（第${(filterRowCount-1)*5+1}-${filterRowCount*5}列）</small>
+                        <button class="btn btn-sm btn-outline-danger" onclick="this.closest('.filter-row-card').remove()">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <div class="card-body py-2">
+                        <textarea class="json-editor filter-row-json" id="filter_row_${filterRowCount}" rows="6" placeholder='[
+  {"label": "", "code": "", "type": "TextEditor"},
+  {"label": "", "code": "", "type": "TextEditor"},
+  {"label": "", "code": "", "type": "TextEditor"},
+  {"label": "", "code": "", "type": "TextEditor"},
+  {"label": "", "code": "", "type": "TextEditor"}
+]'></textarea>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
         }
         
         // ========== Excel 上传 ==========
@@ -891,33 +792,37 @@
                 }
             }
             
-            // 筛选组件 - 从一行五列的输入框收集
-            for (let i = 1; i <= 10; i++) {
-                const labelInput = document.getElementById(`filter_${i}_label`);
-                const codeInput = document.getElementById(`filter_${i}_code`);
-                const typeInput = document.getElementById(`filter_${i}_type`);
-                
-                const label = labelInput?.value?.trim();
-                const code = codeInput?.value?.trim();
-                const type = typeInput?.value || 'TextEditor';
-                
-                if (label && code) {
-                    config.filter_components.push({ label, code, type });
+            // 筛选组件 - 从每行 JSON 输入收集
+            const filterRows = document.querySelectorAll('.filter-row-json');
+            filterRows.forEach((textarea, rowIndex) => {
+                const jsonStr = textarea.value.trim();
+                if (jsonStr) {
+                    try {
+                        const rowComponents = JSON.parse(jsonStr);
+                        if (Array.isArray(rowComponents)) {
+                            rowComponents.forEach(comp => {
+                                if (comp.label && comp.code) {
+                                    config.filter_components.push({
+                                        label: comp.label,
+                                        code: comp.code,
+                                        type: comp.type || 'TextEditor'
+                                    });
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.warn(`第${rowIndex + 1}行筛选组件 JSON 解析失败:`, e);
+                    }
                 }
-            }
+            });
             
-            // 样式
-            const styleMode = document.querySelector('#step5Card .mode-btn.active')?.textContent.includes('JSON') ? 'json' : 'template';
-            if (styleMode === 'json') {
-                try {
-                    config.styles = JSON.parse(document.getElementById('styleJson').value || '[]');
-                } catch (e) {
-                    throw new Error('样式 JSON 格式错误: ' + e.message);
-                }
-            } else {
-                const styleIndex = parseInt(document.getElementById('selectedStyleIndex').value) || 0;
-                config.styles = STYLE_TEMPLATES[styleIndex];
-            }
+            // 样式 - 使用默认规范样式
+            config.styles = [
+                {"name": "表头左列", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "background": "-16771561", "border": true},
+                {"name": "表头", "horizontal_alignment": "2", "font": {"name": "宋体", "size": "80"}, "background": "-16771561", "border": true},
+                {"name": "数据", "horizontal_alignment": "2", "font": {"name": "SimSun", "size": "80"}, "border": true},
+                {"name": "金额", "horizontal_alignment": "4", "font": {"name": "SimSun", "size": "80", "color": "-8163329"}, "background": "-1", "border": true, "format": "#,##0.00"}
+            ];
             
             return config;
         }
