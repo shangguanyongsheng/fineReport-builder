@@ -166,6 +166,26 @@
             margin-top: 8px;
         }
 
+        /* JSON 输入框校验样式 */
+        .json-editor.valid {
+            border-color: #52c41a;
+            background: #f6ffed;
+        }
+        .json-editor.invalid {
+            border-color: #ff4d4f;
+            background: #fff2f0;
+        }
+        .json-error-tip {
+            color: #ff4d4f;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .json-valid-tip {
+            color: #52c41a;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
         .style-preview-card {
             border: 1px solid #e8e8e8;
             border-radius: 8px;
@@ -286,6 +306,7 @@
     "parameter_template": [{"orgId": ""}, {"startDate": ""}, {"endDate": ""}]
   }
 ]'></textarea>
+                    <div id="datasourceJsonTip" class="json-error-tip"></div>
                     <p class="help-text">Class 类型：return_fields 为字段名数组，parameter_template 为对象数组（空值从筛选组件获取，有值写死）</p>
                 </div>
             </div>
@@ -336,6 +357,7 @@
   "B": {"header": "担保人", "field": "guaranteeDebtorName"},
   "C": {"header": "金额", "field": "amount"}
 }'></textarea>
+                    <div id="mappingJsonTip" class="json-error-tip"></div>
                     <p class="help-text">格式：{"列": {"header": "表头", "field": "字段名"}}</p>
                 </div>
             </div>
@@ -567,6 +589,165 @@
         let excelFile = null;
         let datasourceCount = 0;
         let filterCount = 0;
+
+        // ========== JSON 校验工具 ==========
+        const JsonValidator = {
+            /**
+             * 校验 JSON 格式
+             * @param {string} inputId - 输入框 ID
+             * @param {string} expectedType - 期望类型: 'array', 'object', 'any'
+             * @param {string} tipId - 提示元素 ID（可选）
+             * @returns {boolean} 是否有效
+             */
+            validate(inputId, expectedType = 'any', tipId = null) {
+                const input = document.getElementById(inputId);
+                if (!input) return true;
+
+                const value = input.value.trim();
+
+                // 空值视为有效（使用默认值）
+                if (!value) {
+                    input.classList.remove('valid', 'invalid');
+                    if (tipId) {
+                        const tip = document.getElementById(tipId);
+                        if (tip) tip.textContent = '';
+                    }
+                    return true;
+                }
+
+                try {
+                    const parsed = JSON.parse(value);
+
+                    // 检查类型
+                    if (expectedType === 'array' && !Array.isArray(parsed)) {
+                        throw new Error('期望数组格式 [...]');
+                    }
+                    if (expectedType === 'object' && (Array.isArray(parsed) || typeof parsed !== 'object')) {
+                        throw new Error('期望对象格式 {...}');
+                    }
+
+                    // 校验通过
+                    input.classList.remove('invalid');
+                    input.classList.add('valid');
+
+                    if (tipId) {
+                        const tip = document.getElementById(tipId);
+                        if (tip) {
+                            tip.className = 'json-valid-tip';
+                            if (expectedType === 'array') {
+                                tip.textContent = `✓ 有效，${parsed.length} 个元素`;
+                            } else if (expectedType === 'object') {
+                                tip.textContent = `✓ 有效，${Object.keys(parsed).length} 个字段`;
+                            } else {
+                                tip.textContent = '✓ JSON 格式正确';
+                            }
+                        }
+                    }
+                    return true;
+
+                } catch (e) {
+                    // 校验失败
+                    input.classList.remove('valid');
+                    input.classList.add('invalid');
+
+                    if (tipId) {
+                        const tip = document.getElementById(tipId);
+                        if (tip) {
+                            tip.className = 'json-error-tip';
+                            tip.textContent = '✗ ' + e.message;
+                        }
+                    }
+                    return false;
+                }
+            },
+
+            /**
+             * 校验参数模板格式
+             * @param {string} inputId - 输入框 ID
+             * @param {string} tipId - 提示元素 ID
+             */
+            validateParamTemplate(inputId, tipId) {
+                const input = document.getElementById(inputId);
+                if (!input) return true;
+
+                const value = input.value.trim();
+
+                // 空值视为有效
+                if (!value) {
+                    input.classList.remove('valid', 'invalid');
+                    const tip = document.getElementById(tipId);
+                    if (tip) tip.textContent = '';
+                    return true;
+                }
+
+                try {
+                    const parsed = JSON.parse(value);
+
+                    if (!Array.isArray(parsed)) {
+                        throw new Error('期望数组格式 [...]');
+                    }
+
+                    // 检查每个元素是否为对象
+                    for (let i = 0; i < parsed.length; i++) {
+                        const item = parsed[i];
+                        if (typeof item !== 'object' || item === null || Array.isArray(item)) {
+                            throw new Error(`第 ${i + 1} 个元素应为对象 {"参数名": "默认值"}`);
+                        }
+                        const keys = Object.keys(item);
+                        if (keys.length !== 1) {
+                            throw new Error(`第 ${i + 1} 个元素应只有一个键值对`);
+                        }
+                    }
+
+                    // 校验通过
+                    input.classList.remove('invalid');
+                    input.classList.add('valid');
+
+                    const tip = document.getElementById(tipId);
+                    if (tip) {
+                        tip.className = 'json-valid-tip';
+                        tip.textContent = `✓ 有效，${parsed.length} 个参数`;
+                    }
+                    return true;
+
+                } catch (e) {
+                    input.classList.remove('valid');
+                    input.classList.add('invalid');
+
+                    const tip = document.getElementById(tipId);
+                    if (tip) {
+                        tip.className = 'json-error-tip';
+                        tip.textContent = '✗ ' + e.message;
+                    }
+                    return false;
+                }
+            },
+
+            /**
+             * 绑定校验事件
+             */
+            bindValidation() {
+                // 数据源 JSON 模式
+                this.bindInput('datasourceJson', 'any', 'datasourceJsonTip');
+
+                // 列映射 JSON 模式
+                this.bindInput('mappingJson', 'object', 'mappingJsonTip');
+
+                // 筛选组件（动态绑定）
+                document.querySelectorAll('.filter-row-json').forEach(textarea => {
+                    textarea.addEventListener('input', () => this.validate(textarea.id, 'array'));
+                    textarea.addEventListener('blur', () => this.validate(textarea.id, 'array'));
+                });
+            },
+
+            bindInput(inputId, expectedType, tipId) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+
+                input.addEventListener('input', () => this.validate(inputId, expectedType, tipId));
+                input.addEventListener('blur', () => this.validate(inputId, expectedType, tipId));
+            }
+        };
         
         // ========== 初始化 ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -575,6 +756,9 @@
 
             // 初始化样式管理器
             StyleManager.init();
+
+            // 初始化 JSON 校验
+            JsonValidator.bindValidation();
             
             // 上传区域
             const uploadZone = document.getElementById('uploadZone');
@@ -690,6 +874,13 @@
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
+
+            // 为新添加的筛选组件行绑定校验
+            const newTextarea = document.getElementById(`filter_row_${filterRowCount}`);
+            if (newTextarea) {
+                newTextarea.addEventListener('input', () => JsonValidator.validate(`filter_row_${filterRowCount}`, 'array'));
+                newTextarea.addEventListener('blur', () => JsonValidator.validate(`filter_row_${filterRowCount}`, 'array'));
+            }
         }
         
         // ========== Excel 上传与解析 ==========
@@ -888,6 +1079,40 @@
                 </div>
             `;
             document.getElementById('datasourceList').insertAdjacentHTML('beforeend', html);
+
+            // 为新添加的数据源绑定 JSON 校验
+            const newCard = document.getElementById(id);
+            const returnFieldsInput = newCard.querySelector('.ds-return-fields');
+            const paramsInput = newCard.querySelector('.ds-params');
+
+            if (returnFieldsInput) {
+                returnFieldsInput.classList.add('json-editor');
+                returnFieldsInput.addEventListener('input', () => JsonValidator.validate(returnFieldsInput.id || '', 'array'));
+                returnFieldsInput.addEventListener('blur', () => JsonValidator.validate(returnFieldsInput.id || '', 'array'));
+            }
+
+            if (paramsInput) {
+                paramsInput.classList.add('json-editor');
+                // 参数模板特殊校验
+                paramsInput.addEventListener('input', () => {
+                    const value = paramsInput.value.trim();
+                    if (!value) {
+                        paramsInput.classList.remove('valid', 'invalid');
+                        return;
+                    }
+                    try {
+                        const parsed = JSON.parse(value);
+                        if (!Array.isArray(parsed)) {
+                            paramsInput.classList.add('invalid');
+                            return;
+                        }
+                        paramsInput.classList.remove('invalid');
+                        paramsInput.classList.add('valid');
+                    } catch (e) {
+                        paramsInput.classList.add('invalid');
+                    }
+                });
+            }
         }
         
         function removeDatasource(id) {

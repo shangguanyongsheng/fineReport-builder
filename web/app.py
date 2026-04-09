@@ -675,7 +675,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='FineReport Builder Web 服务')
     parser.add_argument('--host', default='0.0.0.0', help='监听地址')
-    parser.add_argument('--port', type=int, default=5000, help='端口号')
+    parser.add_argument('--port', type=int, default=5002, help='端口号')
     parser.add_argument('--debug', action='store_true', help='调试模式')
     
     args = parser.parse_args()
