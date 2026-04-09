@@ -15,6 +15,7 @@
 - 🧠 双记忆系统（长期记忆 + 短期记忆）
 - 📋 模板修改模式（复制 XML 节点增删改）
 - ✅ 参数校验（数据源参数只能多不能少）
+- 🔀 动态列（用户可选显示/隐藏列）
 
 ---
 
@@ -23,12 +24,7 @@
 | 文档 | 说明 | 适合人群 |
 |------|------|----------|
 | [README.md](../README.md) | 项目概述、快速开始 | 所有用户 |
-| [AGENT_DESIGN.md](AGENT_DESIGN.md) | Agent 架构、ReAct 循环、记忆系统 | 开发者 |
-| [excel-convert-v3-design.md](excel-convert-v3-design.md) | V3 Web 界面设计 | 使用者 |
-| [数据模型设计.md](数据模型设计.md) | JSON 配置格式 | 配置者 |
-| [REQUIREMENTS.md](REQUIREMENTS.md) | 需求确认、校验规则 | 配置者 |
-| [FLOWCHART.md](FLOWCHART.md) | **流程图说明**、问题排查 | 开发者 |
-| [CORE_CODE.md](CORE_CODE.md) | **核心代码详解**、调试技巧 | 开发者 |
+| [CORE_CODE.md](CORE_CODE.md) | **核心代码详解**、流程图、调试技巧 | 开发者 |
 | [CPT 模板标注](../templates/CPT_TEMPLATE_ANNOTATION.md) | 核心标签标注、检查清单 | 开发者 |
 
 ---
@@ -42,25 +38,19 @@
 │   ├── 核心特性
 │   └── 技术栈
 │
-├── 2. Agent 架构
-│   ├── ReAct 思维链路
-│   ├── 双记忆系统
-│   ├── 区域标记系统
-│   └── 错误自愈机制
-│
-├── 3. CPT 文件结构
+├── 2. CPT 文件结构
 │   ├── 数据源映射 (TableDataMap)
 │   ├── 参数面板 (ReportParameterAttr)
 │   ├── 单元格列表 (CellElementList)
 │   └── 样式列表 (StyleList)
 │
-├── 4. 配置规范
+├── 3. 配置规范
 │   ├── 数据源配置
 │   ├── 筛选组件配置
 │   ├── 数据列配置
-│   └── 样式配置
+│   └── 动态列配置
 │
-└── 5. Web 界面 (V3)
+└── 4. Web 界面 (V3)
     ├── 功能模块
     ├── API 接口
     └── 布局规范
@@ -70,52 +60,18 @@
 
 ## 1. 项目概述
 
-### 核心目标
-
-解决帆软报表开发痛点：
-- 手动拖拉拽组件费时费力
-- 数据源配置重复繁琐
-- 字段绑定容易出错
-
 ### 技术栈
 
 | 层级 | 技术 |
 |------|------|
-| Web 服务 | Flask + Flask-CORS |
-| 前端 | Bootstrap 5 |
+| Web 服务 | Flask + Flask-CORS (端口: 5002) |
+| 前端 | Bootstrap 5 + SheetJS |
 | 文件解析 | openpyxl, xml.etree |
-| 部署 | Python 3.8+, Gunicorn |
+| 部署 | Python 3.8+ |
 
 ---
 
-## 2. Agent 架构
-
-### ReAct 思维链路
-
-```
-[Thought] 分析需求 → 报表类型、筛选组件、数据列
-[Action] 加载模板 → 解析 XML 结构
-[Observation] 观察结果 → 现有组件、需要修改的内容
-[Action] 执行修改 → 增删改组件
-[Result] 生成报表 → 保存文件
-```
-
-### 双记忆系统
-
-**长期记忆 (AGENT_MEMORY.md)：**
-- 模板知识：筛选区域位置、数据区域结构
-- 错误教训：历史错误及解决方案
-- 成功模式：验证有效的操作流程
-
-**短期记忆 (corrections.jsonl)：**
-- 实时纠正记录
-- 用户反馈记录
-
----
-
-## 3. CPT 文件结构
-
-### 三大核心模块
+## 2. CPT 文件结构
 
 ```
 WorkBook (根节点)
@@ -134,12 +90,12 @@ WorkBook (根节点)
     └── CellElementList (单元格列表)
         ├── 静态文本
         ├── 数据绑定 (DSColumn)
-        └── 公式 (Formula)
+        └── 条件属性 (动态列)
 ```
 
 ---
 
-## 4. 配置规范
+## 3. 配置规范
 
 ### 数据源配置
 
@@ -151,11 +107,19 @@ WorkBook (根节点)
   "class_name": "com.xxx.XXXData",
   "return_fields": ["field1", "field2"],
   "parameter_template": [
-    {"orgId": ""},           // 空 → 从筛选组件获取
-    {"startDate": "2026-03-01"}  // 有值 → 固定默认值
+    {"orgId": ""},                          // 空 → 从筛选组件获取
+    {"startDate": ""},                      // 空 → 从筛选组件获取
+    {"indexInfo": {"fieldCode": "repay.id"}} // JSON对象 → 固定默认值
   ]
 }
 ```
+
+**参数默认值规则：**
+| 值类型 | 行为 |
+|--------|------|
+| 空字符串 `""` | 从筛选组件动态获取 |
+| 简单值 `"2026-01-01"` | 固定默认值 |
+| JSON 对象 `{"key": "value"}` | 自动转字符串作为默认值 |
 
 ### 筛选组件配置
 
@@ -172,22 +136,44 @@ WorkBook (根节点)
 | TextEditor | 文本输入框 |
 | DateEditor | 日期选择器 |
 | ComboBox | 下拉选择框 |
+| ComboCheckBox | 多选下拉框 |
 | TreeComboBoxEditor | 树形下拉 |
 | NumberEditor | 数字输入框 |
 
-### 参数校验规则
+### 动态列配置
 
+**前端配置：**
 ```
-数据源参数 vs 筛选组件 code
+☑ 启用动态列（用户可选择显示/隐藏列，默认显示全部列）
+```
 
-✅ 有筛选组件 → 绑定
-✅ 有默认值 → 使用默认值
-❌ 无筛选组件且无默认值 → 错误
+**生成效果：**
+```
+筛选区域最后一行添加 ComboCheckBox 组件:
+- 参数名: cols（固定）
+- 选项: 所有表头名称
+- 默认值: 全部选中
 
-原则：数据源参数只能多不能少
+每列表头添加条件属性:
+- 公式: INARRAY('表头名称', $cols) = 0
+- 动作: 列宽 = 0（隐藏该列）
 ```
 
 ### 样式配置
+
+**StyleManager 样式管理器：**
+```javascript
+StyleManager = {
+    COLORS: {
+        HEADER_BG: -1447425,    // RGB(233,233,255) 表头背景
+        BORDER: -2432266,       // RGB(218,226,246) 边框
+        AMOUNT_FONT: -8163329   // RGB(0,102,204) 金额字体
+    },
+    templates: { ... },         // 样式模板库
+    getStyles(),               // 获取样式
+    updatePreview()            // 更新预览
+}
+```
 
 **默认样式：**
 | 索引 | 名称 | 对齐 | 用途 |
@@ -196,28 +182,35 @@ WorkBook (根节点)
 | 1 | 表头 | 左 | 普通表头 |
 | 2 | 数据 | 左 | 数据单元格 |
 | 3 | 金额 | 右 | 数值/金额 |
-| 4 | 默认 | 中 | 默认样式 |
-
-**颜色值：**
-| 颜色 | 值 |
-|------|-----|
-| 白色 | -1 |
-| 蓝色背景 | -16771561 |
-| 边框灰 | -2432266 |
 
 ---
 
-## 5. Web 界面 (V3)
+## 4. Web 界面 (V3)
 
 ### 功能模块
 
 | 步骤 | 内容 |
 |------|------|
-| Step 1 | 基本信息（标题、Sheet名） |
+| Step 1 | Excel 上传（自动解析表头） |
 | Step 2 | 数据源配置（Class/Database） |
-| Step 3 | 列映射配置 |
+| Step 3 | 列映射配置 + 动态列开关 |
 | Step 4 | 筛选组件配置 |
-| Step 5 | 样式配置 |
+| Step 5 | 样式选择 |
+| Step 6 | 报表信息 + 生成 |
+
+### JSON 实时校验
+
+**前端 JsonValidator：**
+- 输入时实时校验 JSON 格式
+- 绿色文字 ✓ 格式正确
+- 红色文字 ✗ 格式错误 + 错误信息
+- 自动创建提示元素
+
+**校验范围：**
+- 数据源 JSON 模式
+- 列映射 JSON 模式
+- 筛选组件 JSON
+- 入参模板、返回字段
 
 ### 布局规范
 
@@ -225,6 +218,7 @@ WorkBook (根节点)
 |------|-----|
 | Label 宽度 | 89px |
 | 输入框宽度 | 135px |
+| 组件间距 | 4px（统一） |
 | 行间距 | 8px |
 | 每行组件数 | 5 对 |
 
@@ -232,8 +226,14 @@ WorkBook (根节点)
 
 ```
 POST /api/v2/generate
-请求体: datasource, column_mapping, filter_components
-响应: success, output_file, download_url
+请求体: {
+    datasource: {...},
+    column_mapping: {...},
+    filter_components: [...],
+    enable_dynamic_columns: true/false,
+    styles: [...]
+}
+响应: { success, output_file, download_url }
 ```
 
 ---

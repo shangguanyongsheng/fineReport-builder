@@ -173,18 +173,24 @@
             background: #f6ffed;
         }
         .json-editor.invalid {
-            border-color: #ff4d4f;
+            border-color: #ff4d4f !important;
             background: #fff2f0;
         }
         .json-error-tip {
-            color: #ff4d4f;
-            font-size: 12px;
+            color: #ff4d4f !important;
+            font-size: 13px !important;
             margin-top: 4px;
+            font-weight: 500;
         }
         .json-valid-tip {
             color: #52c41a;
             font-size: 12px;
             margin-top: 4px;
+        }
+        .json-auto-tip {
+            font-size: 13px;
+            margin-top: 4px;
+            min-height: 18px;
         }
 
         .style-preview-card {
@@ -594,25 +600,25 @@
         // ========== JSON 校验工具 ==========
         const JsonValidator = {
             /**
-             * 校验 JSON 格式
-             * @param {string} inputId - 输入框 ID
+             * 校验 JSON 格式（自动显示提示）
+             * @param {string} inputId - 输入框 ID 或元素本身
              * @param {string} expectedType - 期望类型: 'array', 'object', 'any'
-             * @param {string} tipId - 提示元素 ID（可选）
+             * @param {string} tipId - 提示元素 ID（可选，不传则自动创建）
              * @returns {boolean} 是否有效
              */
             validate(inputId, expectedType = 'any', tipId = null) {
-                const input = document.getElementById(inputId);
+                const input = typeof inputId === 'string' ? document.getElementById(inputId) : inputId;
                 if (!input) return true;
 
                 const value = input.value.trim();
 
-                // 空值视为有效（使用默认值）
+                // 获取或创建提示元素
+                let tip = tipId ? document.getElementById(tipId) : this.getOrCreateTip(input);
+
+                // 空值视为有效
                 if (!value) {
                     input.classList.remove('valid', 'invalid');
-                    if (tipId) {
-                        const tip = document.getElementById(tipId);
-                        if (tip) tip.textContent = '';
-                    }
+                    if (tip) tip.textContent = '';
                     return true;
                 }
 
@@ -631,35 +637,47 @@
                     input.classList.remove('invalid');
                     input.classList.add('valid');
 
-                    if (tipId) {
-                        const tip = document.getElementById(tipId);
-                        if (tip) {
-                            tip.className = 'json-valid-tip';
-                            if (expectedType === 'array') {
-                                tip.textContent = `✓ 有效，${parsed.length} 个元素`;
-                            } else if (expectedType === 'object') {
-                                tip.textContent = `✓ 有效，${Object.keys(parsed).length} 个字段`;
-                            } else {
-                                tip.textContent = '✓ JSON 格式正确';
-                            }
+                    if (tip) {
+                        tip.className = 'json-valid-tip';
+                        if (expectedType === 'array') {
+                            tip.textContent = `✓ 有效，${parsed.length} 个元素`;
+                        } else if (expectedType === 'object') {
+                            tip.textContent = `✓ 有效，${Object.keys(parsed).length} 个字段`;
+                        } else {
+                            tip.textContent = '✓ JSON 格式正确';
                         }
                     }
                     return true;
 
                 } catch (e) {
-                    // 校验失败
+                    // 校验失败 - 红色文字提示
                     input.classList.remove('valid');
                     input.classList.add('invalid');
 
-                    if (tipId) {
-                        const tip = document.getElementById(tipId);
-                        if (tip) {
-                            tip.className = 'json-error-tip';
-                            tip.textContent = '✗ ' + e.message;
-                        }
+                    if (tip) {
+                        tip.className = 'json-error-tip';
+                        tip.textContent = '✗ ' + e.message;
                     }
                     return false;
                 }
+            },
+
+            /**
+             * 获取或创建提示元素（在输入框后面）
+             */
+            getOrCreateTip(input) {
+                // 查找已有的 tip
+                let tip = input.nextElementSibling;
+                if (tip && tip.classList.contains('json-auto-tip')) {
+                    return tip;
+                }
+
+                // 创建新的 tip
+                tip = document.createElement('div');
+                tip.className = 'json-auto-tip json-error-tip';
+                tip.style.cssText = 'font-size: 12px; margin-top: 4px; min-height: 18px;';
+                input.parentNode.insertBefore(tip, input.nextSibling);
+                return tip;
             },
 
             /**
