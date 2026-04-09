@@ -6,6 +6,8 @@
     <title>报表生成器 V3 - FineReport Builder</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- SheetJS: Excel 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body { background: #f0f2f5; min-height: 100vh; }
         .navbar { background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); }
@@ -177,6 +179,21 @@
             padding: 8px 12px;
             font-size: 13px;
         }
+        /* 默认样式预览：经典蓝 */
+        #previewHeaderRow {
+            background: rgb(233, 233, 255) !important;
+        }
+        #previewHeaderRow th {
+            border-color: rgb(218, 226, 246);
+            font-weight: 600;
+        }
+        #previewDataRow td {
+            border-color: rgb(218, 226, 246);
+        }
+        #previewAmountCell {
+            text-align: right !important;
+            color: #0066cc !important;
+        }
     </style>
 </head>
 <body>
@@ -219,6 +236,7 @@
                     <div class="alert alert-success">
                         <i class="bi bi-check-circle me-2"></i>
                         文件已上传: <span id="excelFileName"></span>
+                        <small class="text-muted ms-2" id="excelParseStatus"></small>
                         <button class="btn btn-sm btn-outline-success float-end" onclick="clearExcel()">清除</button>
                     </div>
                 </div>
@@ -665,12 +683,119 @@
             container.insertAdjacentHTML('beforeend', html);
         }
         
-        // ========== Excel 上传 ==========
+        // ========== Excel 上传与解析 ==========
         function handleExcelUpload(file) {
             excelFile = file;
             document.getElementById('excelFileName').textContent = file.name;
             document.getElementById('uploadZone').style.display = 'none';
             document.getElementById('excelPreview').style.display = 'block';
+            document.getElementById('excelParseStatus').textContent = '正在解析...';
+
+            // 使用 SheetJS 解析 Excel
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // 获取第一个 Sheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+
+                    // 获取表头（第一行）
+                    const headerRow = [];
+                    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+                    const maxCol = Math.min(range.e.c, 17);  // 最大18列 (A-R)
+
+                    for (let c = range.s.c; c <= maxCol; c++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: c });
+                        const cell = worksheet[cellAddress];
+                        headerRow.push(cell ? cell.v : '');
+                    }
+
+                    // 自动映射表头到表单
+                    autoMapHeaders(headerRow);
+
+                    // 显示解析结果
+                    const colCount = headerRow.filter(h => h).length;
+                    document.getElementById('excelParseStatus').textContent =
+                        `已解析 ${colCount} 列表头，已自动映射`;
+
+                } catch (err) {
+                    console.error('Excel 解析失败:', err);
+                    document.getElementById('excelParseStatus').textContent =
+                        '解析失败，请手动填写';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ========== 自动映射表头 ==========
+        function autoMapHeaders(headers) {
+            // 确保有足够的列输入框
+            const neededCount = headers.length;
+            const mappingList = document.getElementById('mappingList');
+            const currentCount = parseInt(mappingList.dataset.count) || 6;
+
+            if (neededCount > currentCount) {
+                // 添加更多列
+                for (let i = currentCount; i < neededCount; i++) {
+                    const colLetter = String.fromCharCode(65 + i);
+                    const html = `
+                        <div class="row g-2 mb-2 align-items-center">
+                            <div class="col-auto">
+                                <span class="badge bg-primary" style="min-width: 40px;">${colLetter}</span>
+                            </div>
+                            <div class="col-3">
+                                <input type="text" class="form-control form-control-sm" id="col_${i}_header" placeholder="表头（中文）">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control form-control-sm" id="col_${i}_field" placeholder="字段名（英文）">
+                            </div>
+                        </div>
+                    `;
+                    mappingList.insertAdjacentHTML('beforeend', html);
+                }
+                mappingList.dataset.count = neededCount;
+            }
+
+            // 填充表头值
+            headers.forEach((header, i) => {
+                const headerInput = document.getElementById(`col_${i}_header`);
+                if (headerInput && header) {
+                    headerInput.value = header;
+                }
+            });
+
+            // 如果是表单模式，同步到 JSON（忽略字段名验证）
+            const activeMode = document.querySelector('#step3Card .mode-btn.active')?.textContent;
+            if (activeMode && activeMode.includes('JSON')) {
+                syncFormToJson();
+            }
+        }
+
+        // ========== 表单同步到JSON（忽略字段名验证）==========
+        function syncFormToJson() {
+            const mappingJson = {};
+            for (let i = 0; i < 18; i++) {
+                const colLetter = String.fromCharCode(65 + i);
+                const headerInput = document.getElementById(`col_${i}_header`);
+                const fieldInput = document.getElementById(`col_${i}_field`);
+                const header = headerInput?.value?.trim() || '';
+
+                // 只要有表头就加入，忽略字段名验证
+                if (header) {
+                    mappingJson[colLetter] = {
+                        header: header,
+                        field: fieldInput?.value?.trim() || ''
+                    };
+                }
+            }
+
+            const textarea = document.getElementById('mappingJson');
+            if (textarea) {
+                textarea.value = JSON.stringify(mappingJson, null, 2);
+            }
         }
         
         function clearExcel() {
@@ -884,18 +1009,20 @@
 
             if (mode === 'json') {
                 // 表单 → JSON：收集表单数据并填充到 JSON 编辑器
+                // 【修改】只要有表头就加入，忽略字段名验证
                 const mappingJson = {};
                 for (let i = 0; i < 18; i++) {
                     const colLetter = String.fromCharCode(65 + i);
                     const headerInput = document.getElementById(`col_${i}_header`);
                     const fieldInput = document.getElementById(`col_${i}_field`);
-                    const header = headerInput?.value?.trim();
-                    const field = fieldInput?.value?.trim();
+                    const header = headerInput?.value?.trim() || '';
+                    const field = fieldInput?.value?.trim() || '';
 
-                    if (field) {
+                    // 只要有表头就加入（忽略字段名是否有值）
+                    if (header) {
                         mappingJson[colLetter] = {
-                            header: header || field,
-                            field: field
+                            header: header,
+                            field: field  // 字段名可以为空
                         };
                     }
                 }
