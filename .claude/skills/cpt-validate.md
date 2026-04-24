@@ -1,3 +1,4 @@
+---
 name: cpt-validate
 description: 验证 CPT 文件是否符合帆软规范。检查 XML 结构、参数绑定、样式索引、CDATA 格式等。用于生成报表后的自测环节。
 type: tool

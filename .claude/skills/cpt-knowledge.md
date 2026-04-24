@@ -1,3 +1,4 @@
+---
 name: cpt-knowledge
 description: 加载帆软 CPT 知识库上下文，理解 CPT 文件结构、XML 标签规范、控件类型、样式系统等核心概念。在开始任何报表开发任务前首先加载此技能。
 type: reference

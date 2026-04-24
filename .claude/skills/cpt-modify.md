@@ -1,3 +1,4 @@
+---
 name: cpt-modify
 description: 基于现有 CPT 模板进行修改。支持增删筛选组件、修改数据列、更新数据源参数等操作。使用 XML 节点复制方式保持所有默认配置不变。
 type: tool

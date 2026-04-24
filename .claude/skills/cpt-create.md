@@ -1,3 +1,4 @@
+---
 name: cpt-create
 description: 根据用户输入创建全新的 CPT 报表文件。支持 class 和 database 两种数据源类型。基于模板增量修改，避免全量生成 XML 导致遗漏隐属性。
 type: tool
