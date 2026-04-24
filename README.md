@@ -158,6 +158,7 @@ result = validate_cpt("report.cpt")
 - **`<O>` 标签必须用 CDATA 格式**：`<O><![CDATA[value]]></O>`
 - **样式索引必须在 StyleList 范围内**
 - **筛选组件布局**：每行 5 对（Label 89px + Input 135px），间距 4px，行间距 8px
+- **查询和重置按钮自动生成**：每个报表固定包含，无需在配置中指定；重置按钮只清空无默认值的筛选框
 
 ## SQL 数据源模板
 
