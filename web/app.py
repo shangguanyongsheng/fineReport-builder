@@ -8,6 +8,7 @@ import os
 import json
 import re
 from pathlib import Path
+import tempfile
 from datetime import datetime
 
 # 项目根目录
@@ -15,7 +16,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 os.sys.path.insert(0, str(PROJECT_ROOT))
 
 from parsers.cpt_parser import CPTParser
-from parsers.class_table_data import ClassTableDataParser
+from parsers.class_table_data import ClassTableDataParser, ClassTableDataDefinition, ClassParameter
 
 app = Flask(__name__)
 CORS(app)
@@ -48,6 +49,95 @@ def class_test_page():
 
 
 # ============ API 接口 ============
+
+@app.route('/api/analyze/cpt', methods=['POST'])
+def analyze_cpt():
+    """分析 .cpt 文件"""
+    if 'file' not in request.files:
+        return jsonify({'error': '没有上传文件'}), 400
+
+    file = request.files['file']
+    if file.filename == '' or not file.filename.endswith('.cpt'):
+        return jsonify({'error': '请上传 .cpt 文件'}), 400
+
+    with tempfile.NamedTemporaryFile(suffix='.cpt', delete=False) as tmp:
+        file.save(tmp)
+        tmp_path = tmp.name
+
+    try:
+        parser = CPTParser()
+        structure = parser.parse(tmp_path)
+        summary = parser.to_summary(structure)
+
+        class_parser = ClassTableDataParser()
+        class_definitions = class_parser.parse_from_cpt(tmp_path)
+
+        return jsonify({
+            'success': True,
+            'filename': file.filename,
+            'summary': summary,
+            'class_table_data': [
+                {
+                    'name': d.name,
+                    'class_name': d.class_name,
+                    'parameters': [
+                        {'name': p.name, 'default_value': p.default_value, 'type': p.infer_type()}
+                        for p in d.parameters
+                    ]
+                }
+                for d in class_definitions
+            ],
+            'raw_structure': {
+                'title': structure.title,
+                'table_data_count': len(structure.table_data_list),
+                'widget_controls_count': len(structure.widget_controls),
+                'cell_elements_count': len(structure.cell_elements),
+            }
+        })
+    finally:
+        os.unlink(tmp_path)
+
+
+@app.route('/api/class-test/generate', methods=['POST'])
+def generate_class_test():
+    """生成 ClassTableData 测试页面"""
+    data = request.json
+    class_data = data.get('class_data', [])
+    api_endpoint = data.get('api_endpoint', '')
+
+    if not class_data:
+        return jsonify({'error': '缺少 class_data 参数'}), 400
+
+    try:
+        class_parser = ClassTableDataParser()
+        # 从 JSON 重建定义对象
+        definitions = []
+        for item in class_data:
+            params = [
+                ClassParameter(name=p['name'], default_value=p.get('default_value', ''),
+                               description=p.get('description', ''))
+                for p in item.get('parameters', [])
+            ]
+            definitions.append(ClassTableDataDefinition(
+                name=item['name'], class_name=item['class_name'], parameters=params
+            ))
+
+        html = class_parser.to_browser_html(definitions, api_endpoint)
+        output_filename = 'class_test_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.html'
+        output_path = OUTPUT_FOLDER / output_filename
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        return jsonify({
+            'success': True,
+            'output_file': output_filename,
+            'view_url': f'/api/view/{output_filename}',
+            'download_url': f'/api/download/{output_filename}',
+            'data_sources': [{'name': d.name, 'class_name': d.class_name} for d in definitions]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/download/<filename>')
 def download_file(filename):
