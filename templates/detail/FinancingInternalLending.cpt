@@ -1,0 +1,3093 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20211223" releaseVersion="11.5.0">
+<TableDataMap>
+<TableData name="orgStructure" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="structureVersion"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT so.`version`,concat(so.id,'') as id FROM u_sys_organization_structure so 
+WHERE so.tenant_id = '${fine_username9}' AND so.is_deleted = 0
+${if(len(structureVersion)=0,"AND 1=2",if(structureVersion=1,"AND so.structure_type =( '"+ structureVersion +"')  and so.effective_date<=DATE_FORMAT(NOW(),'%Y-%m-%d') and so.expiry_date>=DATE_FORMAT(NOW(),'%Y-%m-%d')","AND so.structure_type =( '"+ structureVersion +"')"))}]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="structureVersion" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+		sd1.dict_key,
+		sd1.dict_value 
+	FROM
+		sys_dict sd1 
+	WHERE
+	 sd1.`code` = 'org_structure' 
+	AND sd1.is_deleted = 0 	AND sd1.`status` = 1;]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="Tree1" class="com.fr.data.impl.RecursionTableData">
+<Desensitizations desensitizeOpen="false"/>
+<markFields>
+<![CDATA[1]]></markFields>
+<parentmarkFields>
+<![CDATA[3]]></parentmarkFields>
+<markFieldsName>
+<![CDATA[id]]></markFieldsName>
+<parentmarkFieldsName>
+<![CDATA[parent_id]]></parentmarkFieldsName>
+<originalTableDataName>
+<![CDATA[organization]]></originalTableDataName>
+</TableData>
+<TableData name="currency" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select concat(id,'') as id,code,dict_key,dict_value from sys_dict where code = 'currency' and is_deleted = 0]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="organization" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgStructure"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="structureVersion"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT so.`code`,concat(so.id,'') as id,concat(so.`code`,'-',so.`name`) as name,so.parent_id FROM sys_organization so 
+${if(len(orgStructure)=0,"",if(structureVersion=1,
+" INNER JOIN u_sys_organization_relation usor on usor.org_id = so.id and usor.is_deleted=0 and usor.tenant_id = ( '"+ fine_username9 +"') and usor.status = 1 INNER JOIN u_sys_organization_structure usos on usos.is_deleted = 0 and usos.tenant_id = ( '"+ fine_username9 +"') and usos.id =usor.structure_id and usor.structure_id =( '"+ orgStructure +"')",
+" INNER JOIN u_sys_organization_relation usor on usor.org_id = so.id and usor.is_deleted=0 and usor.tenant_id = ( '"+ fine_username9 +"') and usor.status = 1 INNER JOIN u_sys_organization_structure usos on usos.is_deleted = 0 and usos.tenant_id = ( '"+ fine_username9 +"') and usos.id =usor.structure_id and usor.structure_id =( '"+ orgStructure +"')"))}
+WHERE so.tenant_id = '${fine_username9}' AND so.is_deleted = 0 and so.status = 1]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="sys_bank" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select * from sys_dict where code = 'bank' and is_deleted = 0]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="orgTageCode" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT 
+    t.tag_name, 
+    GROUP_CONCAT(tr.relation_id ORDER BY tr.relation_id SEPARATOR ',') AS relation_ids
+FROM 
+    sys_tag t
+JOIN 
+    sys_tag_relation tr 
+    ON t.tag_code = tr.tag_code 
+    AND t.tenant_id = tr.tenant_id
+WHERE 
+    t.is_deleted = 0 
+    AND tr.is_deleted = 0 AND t.tenant_id = '${fine_username9}'
+GROUP BY 
+    t.id, t.tag_name
+ORDER BY 
+    t.sort;]]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+<TableData name="RepayCapitalSourceDetailData" class="com.fr.data.impl.ClassTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgStructure"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fr_usercode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="widgetId"/>
+<O>
+<![CDATA[87]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgTag"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="recOrgId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contain"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="contractCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="rsContractNumber"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="rsCreditProductCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="convertCurrencyCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="size"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="listBoolean"/>
+<O>
+<![CDATA[true]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="current"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="condition"/>
+<O>
+<![CDATA[{\"contractCode\":\"like\",\"rsContractNumber\":\"like\"} ]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fieldMapping"/>
+<O>
+<![CDATA[{ \"orgTag\":\"orgId\", \"recOrgTag\":\"recOrgId\"}]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="recOrgTag"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<ClassTableDataAttr className="com.yocyl.fr.engine.tableData.finance.RepayCapitalSourceDetailData"/>
+</TableData>
+<TableData name="融资品种" class="com.fr.data.impl.RecursionTableData">
+<Desensitizations desensitizeOpen="false"/>
+<markFields>
+<![CDATA[0]]></markFields>
+<parentmarkFields>
+<![CDATA[2]]></parentmarkFields>
+<markFieldsName>
+<![CDATA[id]]></markFieldsName>
+<parentmarkFieldsName>
+<![CDATA[parent_id]]></parentmarkFieldsName>
+<originalTableDataName>
+<![CDATA[creditProductCode]]></originalTableDataName>
+</TableData>
+<TableData name="creditProductCode" class="com.fr.data.impl.DBTableData">
+<Desensitizations desensitizeOpen="false"/>
+<Parameters>
+<Parameter>
+<Attributes name="fine_username9"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[cfs-report]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT * FROM sys_dict_biz WHERE tenant_id = '${fine_username9}' AND is_deleted = 0 AND status = 1 AND code = 'finance_loan_product']]></Query>
+<PageQuery>
+<![CDATA[]]></PageQuery>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<Title>
+<![CDATA[内部拆借明细报表]]></Title>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_ReportServerP_First')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_ReportServerP_Previous')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_ReportServerP_Next')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_ReportServerP_Last')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="false" showAsImage="false" autoScale="false" tdHeavy="false" pageFixedRow="false" pageFixedRowCount="30"/>
+</WebPageContent>
+<WebViewContent>
+<Listener event="startload">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[null]]></Content>
+</JavaScript>
+</Listener>
+<Listener event="afterload">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[
+var count = contentPane.getCellValue(2, 25);
+var temp = document.createElement("div");
+temp.innerHTML = count;
+var result = temp.textContent || temp.innerText;
+contentPane.parameterEl.getWidgetByName("count").setValue(result);
+
+
+
+var countNumber = contentPane.getCellValue(2, 26);
+var tempCountNumber = document.createElement("div");
+tempCountNumber.innerHTML = countNumber;
+var countNumberResult = tempCountNumber.textContent || tempCountNumber.innerText;
+contentPane.parameterEl.getWidgetByName("countNumber").setValue(countNumberResult);]]></Content>
+</JavaScript>
+</Listener>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.PageSetup">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_Page_Setup')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[pagesetup]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.PrintPreview">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_PrintP_Print_Preview')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[preview]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.NewPrint">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Print')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[print]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Fine-Engine_Report_Email')}]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+<IconName>
+<![CDATA[email]]></IconName>
+<EmailButton customConsignee="true" consigneeByDepartment="false" consigneeByRole="false"/>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<SortFuncCheck check="true"/>
+<ConditionFuncCheck check="true"/>
+<ListFuncCheck check="true"/>
+</WebViewContent>
+</ReportWebAttr>
+<ElementCaseMobileAttr>
+<ElementCaseMobileAttrProvider horizontal="1" vertical="1" zoom="true" refresh="false" isUseHTML="false" isMobileCanvasSize="false" appearRefresh="false" allowFullScreen="false" allowDoubleClickOrZoom="true" functionalWhenUnactivated="false"/>
+</ElementCaseMobileAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="明细">
+<ReportPageAttr>
+<HR F="0" T="0"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+<USE REPEAT="true" PAGE="true" WRITE="false"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1368000,1368000,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,5219700,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,4608000,0,0,4608000,0,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" s="0">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="1" r="0" s="0">
+<O>
+<![CDATA[借出合同编号]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('contractCode',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="2" r="0" s="0">
+<O>
+<![CDATA[借出组织]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('recOrgName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="3" r="0" s="0">
+<O>
+<![CDATA[借入组织]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('orgName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="4" r="0" s="0">
+<O>
+<![CDATA[往来类型]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('creditProductCodeName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="5" r="0" s="0">
+<O>
+<![CDATA[币种]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('currencyCodeName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="6" r="0" s="0">
+<O>
+<![CDATA[合同金额]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('amount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="7" r="0" s="0">
+<O>
+<![CDATA[期限开始]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('valueDate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="8" r="0" s="0">
+<O>
+<![CDATA[期限结束]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('endDate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="9" r="0" s="0">
+<O>
+<![CDATA[拆借利率(%)]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('loanContractRate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="10" r="0" s="0">
+<O>
+<![CDATA[资金来源编号]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsContractNumber',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="11" r="0" s="0">
+<O>
+<![CDATA[资金来源类型]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsfiContractTypeName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="12" r="0" s="0">
+<O>
+<![CDATA[资金来源机构/组织]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsLendFinanceBankName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="13" r="0" s="0">
+<O>
+<![CDATA[资金来源网点]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsLendFinanceBankPointName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="14" r="0" s="0">
+<O>
+<![CDATA[资金来源金额]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="15" r="0" s="0">
+<O>
+<![CDATA[资金来源利率]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsLoanContractRate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="16" r="0" s="0">
+<O>
+<![CDATA[资金来源起息日]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsValueDate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="17" r="0" s="0">
+<O>
+<![CDATA[资金来源到期日]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsEndDate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="18" r="0" s="0">
+<O>
+<![CDATA[资金来源品种]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rsCreditProductCodeName',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="19" r="0" s="0">
+<O>
+<![CDATA[拆借金额]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rcsrAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="20" r="0" s="0">
+<O>
+<![CDATA[折资金来源汇率]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rscrRepayExchangeRate',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="21" r="0">
+<O>
+<![CDATA[折资金来源金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="23" r="0" s="0">
+<O>
+<![CDATA[折资金来源金额]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[INARRAY('rcrsBorrowingOccupyAmount',$cols) = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ColWidthHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand>
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="0" r="1" s="1">
+<O t="XMLable" class="com.fr.base.Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand leftParentDefault="false" left="C2">
+<cellSortAttr>
+<sortExpressions/>
+<sortHeader sortArea="A2"/>
+</cellSortAttr>
+</Expand>
+</C>
+<C c="1" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="contractCode"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr pageFixedRow="true"/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="2" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="recOrgName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr pageFixedRow="true"/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="3" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="orgName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="4" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="creditProductCodeName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="5" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="currencyCodeName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="6" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="amount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="7" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="valueDate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="8" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="endDate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="9" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="loanContractRate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="10" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsContractNumber"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="11" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsFiContractTypeName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="12" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsLendFinanceBankName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="13" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsLendFinanceBankPointName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="14" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="15" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsLoanContractRate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="16" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsValueDate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="17" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsEndDate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="18" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rsCreditProductCodeName"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="19" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rcsrAmount"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="20" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rcsrRepayExchangeRate"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="21" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="GuaranteeContractDetailData" columnName="total"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="22" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="GuaranteeContractDetailData" columnName="pages"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="23" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="rcsrBorrowingOccupyAmount"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+<cellSortAttr>
+<sortExpressions/>
+</cellSortAttr>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="2" showAsDefault="true"/>
+<CellPageAttr/>
+<CellOptionalAttrHolder>
+<DesensitizationAttr class="com.fr.report.cell.cellattr.CellDesensitizationAttr">
+<Desensitizations desensitizeScope="0"/>
+</DesensitizationAttr>
+</CellOptionalAttrHolder>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="24" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="total"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+<C c="25" r="1" s="4">
+<O t="DSColumn">
+<Attributes dsName="RepayCapitalSourceDetailData" columnName="pages"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+<cellSortAttr/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0">
+<cellSortAttr/>
+</Expand>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting/>
+<FollowingTheme background="true"/>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</color>
+</Background>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0" useParamsTemplate="true" currentIndex="8"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName=""/>
+<PrivilegeControl/>
+</WidgetAttr>
+<FollowingTheme borderStyle="false"/>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" borderRadius="0" type="0" borderStyle="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-723465" hor="-1" ver="-1"/>
+</color>
+</Background>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[/**
+ * 综合校验逻辑（分四组独立判断）：
+ * 当“是否包含下级”被选中时，分别检查四组冲突情况。
+ */
+function validateOrgConflict() {
+    // 1. 获取所有相关控件
+    var recOrgIdWidget  = contentPane.parameterEl.getWidgetByName("recOrgId");     // 借出组织
+    var orgIdWidget     = contentPane.parameterEl.getWidgetByName("orgId");        // 借入组织
+    var recOrgTagWidget = contentPane.parameterEl.getWidgetByName("recOrgTag");    // 借出组织标签
+    var orgTagWidget    = contentPane.parameterEl.getWidgetByName("orgTag");       // 借入组织标签
+    var containWidget   = contentPane.parameterEl.getWidgetByName("contain");      // 是否包含下级
+
+    // 如果关键控件不存在，直接通过
+    if (!recOrgIdWidget || !orgIdWidget || !containWidget) {
+        return true;
+    }
+
+    // 2. 获取值
+    var recOrgIdVal  = recOrgIdWidget.getValue();
+    var orgIdVal     = orgIdWidget.getValue();
+    var recOrgTagVal = recOrgTagWidget ? recOrgTagWidget.getValue() : null;
+    var orgTagVal    = orgTagWidget ? orgTagWidget.getValue() : null;
+    var containVal   = containWidget.getValue();
+
+    // 3. 定义通用的判空函数
+    function hasValue(val) {
+        if (val === null || val === undefined) return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return val.toString().trim().length > 0;
+    }
+
+    // 4. 判断各个字段是否有值
+    var hasRecOrgId = hasValue(recOrgIdVal);
+    var hasOrgId    = hasValue(orgIdVal);
+    var hasRecTag   = hasValue(recOrgTagVal);
+    var hasOrgTag   = hasValue(orgTagVal);
+    var hasContain  = hasValue(containVal);
+
+    // 5. 核心校验：拆分为四组独立判断
+    
+    // 如果“是否包含下级”没有值，直接通过，无需后续校验
+    if (!hasContain) {
+        return true;
+    }
+
+    // --- 第一组：借出组织 + 借入组织 ---
+    if (hasRecOrgId && hasOrgId) {
+        alert("借出组织和借入组织同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第二组：借出标签 + 借入标签 ---
+    if (hasRecTag && hasOrgTag) {
+        alert("借出组织标签和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第三组：借出组织 + 借入标签 (交叉) ---
+    if (hasRecOrgId && hasOrgTag) {
+        alert("借出组织和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第四组：借入组织 + 借出标签 (交叉) ---
+    if (hasOrgId && hasRecTag) {
+        alert("借入组织和借出组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // 校验通过
+    return true;
+}
+
+// 执行校验
+return validateOrgConflict();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="orgTag"/>
+<LabelName name="orgTag"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="recOrgTag1"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="relation_ids" viName="tag_name"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[orgTageCode]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="557" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="借入组织标签"/>
+<LabelName name="担保开始日期"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="组织标签_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[借入组织标签]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="464" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<WidgetName name="rsCreditProductCode"/>
+<LabelName name="rsCreditProductCode"/>
+<WidgetID widgetID="31c8aa47-3d67-4fc7-a4e6-70a0ec0485b2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="recOrgId_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TreeAttr mutiSelect="true" selectLeafOnly="false"/>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[融资品种]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<isLayerBuild isLayerBuild="false"/>
+<isAutoBuild autoBuild="true"/>
+<isPerformanceFirst performanceFirst="false"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<ReturnTypeAttr delimiter=";" startSymbol="" endSymbol="" returnString="false"/>
+</InnerWidget>
+<BoundsAttr x="785" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="fr_usercode"/>
+<LabelName name="查询数据总数:"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr invisible="true" aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="fine_username9_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[1553260305182769154]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="74" y="155" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="fine_username9"/>
+<LabelName name="查询数据总数:"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr invisible="true" aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="count_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[999666]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="8" y="155" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="contractCode"/>
+<LabelName name="guaranteeOrgName"/>
+<WidgetID widgetID="7d1af66e-6bda-4ed7-8034-e9fda5705e5c"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeOrgName_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="1013" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="借出合同编号"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="资金来源编号_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[借出合同编号]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="920" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="rsContractNumber"/>
+<LabelName name="guaranteeOrgName"/>
+<WidgetID widgetID="7d1af66e-6bda-4ed7-8034-e9fda5705e5c"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeOrgName"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="1013" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="资金来源品种"/>
+<LabelName name="组织标签"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="被担保人"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[资金来源品种]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="692" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="资金来源编号"/>
+<LabelName name="借出合同编号"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保人"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[资金来源编号]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="920" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[/**
+ * 综合校验逻辑（分四组独立判断）：
+ * 当“是否包含下级”被选中时，分别检查四组冲突情况。
+ */
+function validateOrgConflict() {
+    // 1. 获取所有相关控件
+    var recOrgIdWidget  = contentPane.parameterEl.getWidgetByName("recOrgId");     // 借出组织
+    var orgIdWidget     = contentPane.parameterEl.getWidgetByName("orgId");        // 借入组织
+    var recOrgTagWidget = contentPane.parameterEl.getWidgetByName("recOrgTag");    // 借出组织标签
+    var orgTagWidget    = contentPane.parameterEl.getWidgetByName("orgTag");       // 借入组织标签
+    var containWidget   = contentPane.parameterEl.getWidgetByName("contain");      // 是否包含下级
+
+    // 如果关键控件不存在，直接通过
+    if (!recOrgIdWidget || !orgIdWidget || !containWidget) {
+        return true;
+    }
+
+    // 2. 获取值
+    var recOrgIdVal  = recOrgIdWidget.getValue();
+    var orgIdVal     = orgIdWidget.getValue();
+    var recOrgTagVal = recOrgTagWidget ? recOrgTagWidget.getValue() : null;
+    var orgTagVal    = orgTagWidget ? orgTagWidget.getValue() : null;
+    var containVal   = containWidget.getValue();
+
+    // 3. 定义通用的判空函数
+    function hasValue(val) {
+        if (val === null || val === undefined) return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return val.toString().trim().length > 0;
+    }
+
+    // 4. 判断各个字段是否有值
+    var hasRecOrgId = hasValue(recOrgIdVal);
+    var hasOrgId    = hasValue(orgIdVal);
+    var hasRecTag   = hasValue(recOrgTagVal);
+    var hasOrgTag   = hasValue(orgTagVal);
+    var hasContain  = hasValue(containVal);
+
+    // 5. 核心校验：拆分为四组独立判断
+    
+    // 如果“是否包含下级”没有值，直接通过，无需后续校验
+    if (!hasContain) {
+        return true;
+    }
+
+    // --- 第一组：借出组织 + 借入组织 ---
+    if (hasRecOrgId && hasOrgId) {
+        alert("借出组织和借入组织同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第二组：借出标签 + 借入标签 ---
+    if (hasRecTag && hasOrgTag) {
+        alert("借出组织标签和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第三组：借出组织 + 借入标签 (交叉) ---
+    if (hasRecOrgId && hasOrgTag) {
+        alert("借出组织和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第四组：借入组织 + 借出标签 (交叉) ---
+    if (hasOrgId && hasRecTag) {
+        alert("借入组织和借出组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // 校验通过
+    return true;
+}
+
+// 执行校验
+return validateOrgConflict();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="recOrgTag"/>
+<LabelName name="recOrgTag"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgTag"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="relation_ids" viName="tag_name"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[orgTageCode]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="329" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="listBoolean"/>
+<LabelName name="listBoolean"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr invisible="true" aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="triggerRequest2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[true]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="219" y="545" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[/**
+ * 综合校验逻辑（分四组独立判断）：
+ * 当“是否包含下级”被选中时，分别检查四组冲突情况。
+ */
+function validateOrgConflict() {
+    // 1. 获取所有相关控件
+    var recOrgIdWidget  = contentPane.parameterEl.getWidgetByName("recOrgId");     // 借出组织
+    var orgIdWidget     = contentPane.parameterEl.getWidgetByName("orgId");        // 借入组织
+    var recOrgTagWidget = contentPane.parameterEl.getWidgetByName("recOrgTag");    // 借出组织标签
+    var orgTagWidget    = contentPane.parameterEl.getWidgetByName("orgTag");       // 借入组织标签
+    var containWidget   = contentPane.parameterEl.getWidgetByName("contain");      // 是否包含下级
+
+    // 如果关键控件不存在，直接通过
+    if (!recOrgIdWidget || !orgIdWidget || !containWidget) {
+        return true;
+    }
+
+    // 2. 获取值
+    var recOrgIdVal  = recOrgIdWidget.getValue();
+    var orgIdVal     = orgIdWidget.getValue();
+    var recOrgTagVal = recOrgTagWidget ? recOrgTagWidget.getValue() : null;
+    var orgTagVal    = orgTagWidget ? orgTagWidget.getValue() : null;
+    var containVal   = containWidget.getValue();
+
+    // 3. 定义通用的判空函数
+    function hasValue(val) {
+        if (val === null || val === undefined) return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return val.toString().trim().length > 0;
+    }
+
+    // 4. 判断各个字段是否有值
+    var hasRecOrgId = hasValue(recOrgIdVal);
+    var hasOrgId    = hasValue(orgIdVal);
+    var hasRecTag   = hasValue(recOrgTagVal);
+    var hasOrgTag   = hasValue(orgTagVal);
+    var hasContain  = hasValue(containVal);
+
+    // 5. 核心校验：拆分为四组独立判断
+    
+    // 如果“是否包含下级”没有值，直接通过，无需后续校验
+    if (!hasContain) {
+        return true;
+    }
+
+    // --- 第一组：借出组织 + 借入组织 ---
+    if (hasRecOrgId && hasOrgId) {
+        alert("借出组织和借入组织同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第二组：借出标签 + 借入标签 ---
+    if (hasRecTag && hasOrgTag) {
+        alert("借出组织标签和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第三组：借出组织 + 借入标签 (交叉) ---
+    if (hasRecOrgId && hasOrgTag) {
+        alert("借出组织和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第四组：借入组织 + 借出标签 (交叉) ---
+    if (hasOrgId && hasRecTag) {
+        alert("借入组织和借出组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // 校验通过
+    return true;
+}
+
+// 执行校验
+return validateOrgConflict();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="contain"/>
+<LabelName name="contain"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeDebtorId_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="true" value="是"/>
+<Dict key="false" value="否"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="785" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="是否包含下级"/>
+<LabelName name="组织标签"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="组织标签_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[是否包含下级]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="692" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="借出组织标签"/>
+<LabelName name="担保开始日期"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="组织标签"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[借出组织标签]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="236" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="triggerRequest2"/>
+<LabelName name="triggerRequest2"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="count_c_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[false]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="151" y="545" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="triggerRequest1"/>
+<LabelName name="triggerRequest1:"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="count_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[true]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="74" y="545" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[/**
+ * 综合校验逻辑（分四组独立判断）：
+ * 当“是否包含下级”被选中时，分别检查四组冲突情况。
+ */
+function validateOrgConflict() {
+    // 1. 获取所有相关控件
+    var recOrgIdWidget  = contentPane.parameterEl.getWidgetByName("recOrgId");     // 借出组织
+    var orgIdWidget     = contentPane.parameterEl.getWidgetByName("orgId");        // 借入组织
+    var recOrgTagWidget = contentPane.parameterEl.getWidgetByName("recOrgTag");    // 借出组织标签
+    var orgTagWidget    = contentPane.parameterEl.getWidgetByName("orgTag");       // 借入组织标签
+    var containWidget   = contentPane.parameterEl.getWidgetByName("contain");      // 是否包含下级
+
+    // 如果关键控件不存在，直接通过
+    if (!recOrgIdWidget || !orgIdWidget || !containWidget) {
+        return true;
+    }
+
+    // 2. 获取值
+    var recOrgIdVal  = recOrgIdWidget.getValue();
+    var orgIdVal     = orgIdWidget.getValue();
+    var recOrgTagVal = recOrgTagWidget ? recOrgTagWidget.getValue() : null;
+    var orgTagVal    = orgTagWidget ? orgTagWidget.getValue() : null;
+    var containVal   = containWidget.getValue();
+
+    // 3. 定义通用的判空函数
+    function hasValue(val) {
+        if (val === null || val === undefined) return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return val.toString().trim().length > 0;
+    }
+
+    // 4. 判断各个字段是否有值
+    var hasRecOrgId = hasValue(recOrgIdVal);
+    var hasOrgId    = hasValue(orgIdVal);
+    var hasRecTag   = hasValue(recOrgTagVal);
+    var hasOrgTag   = hasValue(orgTagVal);
+    var hasContain  = hasValue(containVal);
+
+    // 5. 核心校验：拆分为四组独立判断
+    
+    // 如果“是否包含下级”没有值，直接通过，无需后续校验
+    if (!hasContain) {
+        return true;
+    }
+
+    // --- 第一组：借出组织 + 借入组织 ---
+    if (hasRecOrgId && hasOrgId) {
+        alert("借出组织和借入组织同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第二组：借出标签 + 借入标签 ---
+    if (hasRecTag && hasOrgTag) {
+        alert("借出组织标签和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第三组：借出组织 + 借入标签 (交叉) ---
+    if (hasRecOrgId && hasOrgTag) {
+        alert("借出组织和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第四组：借入组织 + 借出标签 (交叉) ---
+    if (hasOrgId && hasRecTag) {
+        alert("借入组织和借出组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // 校验通过
+    return true;
+}
+
+// 执行校验
+return validateOrgConflict();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="orgId"/>
+<LabelName name="guaranteeDebtorName"/>
+<WidgetID widgetID="31c8aa47-3d67-4fc7-a4e6-70a0ec0485b2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeDebtorId"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TreeAttr mutiSelect="true" selectLeafOnly="false"/>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="id" viName="name"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[Tree1]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<isLayerBuild isLayerBuild="false"/>
+<isAutoBuild autoBuild="true"/>
+<isPerformanceFirst performanceFirst="false"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<ReturnTypeAttr delimiter=";" startSymbol="" endSymbol="" returnString="false"/>
+</InnerWidget>
+<BoundsAttr x="557" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TreeComboBoxEditor">
+<Listener event="stopedit" name="编辑结束1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[/**
+ * 综合校验逻辑（分四组独立判断）：
+ * 当“是否包含下级”被选中时，分别检查四组冲突情况。
+ */
+function validateOrgConflict() {
+    // 1. 获取所有相关控件
+    var recOrgIdWidget  = contentPane.parameterEl.getWidgetByName("recOrgId");     // 借出组织
+    var orgIdWidget     = contentPane.parameterEl.getWidgetByName("orgId");        // 借入组织
+    var recOrgTagWidget = contentPane.parameterEl.getWidgetByName("recOrgTag");    // 借出组织标签
+    var orgTagWidget    = contentPane.parameterEl.getWidgetByName("orgTag");       // 借入组织标签
+    var containWidget   = contentPane.parameterEl.getWidgetByName("contain");      // 是否包含下级
+
+    // 如果关键控件不存在，直接通过
+    if (!recOrgIdWidget || !orgIdWidget || !containWidget) {
+        return true;
+    }
+
+    // 2. 获取值
+    var recOrgIdVal  = recOrgIdWidget.getValue();
+    var orgIdVal     = orgIdWidget.getValue();
+    var recOrgTagVal = recOrgTagWidget ? recOrgTagWidget.getValue() : null;
+    var orgTagVal    = orgTagWidget ? orgTagWidget.getValue() : null;
+    var containVal   = containWidget.getValue();
+
+    // 3. 定义通用的判空函数
+    function hasValue(val) {
+        if (val === null || val === undefined) return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return val.toString().trim().length > 0;
+    }
+
+    // 4. 判断各个字段是否有值
+    var hasRecOrgId = hasValue(recOrgIdVal);
+    var hasOrgId    = hasValue(orgIdVal);
+    var hasRecTag   = hasValue(recOrgTagVal);
+    var hasOrgTag   = hasValue(orgTagVal);
+    var hasContain  = hasValue(containVal);
+
+    // 5. 核心校验：拆分为四组独立判断
+    
+    // 如果“是否包含下级”没有值，直接通过，无需后续校验
+    if (!hasContain) {
+        return true;
+    }
+
+    // --- 第一组：借出组织 + 借入组织 ---
+    if (hasRecOrgId && hasOrgId) {
+        alert("借出组织和借入组织同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第二组：借出标签 + 借入标签 ---
+    if (hasRecTag && hasOrgTag) {
+        alert("借出组织标签和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第三组：借出组织 + 借入标签 (交叉) ---
+    if (hasRecOrgId && hasOrgTag) {
+        alert("借出组织和借入组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // --- 第四组：借入组织 + 借出标签 (交叉) ---
+    if (hasOrgId && hasRecTag) {
+        alert("借入组织和借出组织标签同时存在时，不能选择“是否包含下级”。");
+        containWidget.setValue("");
+        return false;
+    }
+
+    // 校验通过
+    return true;
+}
+
+// 执行校验
+return validateOrgConflict();]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="recOrgId"/>
+<LabelName name="guaranteeOrgName"/>
+<WidgetID widgetID="31c8aa47-3d67-4fc7-a4e6-70a0ec0485b2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="guaranteeOrgId"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TreeAttr mutiSelect="true" selectLeafOnly="false"/>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="id" viName="name"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[Tree1]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<isLayerBuild isLayerBuild="false"/>
+<isAutoBuild autoBuild="true"/>
+<isPerformanceFirst performanceFirst="false"/>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+<ReturnTypeAttr delimiter=";" startSymbol="" endSymbol="" returnString="false"/>
+</InnerWidget>
+<BoundsAttr x="329" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="借入组织"/>
+<LabelName name="担保人"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="被担保人组织"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[借入组织]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="464" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="借出组织"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="担保人组织"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[借出组织]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="236" y="11" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="structureVersion"/>
+<LabelName name="组织架构"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgStructure_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[structureVersion]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="101" y="47" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="orgStructure"/>
+<LabelName name="组织架构"/>
+<WidgetID widgetID="fb33a56a-d757-45e2-84f8-68285a8c71a2"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="orgStructure_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="id" viName="version"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[orgStructure]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="101" y="11" width="135" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click" name="点击1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[
+var countNumber = this.options.form.getWidgetByName("countNumber").getValue();
+this.setEnable(false);
+this.options.form.getWidgetByName("current").setValue(countNumber);
+
+_g().parameterCommit();
+this.setEnable(true);]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="label末页"/>
+<LabelName name="组织架构:"/>
+<WidgetID widgetID="3d91195c-a716-4697-8f5a-8489eee99c42"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label末页2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[末页]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="1059" y="119" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click" name="点击1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[
+var count = this.options.form.getWidgetByName("count").getValue();
+var pageSize = this.options.form.getWidgetByName("size").getValue();
+var number = this.options.form.getWidgetByName("current").getValue();
+if(count==null||count==0){
+    this.setEnable(false);
+    _g().parameterCommit();
+    this.setEnable(true);
+}
+var countNumber = this.options.form.getWidgetByName("countNumber").getValue();
+var intNumber = parseInt(number);
+console.log("intNumber",intNumber);
+console.log("countNumber==",countNumber);
+if (intNumber < countNumber && countNumber > 1) {
+	this.options.form.getWidgetByName("current").setValue(intNumber + 1);
+	 
+} else {
+	this.options.form.getWidgetByName("current").setValue(intNumber);
+	 
+}
+ 
+this.setEnable(false);
+_g().parameterCommit();
+this.setEnable(true);]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="label下一页"/>
+<LabelName name="组织架构:"/>
+<WidgetID widgetID="d32b4030-e5d0-4576-aa28-fa20fcfb6111"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label下一页2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[下一页]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="965" y="119" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="current"/>
+<LabelName name="current"/>
+<WidgetID widgetID="b11c6625-46de-4e91-965e-afa46597c00c"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="pageView"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<EMSG>
+<![CDATA[当前页不允许为空]]></EMSG>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<TextAttr allowBlank="false"/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[1]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="930" y="119" width="35" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click" name="点击1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[
+var count = this.options.form.getWidgetByName("count").getValue();
+var number =this.options.form.getWidgetByName("current").getValue(); 
+var intNumber = parseInt(number);
+
+if(intNumber>1){
+	this.options.form.getWidgetByName("current").setValue(intNumber-1);
+}else{
+	this.options.form.getWidgetByName("current").setValue(1);
+
+}	
+this.setEnable(false);
+_g().parameterCommit();
+this.setEnable(true);]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="label上一页"/>
+<LabelName name="组织架构:"/>
+<WidgetID widgetID="cc4e3638-09e9-4350-bc8a-cc8eee73f065"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label上一页2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[上一页]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="837" y="119" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.FreeButton">
+<Listener event="click" name="点击1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[var count = this.options.form.getWidgetByName("count").getValue();
+this.options.form.getWidgetByName("current").setValue(1);
+var pageSize =this.options.form.getWidgetByName("size").getValue();
+
+
+this.setEnable(false);
+_g().parameterCommit();
+this.setEnable(true);
+]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="label首页"/>
+<LabelName name="查询数据总数:"/>
+<WidgetID widgetID="b39d1ebf-cd67-46ae-bf63-d6305113ab3c"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label首页2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[首页]]></Text>
+<Hotkeys>
+<![CDATA[]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="744" y="119" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="countNumber"/>
+<LabelName name="组织架构:"/>
+<WidgetID widgetID="86643fb9-095b-4a36-9101-ba2583fb2159"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="countNumber2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[0]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="709" y="119" width="35" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label总页数"/>
+<LabelName name="总页数:"/>
+<WidgetAttr aspectRatioLocked="true" aspectRatioBackup="1.8214285714285714" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label总页数2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[总页数:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="654" y="119" width="51" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="size"/>
+<LabelName name="size"/>
+<WidgetID widgetID="4f0c2419-16a1-47cf-8567-60271683f28a"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="size2"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<EMSG>
+<![CDATA[展示条数不能为空]]></EMSG>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="10" value="10"/>
+<Dict key="20" value="20"/>
+<Dict key="30" value="30"/>
+<Dict key="40" value="40"/>
+<Dict key="50" value="50"/>
+<Dict key="100" value="100"/>
+<Dict key="200" value="200"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[10]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="587" y="119" width="58" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label展示条数"/>
+<LabelName name="查询数据总数:"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label展示条数2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[展示条数:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="521" y="119" width="62" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.TextEditor">
+<WidgetName name="count"/>
+<LabelName name="查询数据总数:"/>
+<WidgetID widgetID="5c6b1537-2697-4c50-b1ad-58e85e311478"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="count2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue>
+<O>
+<![CDATA[0]]></O>
+</widgetValue>
+<MobileScanCodeAttr scanCode="true" textInputMode="0" isSupportManual="true" isSupportScan="true" isSupportNFC="false" nfcContentType="0"/>
+<MobileTextEditAttr allowOneClickClear="true"/>
+</InnerWidget>
+<BoundsAttr x="477" y="119" width="44" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label查询数据总数"/>
+<LabelName name="是否反担保"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="label查询数据总数2_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[查询数据总数:]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="384" y="119" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<Listener event="click" name="点击2">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[this.options.form.getWidgetByName("orgStructure").reset();
+this.options.form.getWidgetByName("recOrgId").reset();
+this.options.form.getWidgetByName("orgId").reset();
+this.options.form.getWidgetByName("contain").reset();
+this.options.form.getWidgetByName("rsContractNumber").reset();
+this.options.form.getWidgetByName("structureVersion").reset();
+this.options.form.getWidgetByName("recOrgTag").reset();
+this.options.form.getWidgetByName("orgTag").reset();
+
+this.options.form.getWidgetByName("rsCreditProductCode").reset();
+this.options.form.getWidgetByName("contractCode").reset();
+this.options.form.getWidgetByName("cols").setValue('借出合同编号,借出组织,借入组织,往来类型,币种,合同金额,期限开始,期限结束,拆借利率(%),资金来源编号,资金来源类型,资金来源机构/组织,资金来源网点,资金来源金额,资金来源利率,资金来源起息日,资金来源到期日,资金来源品种,拆借金额,折资金来源汇率,折资金来源金额');]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="Reload"/>
+<LabelName name="出票人名称"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="Reload_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[重置]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="965" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<Listener event="click" name="点击1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[null]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="Search"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="Search_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="1059" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboCheckBox">
+<WidgetName name="cols"/>
+<LabelName name="动态列"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="cols_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<EMSG>
+<![CDATA[列不允许为空]]></EMSG>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<fontSize>
+<![CDATA[10]]></fontSize>
+<noRepeat>
+<![CDATA[false]]></noRepeat>
+<Dictionary class="com.fr.data.impl.CustomDictionary">
+<CustomDictAttr>
+<Dict key="contractCode" value="借出合同编号"/>
+<Dict key="recOrgId" value="借出组织"/>
+<Dict key="orgId" value="借入组织"/>
+<Dict key="creditProductCode" value="往来类型"/>
+<Dict key="amount" value="合同金额"/>
+<Dict key="valueDate" value="期限开始"/>
+<Dict key="endDate" value="期限结束"/>
+<Dict key="loanContractRate" value="拆借利率(%)"/>
+<Dict key="rsContractNumber" value="资金来源编号"/>
+<Dict key="rsfiContractType" value="资金来源类型"/>
+<Dict key="rsLendFinanceBankName" value="资金来源机构/组织"/>
+<Dict key="rsLendFinanceBankPointName" value="资金来源网点"/>
+<Dict key="rsAmount" value="资金来源金额"/>
+<Dict key="rsLoanContractRate" value="资金来源利率"/>
+<Dict key="rsValueDate" value="资金来源起息日"/>
+<Dict key="rsEndDate" value="资金来源到期日"/>
+<Dict key="rsCreditProductCodeName" value="资金来源品种"/>
+<Dict key="rcsrAmount" value="拆借金额"/>
+<Dict key="rscrRepayExchangeRate" value="折资金来源汇率"/>
+<Dict key="rcrsBorrowingOccupyAmount" value="折资金来源金额"/>
+<Dict key="currencyCodeName" value="币种"/>
+</CustomDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[借出合同编号,借出组织,借入组织,往来类型,币种,合同金额,期限开始,期限结束,拆借利率(%),资金来源编号,资金来源类型,资金来源机构/组织,资金来源网点,资金来源金额,资金来源利率,资金来源起息日,资金来源到期日,资金来源品种,拆借金额,折资金来源汇率,折资金来源金额]]></O>
+</widgetValue>
+<RAAttr/>
+</InnerWidget>
+<BoundsAttr x="100" y="83" width="860" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Label统计列"/>
+<LabelName name="折算币种"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="Label统计列_c"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[动态列]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="83" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="架构版本"/>
+<WidgetID widgetID="b84da362-47be-456f-b5e4-1ffaf37f1a93"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="l架构版本"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[架构版本]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="47" width="89" height="28"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="组织架构"/>
+<WidgetID widgetID="2d61c1f5-a75f-4345-b500-f08145fe2e90"/>
+<WidgetAttr aspectRatioLocked="false" aspectRatioBackup="-1.0" description="">
+<MobileBookMark useBookMark="false" bookMarkName="" frozen="false" index="-1" oldWidgetName="l组织架构"/>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[组织架构]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="4" autoline="true"/>
+<FRFont name="SimSun" style="0" size="80"/>
+<border style="0">
+<color>
+<FineColor color="-723724" hor="-1" ver="-1"/>
+</color>
+</border>
+</InnerWidget>
+<BoundsAttr x="8" y="11" width="89" height="28"/>
+</Widget>
+<ShowBookmarks showBookmarks="false"/>
+<Sorted sorted="false"/>
+<MobileWidgetList>
+<Widget widgetName="orgStructure"/>
+<Widget widgetName="recOrgId"/>
+<Widget widgetName="orgId"/>
+<Widget widgetName="contain"/>
+<Widget widgetName="rsContractNumber"/>
+<Widget widgetName="structureVersion"/>
+<Widget widgetName="recOrgTag"/>
+<Widget widgetName="orgTag"/>
+<Widget widgetName="rsCreditProductCode"/>
+<Widget widgetName="contractCode"/>
+<Widget widgetName="cols"/>
+<Widget widgetName="Reload"/>
+<Widget widgetName="Search"/>
+<Widget widgetName="count"/>
+<Widget widgetName="size"/>
+<Widget widgetName="countNumber"/>
+<Widget widgetName="label首页"/>
+<Widget widgetName="label上一页"/>
+<Widget widgetName="current"/>
+<Widget widgetName="label下一页"/>
+<Widget widgetName="label末页"/>
+<Widget widgetName="fine_username9"/>
+<Widget widgetName="fr_usercode"/>
+<Widget widgetName="triggerRequest1"/>
+<Widget widgetName="triggerRequest2"/>
+<Widget widgetName="listBoolean"/>
+</MobileWidgetList>
+<FrozenWidgets/>
+<MobileBookMarkStyle class="com.fr.form.ui.mobile.impl.DefaultMobileBookMarkStyle"/>
+<Display display="true"/>
+<DelayDisplayContent delay="false"/>
+<UseParamsTemplate use="true"/>
+<paramFireStopEdit fireEvent="false"/>
+<Position position="0"/>
+<Design_Width design_width="1267"/>
+<NameTagModified/>
+<WidgetNameTagMap/>
+<ParamAttr class="com.fr.report.mobile.DefaultMobileParamStyle"/>
+<ParamStyle class="com.fr.form.ui.mobile.impl.DefaultMobileParameterStyle"/>
+<FollowingTheme background="true"/>
+</Layout>
+<DesignAttr width="1267" height="156"/>
+</ParameterUI>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-723465" hor="-1" ver="-1"/>
+</color>
+</Background>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1447425" hor="-1" ver="-1"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat" roundingMode="6">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80">
+<foreground>
+<FineColor color="-8163329" hor="-1" ver="-1"/>
+</foreground>
+</FRFont>
+<Background name="ColorBackground">
+<color>
+<FineColor color="-1" hor="-1" ver="-1"/>
+</color>
+</Background>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<Format class="com.fr.general.date.FineDateFormat">
+<![CDATA[yyyy-MM-dd]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Top>
+<Bottom style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Bottom>
+<Left style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Left>
+<Right style="1">
+<color>
+<FineColor color="-2432266" hor="-1" ver="-1"/>
+</color>
+</Right>
+</Border>
+</Style>
+<Style style_name="默认" full="true" border_source="-1" imageLayout="1">
+<FRFont name="simhei" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesensitizationList/>
+<DesignerVersion DesignerVersion="LAA"/>
+<PreviewType PreviewType="2"/>
+<TemplateThemeAttrMark class="com.fr.base.iofile.attr.TemplateThemeAttrMark">
+<TemplateThemeAttrMark name="经典浅灰" dark="false"/>
+</TemplateThemeAttrMark>
+<StrategyConfigsAttr class="com.fr.esd.core.strategy.persistence.StrategyConfigsAttr">
+<StrategyConfigs>
+<StrategyConfig dsName="sys_bank" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="orgTageCode" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="orgStructure" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="organization" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="currency" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="creditProductCode" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+<StrategyConfig dsName="structureVersion" enabled="false" useGlobal="true" shouldMonitor="true" shouldEvolve="false" scheduleBySchema="false" timeToLive="1500000" timeToIdle="86400000" updateInterval="1500000" terminalTime="" updateSchema="0 0 8 * * ? *" activeInitiation="false"/>
+</StrategyConfigs>
+</StrategyConfigsAttr>
+<ForkIdAttrMark class="com.fr.base.iofile.attr.ForkIdAttrMark">
+<ForkIdAttrMark forkId="f3af09b0-de9a-4558-81fe-d7952b2a9c4f"/>
+</ForkIdAttrMark>
+<TemplateCloudInfoAttrMark class="com.fr.plugin.cloud.analytics.attr.TemplateInfoAttrMark" pluginID="com.fr.plugin.cloud.analytics.v11" plugin-version="3.37.19">
+<TemplateCloudInfoAttrMark createTime="1756100971823"/>
+</TemplateCloudInfoAttrMark>
+<TemplateIdAttMark class="com.fr.base.iofile.attr.TemplateIdAttrMark">
+<TemplateIdAttMark TemplateId="f3af09b0-de9a-4558-81fe-d7952b2a9c4f"/>
+</TemplateIdAttMark>
+</WorkBook>
