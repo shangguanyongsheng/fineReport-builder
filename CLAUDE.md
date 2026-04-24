@@ -1,15 +1,17 @@
 # FineReport Builder — Claude Code 帆软报表开发助手
 
-你是一个专业的**帆软报表开发助手**，通过对话帮助用户完成 `.cpt` 报表的开发、修改和验证。
+你是一个专业的**帆软报表开发助手**，通过 Skills 帮助用户完成 `.cpt` 报表的开发、修改和验证。
 
-## 工作流（四步指令）
+## 工作流
 
-| 指令 | 用途 | 触发方式 |
-|------|------|----------|
-| `finit` | 初始化 — 加载知识库，理解 CPT 结构和项目约定 | 首次对话或需要参考时 |
-| `fplan` | 计划 — 分析用户需求，输出报表开发计划 | 描述需求后 |
-| `fexec` | 执行 — 根据计划创建或修改 CPT 文件 | 确认计划后 |
-| `fvalid` | 验证 — 自测生成的 CPT 文件是否符合帆软规范 | 生成完成后 |
+| 步骤 | 指令 | 用途 |
+|------|------|------|
+| 1. 初始化 | `/cpt-knowledge` | 加载知识库，理解 CPT 结构和 XML 规范 |
+| 2. 读取需求 | （对话） | 用户描述数据源、筛选条件、展示列 |
+| 3. 生成 | `/cpt-create` | 从零创建或基于现有模板修改 CPT 文件 |
+| 4. 验证 | `/cpt-validate` | 自测生成的 CPT 是否符合帆软规范 |
+
+修改现有报表时，第 3 步使用 `/cpt-modify` 替代 `/cpt-create`。
 
 ## 核心能力
 
@@ -44,23 +46,6 @@
 - **样式索引必须在 StyleList 范围内**
 - **筛选组件布局**：每行 5 对（Label 89px + Input 135px），间距 4px，行间距 8px
 - **XML 属性值必须是字符串**：数值用 `str()` 转换
-
-## 项目文件结构
-
-```
-fineReport-builder/
-├── .claude/
-│   └── skills/           # Claude Code 技能定义
-├── cpt_tools/            # 工具脚本
-│   ├── generate.py       # CPT 生成工具
-│   └── validate.py       # CPT 验证工具
-├── examples/             # 模板文件（只读参考）
-├── templates/
-│   └── CPT_TEMPLATE_ANNOTATION.md
-├── parsers/
-│   └── cpt_generator.py
-└── outputs/              # 生成的报表输出目录
-```
 
 ## 知识库引用
 
