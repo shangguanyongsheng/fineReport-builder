@@ -39,10 +39,14 @@
 报表类型: 明细 | 管理分析 | 自定义
 数据源:
   - 名称: xxx
-  - 类型: class (Java ClassTableData) | database (数据库)
+  - 类型: class (Java ClassTableData) | database (数据库) | dict (字典查询)
   - Class 全路径: com.xxx.XXXData (class 类型必需)
   - 入参: {参数名: 默认值} (空字符串=从筛选组件获取)
   - 返回字段: [field1, field2, ...]
+字典数据源 (type=dict):
+  - 名称: 数据源名
+  - 模板: finance/biz_dict/credit_product_code (从 base_sql_templates 加载)
+  - 或直接写 SQL
 筛选组件:
   - {label: "中文名", code: "参数名", type: "控件类型"}
 展示列:
@@ -57,6 +61,23 @@
 - **样式索引必须在 StyleList 范围内**
 - **筛选组件布局**：每行 5 对（Label 89px + Input 135px），间距 4px，行间距 8px
 - **XML 属性值必须是字符串**：数值用 `str()` 转换
+- **字典数据源**：通过 `sql_template` 从 `templates/base_sql_templates/` 加载 SQL，支持下拉筛选
+
+## 字典数据源
+
+SQL 模板按业务域组织：
+
+```
+templates/base_sql_templates/
+├── _common/              # sys_dict, sys_dict_biz 通用模板
+├── finance/biz_dict/     # 财务业务字典（增信方式等）
+└── ticket/biz_dict/      # 票据业务字典（预留）
+```
+
+- 业务字典用 `sys_dict_biz` 表，含租户隔离（`tenant_id = '${fine_username9}'`）
+- 系统字典用 `sys_dict` 表，无租户隔离
+- 新增模板：在对应域目录创建 `.sql` 文件，在 `_template.md` 中登记
+- 下拉控件通过 `Dictionary` 节点绑定数据源（`kiName="dict_key"`, `viName="dict_value"`）
 
 ## 知识库引用
 

@@ -113,6 +113,68 @@ for i in range(N):
     y = START_Y + row * (ROW_HEIGHT + ROW_GAP)
 ```
 
+## SQL 数据源（字典查询）
+
+当筛选组件需要下拉字典值时，使用 SQL 数据源从业务字典表查询。
+
+### 业务字典（带租户隔离）
+
+```json
+{
+  "name": "creditProductCode",
+  "type": "DBTableData",
+  "sql_template": "finance/biz_dict/credit_product_code",
+  "database": "cfs-report",
+  "tenant_param": "fine_username9",
+  "parameters": [{"name": "fine_username9", "default": ""}]
+}
+```
+
+`sql_template` 会自动从 `templates/base_sql_templates/finance/biz_dict/credit_product_code.sql` 加载。
+
+### 通用系统字典（无租户隔离）
+
+```json
+{
+  "name": "currency",
+  "type": "DBTableData",
+  "sql": "select concat(id,'') as id,code,dict_key,dict_value from sys_dict where code = 'currency' and is_deleted = 0",
+  "database": "cfs-report",
+  "parameters": []
+}
+```
+
+### 模板目录
+
+```
+templates/base_sql_templates/
+├── _common/
+│   ├── sys_dict.sql          # 系统字典（无租户）
+│   └── sys_dict_biz.sql      # 业务字典（含租户隔离）
+├── finance/
+│   └── biz_dict/
+│       └── credit_product_code.sql  # 增信方式
+└── ticket/
+    └── biz_dict/              # 票据域（预留）
+```
+
+新增字典模板：在对应域目录下创建 `.sql` 文件，在 `_template.md` 中登记。
+
+### 控件绑定字典数据源
+
+下拉控件（ComboBox/TreeComboBoxEditor）通过 Dictionary 节点绑定：
+
+```xml
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+  <FormulaDictAttr kiName="dict_key" viName="dict_value"/>
+  <TableDataDictAttr>
+    <TableData class="com.fr.data.impl.NameTableData">
+      <Name><![CDATA[数据源名称]]></Name>
+    </TableData>
+  </TableDataDictAttr>
+</Dictionary>
+```
+
 ## 数据列自动生成规则
 
 1. **序号列**：如果第一个列名为"序号"且字段为空 → 使用 `seq()` 公式

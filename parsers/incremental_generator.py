@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Dict, List, Any
 from datetime import datetime
 
+from parsers.sql_data_source import SqlDataSourceGenerator
+
 # 模板路径
 TEMPLATE_DIR = Path(__file__).parent.parent / 'templates'
 TEMPLATES = {
@@ -41,10 +43,45 @@ class IncrementalCPTGenerator:
         self.tree = ET.parse(str(self.template_path))
         self.root = self.tree.getroot()
 
+    def _resolve_data_source(self, ds: Dict[str, Any]) -> Dict[str, Any]:
+        """解析数据源配置，支持 sql_template 引用
+
+        如果配置中包含 sql_template，则从模板文件加载 SQL 并合并参数。
+        """
+        if not ds.get("sql_template"):
+            return ds
+
+        sql_gen = SqlDataSourceGenerator()
+        template_path = ds["sql_template"]
+        database = ds.get("database", "cfs-report")
+
+        # 模板变量：从配置中提取
+        variables = ds.get("template_variables", {})
+        # 租户参数默认从 fine_username9 映射
+        tenant_param = ds.get("tenant_param", "fine_username9")
+        if "tenant_param" not in variables:
+            variables["tenant_param"] = tenant_param
+
+        template_ds = sql_gen.from_template_file(
+            name=ds["name"],
+            template_path=template_path,
+            database=database,
+            variables=variables,
+            parameters=ds.get("parameters", []),
+        )
+
+        # 合并其他字段
+        for key, value in ds.items():
+            if key not in ("sql_template", "template_variables", "tenant_param") and key not in template_ds:
+                template_ds[key] = value
+
+        return template_ds
+
     def replace_data_sources(self, data_sources: List[Dict[str, Any]]):
         """替换 TableDataMap 中的数据源
 
         清空原有 TableDataMap，写入新的数据源定义。
+        支持 sql_template 字段，自动从 base_sql_templates 加载。
         """
         tdm = self.root.find('TableDataMap')
         if tdm is None:
@@ -54,6 +91,9 @@ class IncrementalCPTGenerator:
             tdm.remove(child)
 
         for ds in data_sources:
+            # 解析模板引用
+            ds = self._resolve_data_source(ds)
+
             table_data = ET.SubElement(tdm, 'TableData')
             table_data.set('name', ds.get('name', ''))
             ds_type = ds.get('type', 'DBTableData')
