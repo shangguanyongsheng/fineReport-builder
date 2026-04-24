@@ -102,6 +102,7 @@ type: tool
 | `filter_controls[].dict_vi` | 否 | 字典 value 字段，默认 `dict_value` |
 | `filter_controls[].muti_select` | 否 | TreeComboBoxEditor 是否多选，默认 `false` |
 | `filter_controls[].select_leaf_only` | 否 | TreeComboBoxEditor 是否只选叶子，默认 `false` |
+| `filter_controls[].default` | 否 | 默认值。有默认值的筛选组件在重置按钮中**不会被清空** |
 | ~~`filter_controls[].action_buttons`~~ | ~~否~~ | ~~**已废弃**：查询和重置按钮自动生成，无需配置~~ |
 | `cells` | 是 | 单元格列表 |
 | `cells[].column` | 是 | 列索引 |
@@ -191,9 +192,11 @@ for i in range(N):
 | 按钮 | 控件名 | 类型 | 快捷键 | 说明 |
 |------|--------|------|--------|------|
 | 查询 | `Search` | `FormSubmitButton` | Enter | 提交表单刷新数据 |
-| 重置 | `Reload` | `FormSubmitButton` | Enter | 清空所有筛选条件 |
+| 重置 | `Reload` | `FormSubmitButton` | Enter | 清空所有**无默认值**的筛选条件 |
 
 按钮位置：放在所有筛选组件行的下一行右侧。
+
+重置按钮的 JS 逻辑：遍历所有 `filter_controls`，对没有 `default` 字段的组件执行 `this.options.form.getWidgetByName("code").reset()`，有默认值的保持不动。
 
 ## SQL 数据源（字典查询）
 

@@ -274,14 +274,15 @@ class IncrementalCPTGenerator:
             layout.append(input_widget)
 
         # 固定添加查询和重置按钮
-        self._add_query_reset_buttons(layout, len(controls))
+        self._add_query_reset_buttons(layout, len(controls), controls)
 
-    def _add_query_reset_buttons(self, layout: ET.Element, num_controls: int):
+    def _add_query_reset_buttons(self, layout: ET.Element, num_controls: int, controls: List[Dict[str, Any]]):
         """添加查询和重置按钮到筛选面板布局末尾
 
         Args:
             layout: 参数面板 Layout 节点
             num_controls: 筛选组件对数（不含按钮）
+            controls: 筛选组件配置列表，用于生成重置按钮 JS
         """
         BUTTON_WIDTH = 89
         BUTTON_HEIGHT = 28
@@ -296,12 +297,21 @@ class IncrementalCPTGenerator:
         x_reset = START_X + 4 * (228 + 4) - 89  # 第 5 列位置
         x_query = START_X + 4 * (228 + 4)  # 第 5 列右侧
 
+        # 生成重置按钮 JS：只重置空值参数，有默认值的不重置
+        reset_js_lines = []
+        for ctrl in controls:
+            code = ctrl.get('code', '')
+            if code and not ctrl.get('default'):  # 没有默认值才重置
+                reset_js_lines.append(f'this.options.form.getWidgetByName("{code}").reset();')
+        reset_content = '\n'.join(reset_js_lines) if reset_js_lines else 'null'
+
         # 重置按钮
         reset_btn = self._create_submit_button(
             name='Reload',
             text='重置',
             x=x_reset, y=y, w=BUTTON_WIDTH, h=BUTTON_HEIGHT,
             action='reset',
+            js_content=reset_content,
         )
         layout.append(reset_btn)
 
@@ -317,6 +327,7 @@ class IncrementalCPTGenerator:
     def _create_submit_button(
         self, name: str, text: str, x: int, y: int, w: int, h: int,
         action: str = 'query',
+        js_content: str = 'null',
     ) -> ET.Element:
         """创建 FormSubmitButton（查询/重置按钮）
 
@@ -325,6 +336,7 @@ class IncrementalCPTGenerator:
             text: 按钮文本
             x, y, w, h: 位置和尺寸
             action: 'query' 或 'reset'
+            js_content: 按钮点击 JS 内容
         """
         import uuid
         widget = ET.Element('Widget')
@@ -345,11 +357,7 @@ class IncrementalCPTGenerator:
         js.set('class', 'com.fr.js.JavaScriptImpl')
         ET.SubElement(js, 'Parameters')
         content = ET.SubElement(js, 'Content')
-        if action == 'query':
-            content.text = '<![CDATA[null]]>'
-        else:
-            # 重置按钮的 JS 逻辑由外部传入或留空
-            content.text = '<![CDATA[null]]>'
+        content.text = f'<![CDATA[{js_content}]]>'
 
         wname = ET.SubElement(inner, 'WidgetName')
         wname.set('name', name)
