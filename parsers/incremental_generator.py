@@ -273,6 +273,125 @@ class IncrementalCPTGenerator:
             )
             layout.append(input_widget)
 
+        # 固定添加查询和重置按钮
+        self._add_query_reset_buttons(layout, len(controls))
+
+    def _add_query_reset_buttons(self, layout: ET.Element, num_controls: int):
+        """添加查询和重置按钮到筛选面板布局末尾
+
+        Args:
+            layout: 参数面板 Layout 节点
+            num_controls: 筛选组件对数（不含按钮）
+        """
+        BUTTON_WIDTH = 89
+        BUTTON_HEIGHT = 28
+        START_X = 10
+        START_Y = 10
+        ROW_HEIGHT = 28
+        ROW_GAP = 8
+
+        # 计算按钮所在行：放在所有筛选组件行的下一行
+        rows_filled = (num_controls + 4) // 5  # 每行 5 对
+        y = START_Y + rows_filled * (ROW_HEIGHT + ROW_GAP)
+        x_reset = START_X + 4 * (228 + 4) - 89  # 第 5 列位置
+        x_query = START_X + 4 * (228 + 4)  # 第 5 列右侧
+
+        # 重置按钮
+        reset_btn = self._create_submit_button(
+            name='Reload',
+            text='重置',
+            x=x_reset, y=y, w=BUTTON_WIDTH, h=BUTTON_HEIGHT,
+            action='reset',
+        )
+        layout.append(reset_btn)
+
+        # 查询按钮
+        query_btn = self._create_submit_button(
+            name='Search',
+            text='查询',
+            x=x_query, y=y, w=BUTTON_WIDTH, h=BUTTON_HEIGHT,
+            action='query',
+        )
+        layout.append(query_btn)
+
+    def _create_submit_button(
+        self, name: str, text: str, x: int, y: int, w: int, h: int,
+        action: str = 'query',
+    ) -> ET.Element:
+        """创建 FormSubmitButton（查询/重置按钮）
+
+        Args:
+            name: 控件名称（Search / Reload）
+            text: 按钮文本
+            x, y, w, h: 位置和尺寸
+            action: 'query' 或 'reset'
+        """
+        import uuid
+        widget = ET.Element('Widget')
+        widget.set('class', 'com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget')
+        inner = ET.SubElement(widget, 'InnerWidget')
+        inner.set('class', 'com.fr.form.parameter.FormSubmitButton')
+
+        # Listener
+        listener = ET.SubElement(inner, 'Listener')
+        if action == 'query':
+            listener.set('event', 'click')
+            listener.set('name', '点击1')
+        else:
+            listener.set('event', 'click')
+            listener.set('name', '点击2')
+
+        js = ET.SubElement(listener, 'JavaScript')
+        js.set('class', 'com.fr.js.JavaScriptImpl')
+        ET.SubElement(js, 'Parameters')
+        content = ET.SubElement(js, 'Content')
+        if action == 'query':
+            content.text = '<![CDATA[null]]>'
+        else:
+            # 重置按钮的 JS 逻辑由外部传入或留空
+            content.text = '<![CDATA[null]]>'
+
+        wname = ET.SubElement(inner, 'WidgetName')
+        wname.set('name', name)
+
+        if action == 'reset':
+            label_name = ET.SubElement(inner, 'LabelName')
+            label_name.set('name', '重置')
+
+        wid = ET.SubElement(inner, 'WidgetID')
+        wid.set('widgetID', str(uuid.uuid4()))
+
+        wattr = ET.SubElement(inner, 'WidgetAttr')
+        wattr.set('aspectRatioLocked', 'false')
+        wattr.set('aspectRatioBackup', '-1.0')
+        wattr.set('description', '')
+
+        mb = ET.SubElement(wattr, 'MobileBookMark')
+        mb.set('useBookMark', 'false')
+        mb.set('bookMarkName', '')
+        mb.set('frozen', 'false')
+        mb.set('index', '-1')
+        if action == 'query':
+            mb.set('oldWidgetName', 'Search_c')
+        else:
+            mb.set('oldWidgetName', 'Reload_c')
+
+        ET.SubElement(wattr, 'PrivilegeControl')
+
+        text_elem = ET.SubElement(inner, 'Text')
+        text_elem.text = f'<![CDATA[{text}]]>'
+
+        hotkeys = ET.SubElement(inner, 'Hotkeys')
+        hotkeys.text = '<![CDATA[enter]]>'
+
+        bounds = ET.SubElement(widget, 'BoundsAttr')
+        bounds.set('x', str(x))
+        bounds.set('y', str(y))
+        bounds.set('width', str(w))
+        bounds.set('height', str(h))
+
+        return widget
+
     def _create_label_widget(self, name: str, text: str, x: int, y: int, w: int, h: int) -> ET.Element:
         """创建 Label 控件 XML"""
         widget = ET.Element('Widget')

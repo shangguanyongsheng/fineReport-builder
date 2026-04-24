@@ -102,6 +102,7 @@ type: tool
 | `filter_controls[].dict_vi` | 否 | 字典 value 字段，默认 `dict_value` |
 | `filter_controls[].muti_select` | 否 | TreeComboBoxEditor 是否多选，默认 `false` |
 | `filter_controls[].select_leaf_only` | 否 | TreeComboBoxEditor 是否只选叶子，默认 `false` |
+| ~~`filter_controls[].action_buttons`~~ | ~~否~~ | ~~**已废弃**：查询和重置按钮自动生成，无需配置~~ |
 | `cells` | 是 | 单元格列表 |
 | `cells[].column` | 是 | 列索引 |
 | `cells[].row` | 是 | 行索引，0=表头行，1=数据行 |
@@ -182,6 +183,17 @@ for i in range(N):
     x_input = x_label + LABEL_WIDTH + LABEL_INPUT_GAP
     y = START_Y + row * (ROW_HEIGHT + ROW_GAP)
 ```
+
+## 查询和重置按钮（强制）
+
+**每个报表必须固定包含查询和重置按钮**，按钮会自动添加在筛选面板末尾，无需在配置中指定：
+
+| 按钮 | 控件名 | 类型 | 快捷键 | 说明 |
+|------|--------|------|--------|------|
+| 查询 | `Search` | `FormSubmitButton` | Enter | 提交表单刷新数据 |
+| 重置 | `Reload` | `FormSubmitButton` | Enter | 清空所有筛选条件 |
+
+按钮位置：放在所有筛选组件行的下一行右侧。
 
 ## SQL 数据源（字典查询）
 
