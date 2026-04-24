@@ -256,7 +256,9 @@ class IncrementalCPTGenerator:
 
             # Input
             ctrl_type = ctrl.get('type', 'TextEditor')
-            extra = {}
+            extra = {
+                'default': ctrl.get('default', ''),
+            }
             if ctrl_type == 'TreeComboBoxEditor':
                 extra['dict_data_source'] = ctrl.get('dict_data_source', '')
                 extra['dict_ki'] = ctrl.get('dict_ki', 'dict_key')
@@ -425,7 +427,9 @@ class IncrementalCPTGenerator:
             name: 控件 code
             ctrl_type: 控件类型（TextEditor, ComboBox, TreeComboBoxEditor, DateEditor 等）
             x, y, w, h: 位置和尺寸
-            **kwargs: 额外参数，TreeComboBoxEditor 需要：
+            **kwargs: 额外参数：
+                - default: 控件默认值
+                - TreeComboBoxEditor 需要：
                 - dict_data_source: 绑定的树数据源名称
                 - dict_ki: 字典 key 字段名（默认 dict_key）
                 - dict_vi: 字典 value 字段名（默认 dict_value）
@@ -491,7 +495,8 @@ class IncrementalCPTGenerator:
 
         wv = ET.SubElement(inner, 'widgetValue')
         o = ET.SubElement(wv, 'O')
-        o.text = '<![CDATA[]]>'
+        default = kwargs.get('default', '')
+        o.text = f'<![CDATA[{default}]]>'
         bounds = ET.SubElement(widget, 'BoundsAttr')
         bounds.set('x', str(x))
         bounds.set('y', str(y))

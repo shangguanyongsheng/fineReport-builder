@@ -56,7 +56,14 @@ type: tool
         {
             "label": "显示名称",
             "code": "paramCode",
-            "type": "TextEditor"
+            "type": "TextEditor",
+            "default": ""
+        },
+        {
+            "label": "有默认值的筛选",
+            "code": "fixedParam",
+            "type": "TextEditor",
+            "default": "固定值"
         }
     ],
     "cells": [
