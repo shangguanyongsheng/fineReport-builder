@@ -8,46 +8,116 @@ type: tool
 
 ## 触发条件
 
-用户要求创建一个新的报表，并且：
-- 提供了数据源信息（名称、类型、class 路径）
-- 提供了筛选条件（中文名称 + 英文 code）
-- 提供了展示列（中文表头 + 英文字段名）
+用户要求创建一个新的报表（无论输入多么模糊），**必须**先进行需求结构化。
 
 ## 执行流程
 
-### Step 1: 需求结构化
+### Step 1: 需求结构化（强制）
 
-将用户输入解析为标准配置结构：
+**不管用户输入了什么内容，必须先输出以下结构化配置，再执行后续步骤。** 结构化时，用户提到的细节必须写进去，没提到的不实现、不猜测。
 
-```python
-config = {
+结构化的配置必须完整包含以下所有字段：
+
+```json
+{
     "title": "报表标题",
-    "template_type": "detail",        # "detail" 或 "manager"
+    "template_type": "detail",
     "data_sources": [
         {
             "name": "数据源名称",
-            "type": "ClassTableData",  # 或 DBTableData
-            "class_name": "com.xxx.DataClass",  # class 类型必需
+            "type": "ClassTableData",
+            "class_name": "com.xxx.DataClass",
             "parameters": [
-                {"name": "orgId", "default": ""},      # 空 → 筛选组件
-                {"name": "fixedParam", "default": "123"}  # 有值 → 固定
+                {"name": "param1", "default": ""}
             ]
         }
     ],
+    "sql_data_sources": [
+        {
+            "name": "字典数据源名",
+            "type": "DBTableData",
+            "sql_template": "finance/biz_dict/credit_product_code",
+            "database": "cfs-report",
+            "tenant_param": "fine_username9",
+            "parameters": [{"name": "fine_username9", "default": ""}]
+        }
+    ],
+    "tree_data_sources": [
+        {
+            "tree_name": "Tree1",
+            "base_data_source": "organization",
+            "mark_field_index": 1,
+            "parent_mark_field_index": 3,
+            "mark_field_name": "id",
+            "parent_mark_field_name": "parent_id"
+        }
+    ],
     "filter_controls": [
-        {"label": "开始日期", "code": "startDate", "type": "DateEditor"},
-        {"label": "组织机构", "code": "orgId", "type": "TreeComboBoxEditor"},
+        {
+            "label": "显示名称",
+            "code": "paramCode",
+            "type": "TextEditor"
+        }
     ],
     "cells": [
-        # 表头行 (row=0)
-        {"column": 0, "row": 0, "value": "合同编号", "style_index": 1},
-        # 数据行 (row=1)
-        {"column": 0, "row": 1, "value_type": "DSColumn",
-         "data_source": "数据源名称", "column_name": "contractNo",
-         "expand_dir": 0, "style_index": 2}
-    ],
+        {
+            "column": 0,
+            "row": 0,
+            "value": "表头",
+            "style_index": 1
+        }
+    ]
 }
 ```
+
+#### 结构化字段说明
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `title` | 是 | 报表标题，用户没说就用描述推断 |
+| `template_type` | 是 | `"detail"` 明细 / `"manager"` 管理分析 / `"自定义"` |
+| `data_sources` | 是 | ClassTableData 数据源列表 |
+| `data_sources[].name` | 是 | 数据源名称 |
+| `data_sources[].type` | 是 | `"ClassTableData"` |
+| `data_sources[].class_name` | type=ClassTableData 时必填 | Java 类全路径 |
+| `data_sources[].parameters` | 是 | 参数列表，空值=从筛选组件获取 |
+| `data_sources[].parameters[].name` | 是 | 参数名 |
+| `data_sources[].parameters[].default` | 是 | 默认值，空字符串 `""` 表示动态获取 |
+| `sql_data_sources` | 否 | SQL 数据源（字典查询） |
+| `sql_data_sources[].sql_template` | 否 | 模板路径，如 `finance/biz_dict/credit_product_code` |
+| `sql_data_sources[].database` | sql_data_sources 存在时必填 | 数据库名 |
+| `tree_data_sources` | 否 | 树形数据源（RecursionTableData） |
+| `tree_data_sources[].tree_name` | 树存在时必填 | 树节点名称 |
+| `tree_data_sources[].base_data_source` | 树存在时必填 | 底层 DBTableData 名称 |
+| `tree_data_sources[].mark_field_index` | 树存在时必填 | 节点 ID 列索引 |
+| `tree_data_sources[].parent_mark_field_index` | 树存在时必填 | 父节点 ID 列索引 |
+| `tree_data_sources[].mark_field_name` | 否 | 节点 ID 字段名，默认 `id` |
+| `tree_data_sources[].parent_mark_field_name` | 否 | 父节点 ID 字段名，默认 `parent_id` |
+| `filter_controls` | 是 | 筛选组件列表 |
+| `filter_controls[].label` | 是 | 显示名称 |
+| `filter_controls[].code` | 是 | 参数 code，必须与 data_sources 中参数名对应 |
+| `filter_controls[].type` | 是 | `TextEditor` / `DateEditor` / `ComboBox` / `TreeComboBoxEditor` |
+| `filter_controls[].dict_data_source` | type=ComboBox/TreeComboBoxEditor 时必填 | 绑定的数据源名称 |
+| `filter_controls[].dict_ki` | 否 | 字典 key 字段，默认 `dict_key` |
+| `filter_controls[].dict_vi` | 否 | 字典 value 字段，默认 `dict_value` |
+| `filter_controls[].muti_select` | 否 | TreeComboBoxEditor 是否多选，默认 `false` |
+| `filter_controls[].select_leaf_only` | 否 | TreeComboBoxEditor 是否只选叶子，默认 `false` |
+| `cells` | 是 | 单元格列表 |
+| `cells[].column` | 是 | 列索引 |
+| `cells[].row` | 是 | 行索引，0=表头行，1=数据行 |
+| `cells[].value` | 是 | 表头文本或公式 |
+| `cells[].value_type` | row>=1 时必填 | `"DSColumn"` / `"Formula"` / `"Static"` |
+| `cells[].data_source` | value_type=DSColumn 时必填 | 数据源名称 |
+| `cells[].column_name` | value_type=DSColumn 时必填 | 字段名 |
+| `cells[].expand_dir` | value_type=DSColumn 时必填 | 展开方向，通常 `0` |
+| `cells[].style_index` | 是 | 样式索引 |
+
+#### 结构化规则
+
+1. **用户提到的每个细节都必须写入结构化配置**，不要遗漏
+2. **用户没提到的字段不要自行添加或假设**
+3. **结构化配置必须先输出给用户确认**，确认后再进入 Step 2
+4. 如果用户输入模糊，结构化前先询问缺失的必要字段
 
 ### Step 2: 校验
 
@@ -72,7 +142,7 @@ output_path = generator.generate(config)
 
 ```
 1. 加载模板（detail 或 manager）
-2. 替换 TableDataMap      ← 数据源定义
+2. 替换 TableDataMap      ← 数据源定义（含 DBTableData + RecursionTableData）
 3. 替换 CellElementList    ← 单元格列表
 4. 替换 ReportParameterAttr/Layout  ← 筛选组件
 5. 保留其余所有节点：
@@ -191,7 +261,7 @@ templates/base_sql_templates/
 > 筛选：开始日期(DateEditor)、结束日期(DateEditor)、组织机构(TreeComboBoxEditor)
 > 展示列：序号、合同编号(contractNo)、合同名称(contractName)、金额(amount)
 
-**解析后配置**：
+**结构化配置**：
 ```json
 {
   "title": "授信明细报表",
