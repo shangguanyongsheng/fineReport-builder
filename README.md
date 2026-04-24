@@ -63,20 +63,26 @@
 
 ## 使用方式
 
-**下载项目到本地 → 在该项目下打开 Claude Code → 直接对话开发**
+**克隆项目 → 进入项目目录 → 启动 Claude Code → 直接使用 `/cpt-*` 命令**
 
-无需安装依赖，无需启动服务。Claude Code 会自动加载 `.claude/skills/` 中的技能定义。
+Claude Code 会自动发现 `.claude/skills/` 目录下的技能，无需任何额外配置。
 
 ```bash
-# 1. 下载项目
+# 1. 克隆项目
 git clone https://github.com/shangguanyongsheng/fineReport-builder.git
 cd fineReport-builder
 
-# 2. 复制 skills 到你的业务项目（可选）
-cp -r .claude/skills/ 你的项目/.claude/
+# 2. 启动 Claude Code（必须在项目目录下）
+claude
 
-# 3. 在 Claude Code 中直接对话，描述报表需求即可
+# 3. 直接使用技能命令
+/cpt-create     # 创建新报表
+/cpt-modify     # 修改现有报表
+/cpt-validate   # 验证报表规范
+/cpt-knowledge  # 加载知识库
 ```
+
+生成的 `.cpt` 文件默认输出到 `outputs/` 目录。
 
 ## 内置 Skills
 
