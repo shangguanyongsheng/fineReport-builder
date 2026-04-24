@@ -1,0 +1,176 @@
+name: cpt-create
+description: 根据用户输入创建全新的 CPT 报表文件。支持 class 和 database 两种数据源类型。自动处理筛选组件布局、数据列绑定、样式配置。
+type: tool
+
+---
+
+# CPT 创建技能
+
+## 触发条件
+
+用户要求创建一个新的报表，并且：
+- 提供了数据源信息（名称、类型、class 路径）
+- 提供了筛选条件（中文名称 + 英文 code）
+- 提供了展示列（中文表头 + 英文字段名）
+
+## 执行流程
+
+### Step 1: 需求结构化
+
+将用户输入解析为标准配置结构：
+
+```python
+config = {
+    "title": "报表标题",
+    "sheet_name": "Sheet1",
+    "data_sources": [
+        {
+            "name": "数据源名称",
+            "type": "ClassTableData",  # 或 DBTableData
+            "class_name": "com.xxx.DataClass",  # class 类型必需
+            "parameters": [
+                {"name": "orgId", "default": ""},      # 空 → 筛选组件
+                {"name": "fixedParam", "default": "123"}  # 有值 → 固定
+            ]
+        }
+    ],
+    "filter_controls": [
+        {"label": "开始日期", "code": "startDate", "type": "DateEditor"},
+        {"label": "组织机构", "code": "orgId", "type": "TreeComboBoxEditor"},
+        {"label": "区域", "code": "region", "type": "ComboBox",
+         "options": {"east": "华东", "south": "华南"}}
+    ],
+    "cells": [
+        # 表头行 (row=0)
+        {"column": 0, "row": 0, "value": "合同编号", "style_index": 1},
+        # 数据行 (row=1)
+        {"column": 0, "row": 1, "value_type": "DSColumn",
+         "data_source": "数据源名称", "column_name": "contractNo",
+         "expand_dir": 0, "style_index": 2}
+    ],
+    "styles": [],  # 空数组 = 使用默认样式集
+    "enable_dynamic_columns": False,
+    "column_headers": []
+}
+```
+
+### Step 2: 校验
+
+1. **数据源参数完整性**：每个空值参数都有对应筛选组件
+2. **展示列字段完整性**：非序号列必须有字段名
+3. **样式引用检查**：cells 中的 style_index 不超出范围
+
+### Step 3: 生成 CPT
+
+有两种方式生成：
+
+#### 方式 A：使用现有 Python 生成器（推荐）
+
+```bash
+cd /home/admin/python-works/fineReport-builder
+python cpt_tools/generate.py --config <config_json_or_file> --output outputs/<文件名>.cpt
+```
+
+#### 方式 B：直接写入 XML（简单报表）
+
+对于简单报表，可以直接调用 `parsers/cpt_generator.py`：
+
+```python
+import sys
+sys.path.insert(0, '/home/admin/python-works/fineReport-builder')
+from parsers.cpt_generator import CPTGenerator
+
+generator = CPTGenerator()
+cpt_content = generator.generate(config)
+```
+
+### Step 4: 输出确认
+
+```
+✅ 报表创建成功: outputs/xxx.cpt
+📊 数据源: 1 个 (ClassTableData)
+🔍 筛选组件: 3 对
+📋 展示列: 5 列
+🎨 样式: 默认 5 种
+```
+
+## 筛选组件布局自动计算
+
+```
+给定 N 个筛选组件，自动计算位置：
+
+LABEL_WIDTH = 89
+INPUT_WIDTH = 135
+LABEL_INPUT_GAP = 4
+PAIR_GAP = 4
+ROW_HEIGHT = 28
+ROW_GAP = 8
+PAIRS_PER_ROW = 5
+START_X = 10
+START_Y = 10
+
+for i in range(N):
+    row = i // PAIRS_PER_ROW
+    col = i % PAIRS_PER_ROW
+    pair_width = LABEL_WIDTH + LABEL_INPUT_GAP + INPUT_WIDTH  # 228
+    x_label = START_X + col * (pair_width + PAIR_GAP)
+    x_input = x_label + LABEL_WIDTH + LABEL_INPUT_GAP
+    y = START_Y + row * (ROW_HEIGHT + ROW_GAP)
+```
+
+## 数据列自动生成规则
+
+1. **序号列**：如果第一个列名为"序号"且字段为空 → 使用 `seq()` 公式
+2. **金额字段**：字段名包含 amount/money/金额/price/费用 → 使用金额样式（索引 3）
+3. **普通字段**：使用数据样式（索引 2）
+4. **表头**：使用表头样式（索引 1），第一列用索引 0
+
+## 动态列处理
+
+如果用户启用了动态列（`enable_dynamic_columns = true`）：
+1. 收集所有表头中文名称到 `column_headers` 列表
+2. 在筛选区域最后一行添加"动态列" ComboCheckBox
+3. 每个表头单元格添加 `INARRAY` 条件属性
+
+## 示例：从用户对话到完整配置
+
+**用户输入**：
+> 创建一个授信明细报表
+> 数据源：com.yocyl.fr.engine.tableData.finance.CreditContractDetailData，名称 CreditData
+> 入参：startDate(空)、endDate(空)、orgId(空)
+> 筛选：开始日期(DateEditor)、结束日期(DateEditor)、组织机构(TreeComboBoxEditor)
+> 展示列：序号、合同编号(contractNo)、合同名称(contractName)、金额(amount)
+
+**解析后配置**：
+```json
+{
+  "title": "授信明细报表",
+  "sheet_name": "授信明细",
+  "data_sources": [{
+    "name": "CreditData",
+    "type": "ClassTableData",
+    "class_name": "com.yocyl.fr.engine.tableData.finance.CreditContractDetailData",
+    "parameters": [
+      {"name": "startDate", "default": ""},
+      {"name": "endDate", "default": ""},
+      {"name": "orgId", "default": ""}
+    ]
+  }],
+  "filter_controls": [
+    {"label": "开始日期", "code": "startDate", "type": "DateEditor"},
+    {"label": "结束日期", "code": "endDate", "type": "DateEditor"},
+    {"label": "组织机构", "code": "orgId", "type": "TreeComboBoxEditor"}
+  ],
+  "cells": [
+    {"column": 0, "row": 0, "value": "序号", "style_index": 0},
+    {"column": 1, "row": 0, "value": "合同编号", "style_index": 1},
+    {"column": 2, "row": 0, "value": "合同名称", "style_index": 1},
+    {"column": 3, "row": 0, "value": "金额", "style_index": 1},
+    {"column": 0, "row": 1, "value_type": "Formula", "value": "seq()", "style_index": 2},
+    {"column": 1, "row": 1, "value_type": "DSColumn", "data_source": "CreditData", "column_name": "contractNo", "expand_dir": 0, "style_index": 2},
+    {"column": 2, "row": 1, "value_type": "DSColumn", "data_source": "CreditData", "column_name": "contractName", "expand_dir": 0, "style_index": 2},
+    {"column": 3, "row": 1, "value_type": "DSColumn", "data_source": "CreditData", "column_name": "amount", "expand_dir": 0, "style_index": 3}
+  ],
+  "styles": []
+}
+```
