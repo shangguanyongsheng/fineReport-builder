@@ -247,10 +247,10 @@ class CPTGenerator:
                 expand.set('dir', str(cell['expand_dir']))
 
         elif value_type == 'Formula':
+            # 帆软公式（如 seq() 序号公式）
             value_elem.set('t', 'XMLable')
             value_elem.set('class', 'com.fr.base.Formula')
-            attrs = ET.SubElement(value_elem, 'Attributes')
-            attrs.text = value
+            value_elem.text = value
 
         else:
             value_elem.text = value

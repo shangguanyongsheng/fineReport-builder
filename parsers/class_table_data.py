@@ -309,10 +309,11 @@ class ClassTableDataParser:
                     field_type = "number"
                 
                 if field["type"] in ["array", "object"]:
+                    placeholder = '"value"' if field["type"] == "array" else '{"key": "value"}'
                     html_parts.append(f'''
                     <div class="form-group">
                         <label class="{required_class}">{field["label"]}</label>
-                        <textarea name="{field["name"]}" placeholder='[{field["type"] == "array" and "\"value\"" or "{\"key\": \"value\"}"}]'>{field.get("default", "")}</textarea>
+                        <textarea name="{field["name"]}" placeholder='[{placeholder}]'>{field.get("default", "")}</textarea>
                     </div>
 ''')
                 else:

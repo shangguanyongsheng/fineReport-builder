@@ -1,36 +1,28 @@
 """FineReport Builder Web 服务
 
-提供 Web 界面进行报表构建、Excel 转换、ClassTableData 测试等操作。
+提供 CPT 文件分析、生成、验证和 ClassTableData 交互测试。
 """
-from flask import Flask, request, jsonify, render_template, send_file, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 import os
 import json
-import tempfile
+import re
 from pathlib import Path
 from datetime import datetime
 
 # 项目根目录
 PROJECT_ROOT = Path(__file__).parent.parent
-sys_path = os.sys.path
-sys_path.insert(0, str(PROJECT_ROOT))
+os.sys.path.insert(0, str(PROJECT_ROOT))
 
 from parsers.cpt_parser import CPTParser
 from parsers.class_table_data import ClassTableDataParser
-from parsers.excel_parser import ExcelParser
 
-app = Flask(__name__, 
-            template_folder='templates',
-            static_folder='static')
+app = Flask(__name__)
 CORS(app)
 
-# 配置
-UPLOAD_FOLDER = PROJECT_ROOT / 'uploads'
+# 输出目录
 OUTPUT_FOLDER = PROJECT_ROOT / 'outputs'
-UPLOAD_FOLDER.mkdir(exist_ok=True)
 OUTPUT_FOLDER.mkdir(exist_ok=True)
-
-app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 app.config['OUTPUT_FOLDER'] = str(OUTPUT_FOLDER)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
 
@@ -49,23 +41,6 @@ def cpt_analyze_page():
     return render_template('cpt_analyze.html')
 
 
-@app.route('/excel-convert')
-def excel_convert_page():
-    """Excel 转换页面"""
-    return render_template('excel_convert.html')
-
-@app.route('/excel-convert-v2')
-def excel_convert_v2_page():
-    """Excel 转换页面 V2"""
-    return render_template('excel_convert_v2.html')
-
-
-@app.route('/excel-convert-v3')
-def excel_convert_v3_page():
-    """Excel 转换页面 V3 - 支持 JSON 输入"""
-    return render_template('excel_convert_v3.html')
-
-
 @app.route('/class-test')
 def class_test_page():
     """ClassTableData 测试页面"""
@@ -73,220 +48,6 @@ def class_test_page():
 
 
 # ============ API 接口 ============
-
-@app.route('/api/analyze/cpt', methods=['POST'])
-def analyze_cpt():
-    """分析 .cpt 文件"""
-    if 'file' not in request.files:
-        return jsonify({'error': '没有上传文件'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': '没有选择文件'}), 400
-    
-    if not file.filename.endswith('.cpt'):
-        return jsonify({'error': '请上传 .cpt 文件'}), 400
-    
-    # 保存上传文件
-    filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-    filepath = UPLOAD_FOLDER / filename
-    file.save(filepath)
-    
-    try:
-        # 解析 CPT
-        parser = CPTParser()
-        structure = parser.parse(str(filepath))
-        summary = parser.to_summary(structure)
-        
-        # 解析 ClassTableData
-        class_parser = ClassTableDataParser()
-        class_definitions = class_parser.parse_from_cpt(str(filepath))
-        
-        result = {
-            'success': True,
-            'filename': file.filename,
-            'summary': summary,
-            'class_table_data': [
-                {
-                    'name': d.name,
-                    'class_name': d.class_name,
-                    'parameters': [
-                        {
-                            'name': p.name,
-                            'default_value': p.default_value,
-                            'type': p.infer_type()
-                        }
-                        for p in d.parameters
-                    ]
-                }
-                for d in class_definitions
-            ],
-            'raw_structure': {
-                'title': structure.title,
-                'table_data_count': len(structure.table_data_list),
-                'widget_controls_count': len(structure.widget_controls),
-                'cell_elements_count': len(structure.cell_elements),
-            }
-        }
-        
-        return jsonify(result)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/analyze/excel', methods=['POST'])
-def analyze_excel():
-    """分析 Excel 文件"""
-    if 'file' not in request.files:
-        return jsonify({'error': '没有上传文件'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': '没有选择文件'}), 400
-    
-    if not file.filename.endswith(('.xlsx', '.xls')):
-        return jsonify({'error': '请上传 Excel 文件 (.xlsx/.xls)'}), 400
-    
-    # 保存上传文件
-    filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-    filepath = UPLOAD_FOLDER / filename
-    file.save(filepath)
-    
-    try:
-        # 解析 Excel
-        parser = ExcelParser()
-        structure = parser.parse(str(filepath))
-        summary = parser.to_summary(structure)
-        
-        # 获取第一个 sheet 的单元格预览
-        preview_data = []
-        if structure.sheets:
-            sheet = structure.sheets[0]
-            cells_by_pos = {(c.column, c.row): c for c in sheet.cells}
-            
-            for row in range(min(sheet.max_row + 1, 20)):  # 最多预览 20 行
-                row_data = []
-                for col in range(min(sheet.max_column + 1, 20)):  # 最多预览 20 列
-                    cell = cells_by_pos.get((col, row))
-                    row_data.append(str(cell.value) if cell and cell.value is not None else '')
-                preview_data.append(row_data)
-        
-        result = {
-            'success': True,
-            'filename': file.filename,
-            'summary': summary,
-            'preview': {
-                'sheet_name': structure.sheets[0].name if structure.sheets else '',
-                'max_row': structure.sheets[0].max_row if structure.sheets else 0,
-                'max_column': structure.sheets[0].max_column if structure.sheets else 0,
-                'data': preview_data
-            }
-        }
-        
-        return jsonify(result)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/convert/excel-to-cpt', methods=['POST'])
-def convert_excel_to_cpt():
-    """将 Excel 转换为 .cpt"""
-    data = request.json
-    
-    filename = data.get('filename')
-    sheet_index = data.get('sheet_index', 0)
-    ds_name = data.get('ds_name', 'data_source')
-    database = data.get('database', 'default_db')
-    
-    # 查找上传的文件
-    excel_files = list(UPLOAD_FOLDER.glob(f'*{filename}'))
-    if not excel_files:
-        return jsonify({'error': '找不到上传的文件'}), 400
-    
-    filepath = excel_files[-1]  # 取最新的
-    
-    try:
-        parser = ExcelParser()
-        structure = parser.parse(str(filepath))
-        
-        if sheet_index >= len(structure.sheets):
-            return jsonify({'error': f'Sheet 索引 {sheet_index} 超出范围'}), 400
-        
-        sheet = structure.sheets[sheet_index]
-        cells = parser.to_cpt_cells(sheet)
-        styles = parser.to_cpt_styles(sheet.styles)
-        
-        # 生成 .cpt 文件内容（简化版）
-        cpt_content = generate_cpt_xml(sheet.name, cells, styles, ds_name, database)
-        
-        # 保存输出文件
-        output_filename = filepath.stem + '.cpt'
-        output_path = OUTPUT_FOLDER / output_filename
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(cpt_content)
-        
-        return jsonify({
-            'success': True,
-            'output_file': output_filename,
-            'download_url': f'/api/download/{output_filename}',
-            'stats': {
-                'cells': len(cells),
-                'styles': len(styles),
-                'rows': sheet.max_row + 1,
-                'columns': sheet.max_column + 1
-            }
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/class-test/generate', methods=['POST'])
-def generate_class_test():
-    """生成 ClassTableData 测试页面"""
-    data = request.json
-    filename = data.get('filename')
-    api_endpoint = data.get('api_endpoint', '')
-    
-    # 查找上传的文件
-    cpt_files = list(UPLOAD_FOLDER.glob(f'*{filename}'))
-    if not cpt_files:
-        return jsonify({'error': '找不到上传的文件'}), 400
-    
-    filepath = cpt_files[-1]
-    
-    try:
-        parser = ClassTableDataParser()
-        definitions = parser.parse_from_cpt(str(filepath))
-        
-        if not definitions:
-            return jsonify({'error': '未找到 ClassTableData 数据集'}), 400
-        
-        # 生成交互式 HTML
-        html = parser.to_browser_html(definitions, api_endpoint)
-        
-        # 保存输出文件
-        output_filename = filepath.stem + '_test.html'
-        output_path = OUTPUT_FOLDER / output_filename
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(html)
-        
-        return jsonify({
-            'success': True,
-            'output_file': output_filename,
-            'view_url': f'/api/view/{output_filename}',
-            'download_url': f'/api/download/{output_filename}',
-            'data_sources': [
-                {'name': d.name, 'class_name': d.class_name}
-                for d in definitions
-            ]
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 
 @app.route('/api/download/<filename>')
 def download_file(filename):
@@ -302,92 +63,61 @@ def view_file(filename):
 
 @app.route('/api/list/files')
 def list_files():
-    """列出已上传和输出的文件"""
-    uploads = [{'name': f.name, 'size': f.stat().st_size, 'time': datetime.fromtimestamp(f.stat().st_mtime).isoformat()}
-               for f in UPLOAD_FOLDER.iterdir() if f.is_file()]
-    
-    outputs = [{'name': f.name, 'size': f.stat().st_size, 'time': datetime.fromtimestamp(f.stat().st_mtime).isoformat()}
-               for f in OUTPUT_FOLDER.iterdir() if f.is_file()]
-    
-    return jsonify({
-        'uploads': sorted(uploads, key=lambda x: x['time'], reverse=True),
-        'outputs': sorted(outputs, key=lambda x: x['time'], reverse=True)
-    })
+    """列出输出文件"""
+    outputs = [
+        {
+            'name': f.name,
+            'size': f.stat().st_size,
+            'time': datetime.fromtimestamp(f.stat().st_mtime).isoformat()
+        }
+        for f in OUTPUT_FOLDER.iterdir() if f.is_file()
+    ]
+    return jsonify({'outputs': sorted(outputs, key=lambda x: x['time'], reverse=True)})
 
 
-# ============ 辅助函数 ============
-
-def generate_cpt_xml(title, cells, styles, ds_name, database):
-    """生成 .cpt XML 内容（简化版）"""
-    xml_parts = ['''<?xml version="1.0" encoding="UTF-8"?>
-<WorkBook xmlVersion="20170720" releaseVersion="9.0.0">
-<Report name="''' + title + '''" class="com.fr.report.worksheet.WorkSheet">
-<TableDataMap>
-    <TableData name="''' + ds_name + '''" class="com.fr.data.impl.DBTableData">
-        <Connection class="com.fr.data.impl.NameDatabaseConnection">
-            <DatabaseName><![CDATA[''' + database + ''']]></DatabaseName>
-        </Connection>
-        <Query><![CDATA[SELECT * FROM table_name]]></Query>
-    </TableData>
-</TableDataMap>
-<CellElementList>
-''']
-    
-    for cell in cells[:1000]:  # 限制最多 1000 个单元格
-        xml_parts.append(f'''    <C c="{cell['column']}" r="{cell['row']}">
-        <O><![CDATA[{cell['value']}]]></O>
-    </C>
-''')
-    
-    xml_parts.append('''</CellElementList>
-</Report>
-</WorkBook>''')
-    
-    return ''.join(xml_parts)
-
-
-# ============ V2 API ============
+# ============ V2 报表生成接口 ============
 
 @app.route('/api/v2/generate', methods=['POST'])
 def generate_report_v2():
     """V2 报表生成接口"""
     import logging
     logger = logging.getLogger(__name__)
-    
+
     logger.info("=" * 60)
     logger.info("收到 V2 报表生成请求")
-    
+
     data = request.json
     logger.info(f"请求数据: {json.dumps(data, ensure_ascii=False, indent=2)}")
-    
+
     try:
-        # 解析配置
         datasource = data.get('datasource', {})
         column_mapping = data.get('column_mapping', {})
         filter_components = data.get('filter_components', [])
         report_info = data.get('report', {})
-        enable_dynamic_columns = data.get('enable_dynamic_columns', False)  # 动态列开关
-        
+        report_type = data.get('report_type', 'analysis')
+        enable_dynamic_columns = data.get('enable_dynamic_columns', False)
+
         logger.info(f"数据源类型: {datasource.get('type')}")
+        logger.info(f"报表类型: {report_type}")
         logger.info(f"列映射: {column_mapping}")
         logger.info(f"筛选组件数量: {len(filter_components)}")
-        
-        # 生成 CPT 配置
+
         cpt_config = {
             'title': report_info.get('title', '新建报表'),
             'sheet_name': report_info.get('sheet_name', 'Sheet1'),
+            'report_type': report_type,
             'data_sources': [],
             'filter_controls': [],
             'cells': [],
-            'enable_dynamic_columns': enable_dynamic_columns  # 动态列开关
+            'enable_dynamic_columns': enable_dynamic_columns
         }
-        
+
         # 数据源配置
         if datasource.get('type') == 'database':
             sql = datasource.get('sql', '')
             params = extract_params_from_sql(sql)
             logger.info(f"SQL 参数: {params}")
-            
+
             cpt_config['data_sources'].append({
                 'name': datasource.get('name', 'main_data'),
                 'type': 'DBTableData',
@@ -396,32 +126,25 @@ def generate_report_v2():
                 'parameters': params
             })
             logger.info(f"数据库数据源已配置: {datasource.get('name')}")
-            
+
         elif datasource.get('type') == 'class':
             param_template = datasource.get('parameter_template', [])
-            # 入参格式: [{"paramName": ""}, {"paramName": "defaultValue"}]
-            # 每个对象只有一个 key，空值表示从筛选组件获取，有值表示写死默认值
-            # ⭐ 用户传什么默认值就用什么，不做转换
             params = []
             if isinstance(param_template, list) and len(param_template) > 0:
                 for item in param_template:
                     if isinstance(item, dict):
                         for param_name, param_value in item.items():
-                            # 处理默认值 - 原封不动使用用户输入
                             if param_value is None:
                                 default_value = ''
                             elif isinstance(param_value, str):
                                 default_value = param_value
                             elif isinstance(param_value, (dict, list)):
-                                # 如果是对象/数组，转成 JSON 字符串
                                 default_value = json.dumps(param_value, ensure_ascii=False)
                             else:
                                 default_value = str(param_value)
-
                             params.append({'name': param_name, 'default': default_value})
 
             elif isinstance(param_template, dict) and len(param_template) > 0:
-                # 兼容旧格式 {"param1": "", "param2": "value"}
                 for k, v in param_template.items():
                     if v is None:
                         default_value = ''
@@ -433,8 +156,6 @@ def generate_report_v2():
                         default_value = str(v)
                     params.append({'name': k, 'default': default_value})
             else:
-                # 如果没有 parameter_template，从 filter_components 自动推断参数
-                # 这样用户不需要手动填写入参模板，系统会自动绑定筛选组件
                 for comp in filter_components:
                     code = comp.get('code')
                     if code:
@@ -443,19 +164,15 @@ def generate_report_v2():
             logger.info(f"原始 parameter_template: {param_template}")
             logger.info(f"处理后的 params: {params}")
 
-            # 打印每个参数的详细信息
             for p in params:
                 logger.info(f"  参数: {p['name']} = {p['default'][:50] if p['default'] else '(空)'}")
-            
-            # 出参格式: ["field1", "field2", ...] 字段名数组
+
             return_fields = datasource.get('return_fields', [])
             if isinstance(return_fields, list) and len(return_fields) > 0:
-                # 确保 return_fields 是字符串数组
                 if isinstance(return_fields[0], dict):
-                    # 旧格式 [{"name": "field1"}]，转换为字符串数组
                     return_fields = [f.get('name', '') for f in return_fields if isinstance(f, dict)]
             logger.info(f"Class 出参: {return_fields}")
-            
+
             cpt_config['data_sources'].append({
                 'name': datasource.get('name', 'main_data'),
                 'type': 'ClassTableData',
@@ -464,7 +181,7 @@ def generate_report_v2():
                 'parameters': params
             })
             logger.info(f"Class 数据源已配置: {datasource.get('name')}")
-        
+
         # 筛选组件配置
         logger.info("配置筛选组件...")
         for i, comp in enumerate(filter_components):
@@ -479,18 +196,13 @@ def generate_report_v2():
             cpt_config['filter_controls'].append(ctrl)
             logger.debug(f"组件 {i}: {ctrl}")
         logger.info(f"筛选组件配置完成，共 {len(cpt_config['filter_controls'])} 个")
-        
-        # 单元格配置（从列映射生成）
+
+        # 单元格配置
         logger.info("配置单元格...")
-        
-        # 获取样式配置
         styles = data.get('styles', [])
         logger.info(f"样式配置: {len(styles)} 个")
-        
-        # 规范化样式配置 - 确保所有值都是字符串
         styles = normalize_styles(styles)
-        
-        # 如果没有样式配置，使用默认样式
+
         if not styles:
             styles = [
                 {
@@ -502,83 +214,69 @@ def generate_report_v2():
                 }
             ]
             logger.info("使用默认样式")
-        
-        cpt_config['styles'] = styles
-        
-        # 单元格配置（从列映射生成表头和数据行）
-        # 支持两种格式：
-        # 1. 简单格式：{"A": "tenantId"} - 表头和字段都用 tenantId
-        # 2. 详细格式：{"A": {"header": "租户ID", "field": "tenantId"}} - 表头用中文，字段用英文名
 
-        # 收集所有表头名称（用于动态列）
+        cpt_config['styles'] = styles
         column_headers = []
 
-        row = 0  # 表头行
+        row = 0
         for col_letter, mapping_value in column_mapping.items():
-            col_num = ord(col_letter.upper()) - ord('A')
-
-            # 解析映射值
+            col_num = parse_col_letter(col_letter)
             if isinstance(mapping_value, dict):
                 header_name = mapping_value.get('header', mapping_value.get('field', ''))
                 field_name = mapping_value.get('field', '')
             else:
-                # 简单格式，表头和字段相同
                 header_name = mapping_value
                 field_name = mapping_value
 
-            # 只要有表头就添加（字段名可以为空）
             if not header_name:
                 continue
-
             column_headers.append(header_name)
-
-            # 表头单元格
-            cell = {
+            cpt_config['cells'].append({
                 'column': col_num,
                 'row': row,
                 'value': header_name,
-                'style_index': 1  # 表头样式
-            }
-            cpt_config['cells'].append(cell)
+                'style_index': 1
+            })
             logger.debug(f"表头单元格: {col_letter}({col_num}) -> {header_name}")
-        
-        # 数据行模板
+
         row = 1
         ds_name = cpt_config['data_sources'][0]['name'] if cpt_config['data_sources'] else 'data'
         for col_letter, mapping_value in column_mapping.items():
-            col_num = ord(col_letter.upper()) - ord('A')
-            
-            # 解析映射值
+            col_num = parse_col_letter(col_letter)
             if isinstance(mapping_value, dict):
                 field_name = mapping_value.get('field', '')
             else:
                 field_name = mapping_value
-            
+
             if not field_name:
+                cpt_config['cells'].append({
+                    'column': col_num,
+                    'row': row,
+                    'value_type': 'Formula',
+                    'value': 'seq()',
+                    'style_index': 2
+                })
+                logger.debug(f"序号公式列: {col_letter}({col_num}) -> seq()")
                 continue
-            
-            # 判断是否为金额字段
+
             is_amount = any(kw in field_name.lower() for kw in ['amount', 'money', '金额', 'price', '费用'])
-            cell = {
+            cpt_config['cells'].append({
                 'column': col_num,
                 'row': row,
                 'value_type': 'DSColumn',
                 'data_source': ds_name,
                 'column_name': field_name,
                 'expand_dir': 0,
-                'style_index': 3 if is_amount else 2  # 金额用样式3，其他用样式2
-            }
-            cpt_config['cells'].append(cell)
+                'style_index': 3 if is_amount else 2
+            })
             logger.debug(f"数据单元格: {col_letter}({col_num}) -> {field_name}")
 
         logger.info(f"单元格配置完成，共 {len(cpt_config['cells'])} 个")
 
-        # 动态列配置：传递表头名称列表
         if enable_dynamic_columns and column_headers:
             cpt_config['column_headers'] = column_headers
             logger.info(f"启用动态列，列名: {column_headers}")
 
-        # 行高列宽配置
         row_height = data.get('row_height', {})
         column_width = data.get('column_width', {})
         if row_height:
@@ -592,69 +290,61 @@ def generate_report_v2():
         generator = CPTGenerator()
         cpt_content = generator.generate(cpt_config)
         logger.info(f"CPT 文件生成成功，大小: {len(cpt_content)} 字符")
-        
-        # 保存文件
+
         output_filename = f"{report_info.get('title', 'report')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.cpt"
         output_path = OUTPUT_FOLDER / output_filename
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(cpt_content)
         logger.info(f"文件已保存: {output_path}")
-        
         logger.info("报表生成完成!")
         logger.info("=" * 60)
-        
+
         return jsonify({
             'success': True,
             'output_file': output_filename,
             'download_url': f'/api/download/{output_filename}',
             'config': cpt_config
         })
-        
+
     except Exception as e:
         logger.error(f"生成失败: {str(e)}", exc_info=True)
         logger.error("=" * 60)
         return jsonify({'error': str(e)}), 500
 
 
+# ============ 辅助函数 ============
+
 def extract_params_from_sql(sql):
     """从 SQL 中提取参数名"""
-    import re
     params = re.findall(r'\$\{(\w+)\}', sql)
     return [{'name': p, 'default': ''} for p in params]
 
 
+def parse_col_letter(col):
+    """Excel 列字母转数字（A=0, Z=25, AA=26, AB=27...）"""
+    result = 0
+    for ch in col.upper():
+        result = result * 26 + (ord(ch) - ord('A') + 1)
+    return result - 1
+
+
 def normalize_styles(styles):
-    """规范化样式配置，确保所有值都是字符串类型
-    
-    解决 ElementTree 无法序列化整数的问题：
-    "cannot serialize 14 (type int)"
-    """
+    """规范化样式配置，确保所有值都是字符串类型"""
     if not styles:
         return styles
-    
+
     normalized = []
     for style in styles:
         norm_style = {}
-        
-        # 基本属性
         for key in ['name', 'horizontal_alignment', 'format']:
             if key in style:
                 norm_style[key] = str(style[key])
-        
-        # 布尔属性
         if 'border' in style:
             norm_style['border'] = bool(style['border'])
         if 'is_default' in style:
             norm_style['is_default'] = bool(style['is_default'])
-        
-        # 背景
         if 'background' in style:
-            if style['background'] is not None:
-                norm_style['background'] = str(style['background'])
-            else:
-                norm_style['background'] = None
-        
-        # 字体配置
+            norm_style['background'] = str(style['background']) if style['background'] is not None else None
         if 'font' in style:
             font = style['font']
             norm_font = {}
@@ -662,9 +352,7 @@ def normalize_styles(styles):
                 if fk in font:
                     norm_font[fk] = str(font[fk])
             norm_style['font'] = norm_font
-        
         normalized.append(norm_style)
-    
     return normalized
 
 
@@ -672,14 +360,14 @@ def normalize_styles(styles):
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='FineReport Builder Web 服务')
     parser.add_argument('--host', default='0.0.0.0', help='监听地址')
     parser.add_argument('--port', type=int, default=5002, help='端口号')
     parser.add_argument('--debug', action='store_true', help='调试模式')
-    
+
     args = parser.parse_args()
-    
+
     print(f"""
 ╔══════════════════════════════════════════════════════════╗
 ║         FineReport Builder Web 服务                       ║
@@ -687,10 +375,10 @@ if __name__ == '__main__':
 ║  地址: http://{args.host}:{args.port}                       ║
 ║  功能:                                                    ║
 ║    - CPT 文件分析                                         ║
-║    - Excel 转 CPT                                         ║
+║    - 报表生成                                             ║
 ║    - ClassTableData 交互测试                              ║
 ║    - 文件下载                                             ║
 ╚══════════════════════════════════════════════════════════╝
     """)
-    
+
     app.run(host=args.host, port=args.port, debug=args.debug)
