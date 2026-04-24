@@ -1,0 +1,8 @@
+# 融资品种树（finance 域）
+# 包装 creditProductCode 数据源生成递归树
+name: 融资品种
+base_data_source: creditProductCode
+mark_field_index: 0          # id 列在 SELECT 结果中的索引
+parent_mark_field_index: 2   # parent_id 列在 SELECT 结果中的索引
+mark_field_name: id
+parent_mark_field_name: parent_id

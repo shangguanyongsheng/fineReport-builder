@@ -144,6 +144,23 @@ class IncrementalCPTGenerator:
                 pq = ET.SubElement(table_data, 'PageQuery')
                 pq.text = '<![CDATA[]]>'
 
+            elif ds.get('type') == 'RecursionTableData':
+                # 递归树数据源
+                mf = ET.SubElement(table_data, 'markFields')
+                mf.text = f"<![CDATA[{ds['mark_field_index']}]]>"
+
+                pmf = ET.SubElement(table_data, 'parentmarkFields')
+                pmf.text = f"<![CDATA[{ds['parent_mark_field_index']}]]>"
+
+                mfn = ET.SubElement(table_data, 'markFieldsName')
+                mfn.text = f"<![CDATA[{ds['mark_field_name']}]]>"
+
+                pmfn = ET.SubElement(table_data, 'parentmarkFieldsName')
+                pmfn.text = f"<![CDATA[{ds['parent_mark_field_name']}]]>"
+
+                otn = ET.SubElement(table_data, 'originalTableDataName')
+                otn.text = f"<![CDATA[{ds['base_data_source']}]]>"
+
     def replace_cells(self, cells: List[Dict[str, Any]]):
         """替换 CellElementList 中的单元格
 
@@ -238,10 +255,21 @@ class IncrementalCPTGenerator:
             layout.append(label_widget)
 
             # Input
+            ctrl_type = ctrl.get('type', 'TextEditor')
+            extra = {}
+            if ctrl_type == 'TreeComboBoxEditor':
+                extra['dict_data_source'] = ctrl.get('dict_data_source', '')
+                extra['dict_ki'] = ctrl.get('dict_ki', 'dict_key')
+                extra['dict_vi'] = ctrl.get('dict_vi', 'dict_value')
+                extra['muti_select'] = ctrl.get('muti_select', 'false')
+                extra['select_leaf_only'] = ctrl.get('select_leaf_only', 'false')
+                extra['widget_id'] = ctrl.get('widget_id', '')
+
             input_widget = self._create_input_widget(
                 name=code,
-                ctrl_type=ctrl.get('type', 'TextEditor'),
-                x=x_input, y=y, w=INPUT_WIDTH, h=ROW_HEIGHT
+                ctrl_type=ctrl_type,
+                x=x_input, y=y, w=INPUT_WIDTH, h=ROW_HEIGHT,
+                **extra,
             )
             layout.append(input_widget)
 
@@ -263,14 +291,77 @@ class IncrementalCPTGenerator:
         bounds.set('height', str(h))
         return widget
 
-    def _create_input_widget(self, name: str, ctrl_type: str, x: int, y: int, w: int, h: int) -> ET.Element:
-        """创建输入控件 XML"""
+    def _create_input_widget(self, name: str, ctrl_type: str, x: int, y: int, w: int, h: int, **kwargs) -> ET.Element:
+        """创建输入控件 XML
+
+        Args:
+            name: 控件 code
+            ctrl_type: 控件类型（TextEditor, ComboBox, TreeComboBoxEditor, DateEditor 等）
+            x, y, w, h: 位置和尺寸
+            **kwargs: 额外参数，TreeComboBoxEditor 需要：
+                - dict_data_source: 绑定的树数据源名称
+                - dict_ki: 字典 key 字段名（默认 dict_key）
+                - dict_vi: 字典 value 字段名（默认 dict_value）
+                - muti_select: 是否多选（默认 false）
+                - select_leaf_only: 是否只选叶子（默认 false）
+                - widget_id: 控件 UUID
+        """
+        import uuid
         widget = ET.Element('Widget')
         widget.set('class', 'com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget')
         inner = ET.SubElement(widget, 'InnerWidget')
         inner.set('class', f"com.fr.form.ui.{ctrl_type}")
         wname = ET.SubElement(inner, 'WidgetName')
         wname.set('name', name)
+
+        # TreeComboBoxEditor 需要 Dictionary 绑定
+        if ctrl_type == 'TreeComboBoxEditor':
+            wname_label = ET.SubElement(inner, 'LabelName')
+            wname_label.set('name', name)
+
+            wid = ET.SubElement(inner, 'WidgetID')
+            wid.set('widgetID', kwargs.get('widget_id', str(uuid.uuid4())))
+
+            wattr = ET.SubElement(inner, 'WidgetAttr')
+            wattr.set('aspectRatioLocked', 'false')
+            wattr.set('aspectRatioBackup', '-1.0')
+            wattr.set('description', '')
+
+            mb = ET.SubElement(wattr, 'MobileBookMark')
+            mb.set('useBookMark', 'false')
+            mb.set('bookMarkName', '')
+            mb.set('frozen', 'false')
+            mb.set('index', '-1')
+            mb.set('oldWidgetName', '')
+
+            ET.SubElement(wattr, 'PrivilegeControl')
+
+            # TreeAttr
+            tree_attr = ET.SubElement(inner, 'TreeAttr')
+            tree_attr.set('mutiSelect', kwargs.get('muti_select', 'false'))
+            tree_attr.set('selectLeafOnly', kwargs.get('select_leaf_only', 'false'))
+
+            # Dictionary
+            dictionary = ET.SubElement(inner, 'Dictionary')
+            dictionary.set('class', 'com.fr.data.impl.TableDataDictionary')
+
+            formula_dict = ET.SubElement(dictionary, 'FormulaDictAttr')
+            formula_dict.set('kiName', kwargs.get('dict_ki', 'dict_key'))
+            formula_dict.set('viName', kwargs.get('dict_vi', 'dict_value'))
+
+            td_dict_attr = ET.SubElement(dictionary, 'TableDataDictAttr')
+            td = ET.SubElement(td_dict_attr, 'TableData')
+            td.set('class', 'com.fr.data.impl.NameTableData')
+            td_name = ET.SubElement(td, 'Name')
+            td_name.text = f"<![CDATA[{kwargs.get('dict_data_source', '')}]]>"
+
+            ET.SubElement(inner, 'isLayerBuild').set('isLayerBuild', 'false')
+            ET.SubElement(inner, 'isAutoBuild').set('autoBuild', 'true')
+            ET.SubElement(inner, 'isPerformanceFirst').set('performanceFirst', 'false')
+        else:
+            # 普通控件只需要 widgetValue
+            pass
+
         wv = ET.SubElement(inner, 'widgetValue')
         o = ET.SubElement(wv, 'O')
         o.text = '<![CDATA[]]>'

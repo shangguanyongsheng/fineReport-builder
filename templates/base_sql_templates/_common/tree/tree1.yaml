@@ -1,0 +1,8 @@
+# Tree1 — 组织架构树（公共）
+# 包装 organization 数据源生成递归树
+name: Tree1
+base_data_source: organization
+mark_field_index: 1       # id 列在 SELECT 结果中的索引（从 0 开始）
+parent_mark_field_index: 3 # parent_id 列在 SELECT 结果中的索引
+mark_field_name: id
+parent_mark_field_name: parent_id
