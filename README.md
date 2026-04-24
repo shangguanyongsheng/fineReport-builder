@@ -178,31 +178,114 @@ SQL 模板按业务域组织：
 
 ```
 templates/base_sql_templates/
-├── _common/              # sys_dict, sys_dict_biz 通用模板
-├── finance/biz_dict/     # 财务业务字典（增信方式等）
-└── ticket/biz_dict/      # 票据业务字典（预留）
+├── _common/
+│   ├── sys_dict.sql          # 系统字典（无租户）
+│   ├── sys_dict_biz.sql      # 业务字典（含租户隔离）
+│   └── tree/                 # 组织架构树公共模板
+├── finance/
+│   ├── biz_dict/             # 财务业务字典（增信方式等）
+│   └── tree/                 # 财务域树模板（融资品种等）
+└── ticket/
+    └── biz_dict/             # 票据业务字典（预留）
 ```
 
-- 模板中使用 `${fine_username9}` 帆软运行时变量，不被替换为字面量
-- 新增模板：在对应域目录创建 `.sql` 文件，在 `_template.md` 中登记
-- 下拉控件通过 `Dictionary` 节点绑定数据源（`kiName="dict_key"`, `viName="dict_value"`）
-- 也可直接在代码中使用 `SqlDataSourceGenerator`：
+## 筛选组件类型
+
+基础筛选组件支持以下类型：
+
+| 控件类型 | 类型名 | 说明 |
+|----------|--------|------|
+| 输入框 | `TextEditor` | 文本输入 |
+| 日期选择 | `DateEditor` | 日期筛选 |
+| 下拉选择 | `ComboBox` | 平铺下拉列表，绑定普通字典数据源 |
+| 树形下拉 | `TreeComboBoxEditor` | 层级树形下拉，绑定 `RecursionTableData` 数据源 |
+
+## 树形数据源（RecursionTableData）
+
+树形下拉筛选需要同时生成两个数据源节点：底层 `DBTableData` + 包装 `RecursionTableData`。
+
+### 组织架构树（公共）
 
 ```python
 from parsers.sql_data_source import SqlDataSourceGenerator
 
 gen = SqlDataSourceGenerator()
 
-# 业务字典（带租户隔离）
-ds = gen.generate_biz_dict('creditProductCode', 'finance_loan_product', 'cfs-report')
+# 一键生成完整的组织架构树（4 个数据源）
+sources = gen.generate_organization_tree(
+    tree_name="Tree1",            # 树节点名称
+    tenant_param="fine_username9",
+    database="cfs-report"
+)
+# sources = [orgStructure, structureVersion, organization, Tree1]
+```
 
-# 系统字典（无租户隔离）
-ds = gen.generate_sys_dict('currency', 'currency', 'cfs-report')
+对应的筛选组件：
 
-# 从模板文件加载
-ds = gen.from_template_file('creditProductCode',
-    'finance/biz_dict/credit_product_code.sql', 'cfs-report',
-    variables={'tenant_param': 'fine_username9'})
+```json
+[
+  {"label": "组织架构", "code": "orgStructure", "type": "ComboBox",
+   "dict_data_source": "orgStructure", "dict_ki": "id", "dict_vi": "version"},
+  {"label": "版本", "code": "structureVersion", "type": "ComboBox",
+   "dict_data_source": "structureVersion"},
+  {"label": "组织机构", "code": "organization", "type": "TreeComboBoxEditor",
+   "dict_data_source": "Tree1", "dict_ki": "id", "dict_vi": "name"}
+]
+```
+
+### 融资品种树（finance 域）
+
+```python
+# 一键生成财务字典树（2 个数据源）
+sources = gen.generate_finance_dict_tree(
+    dict_code="finance_loan_product",  # 业务字典编码
+    tree_name="融资品种",
+    tenant_param="fine_username9",
+    database="cfs-report"
+)
+# sources = [creditProductCode, 融资品种]
+```
+
+对应的筛选组件：
+
+```json
+{
+  "label": "增信方式",
+  "code": "rsCreditProductCode",
+  "type": "TreeComboBoxEditor",
+  "dict_data_source": "融资品种",
+  "dict_ki": "id",
+  "dict_vi": "name",
+  "muti_select": "true"
+}
+```
+
+### 树数据源配置属性
+
+| 属性 | 说明 | 示例 |
+|------|------|------|
+| `base_data_source` | 底层 DBTableData 名称 | `"creditProductCode"` |
+| `mark_field_index` | 节点 ID 列索引（从 0 开始） | `0` |
+| `parent_mark_field_index` | 父节点 ID 列索引 | `2` |
+| `mark_field_name` | 节点 ID 字段名 | `"id"` |
+| `parent_mark_field_name` | 父节点 ID 字段名 | `"parent_id"` |
+
+也可通过 YAML 模板定义树配置：
+
+```yaml
+# templates/base_sql_templates/finance/tree/credit_product_tree.yaml
+name: 融资品种
+base_data_source: creditProductCode
+mark_field_index: 0
+parent_mark_field_index: 2
+mark_field_name: id
+parent_mark_field_name: parent_id
+```
+
+加载模板：
+
+```python
+_, tree = gen.load_tree_template("finance/tree/credit_product_tree.yaml")
 ```
 
 ## License
